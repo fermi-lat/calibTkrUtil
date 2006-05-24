@@ -1,0 +1,25 @@
+------------------------------------------------------------
+User: cohen  Wed May 24 09:27:04 PDT 2006
+calibTkrUtil
+
+Log Message:
+first import of calibTkrUtil
+
+Status:
+
+Vendor Tag:	JCT
+Release Tags:	v0
+		
+N calibTkrUtil/.cvsignore
+N calibTkrUtil/cmt/.cvsignore
+N calibTkrUtil/cmt/requirements
+N calibTkrUtil/src/TkrHits.cxx
+N calibTkrUtil/src/TkrNoiseOcc.cxx
+N calibTkrUtil/src/mainpage.h
+N calibTkrUtil/calibTkrUtil/TkrNoiseOcc.h
+N calibTkrUtil/calibTkrUtil/TkrHits.h
+N calibTkrUtil/doc/release.notes
+
+No conflicts created by this import
+
+    *
