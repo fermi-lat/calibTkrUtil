@@ -1,0 +1,26 @@
+package calibTkrUtil
+
+version v0
+
+# $Header:  $
+
+author Johann Cohen-Tanugi <cohen@slac.stanford.edu>
+
+
+#this is needed for svac/EngineeringModelRoot
+#apply_pattern package_linkopts
+
+macro  calibTkrUtil_srcs "${CALIBTKRUTILROOT}/src/*.cxx" WIN32 "$CALIBTKRUTILROOT\src\*.cxx" 
+
+private 
+
+use commonRootData *
+use digiRootData *
+use reconRootData *
+use facilities * 
+
+apply_pattern package_include
+
+apply_pattern package_headers
+macro_append calibTkrUtil_headers "" WIN32 "../calibTkrUtil/*.h"
+
