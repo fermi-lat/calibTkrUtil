@@ -21,34 +21,24 @@ TkrNoiseOcc::setTrigCut(int trig_cut){
   m_trig_cut = trig_cut;
 }
 
-/*
-void
-TkrNoiseOcc::initPar(int coincidence_cut, int multi_ld, int multi_hd) 
-{
-  m_coincidence_cut = coincidence_cut;
-  m_multi_ld = multi_ld;
-  m_multi_hd = multi_hd;
-}
-*/
-
 void 
-TkrNoiseOcc::initAnalysis(int nEvent, int evt_interval, int coincidence_cut,
-			  int multi_ld, int multi_hd, int periodic_trig) {
+TkrNoiseOcc::initAnalysis(int nEvent, int evt_interval){
 
   int tower, bilayer, xyview;
   int ix;
 
   m_nEvent          = nEvent;	   
   m_evt_interval    = evt_interval;   
-  m_coincidence_cut = coincidence_cut;
-  m_multi_ld        = multi_ld;       
-  m_multi_hd        = multi_hd;
-  m_periodic_trig   = periodic_trig;
 
+  //Default values
+  m_coincidence_cut = 1;  //coincidence_cut;
+  m_multi_ld        = -1; //multi_ld;       
+  m_multi_hd        = 65; //multi_hd;
+  m_periodic_trig   = 0;  //periodic_trig;
+  m_trig_cut = 0;
 
   m_crit_strip_rate = 5.0e-5;
   m_crit_layer_rate = 5.0e-2;
-  m_trig_cut = 0;
 
   m_nx = (int)(m_nEvent/m_evt_interval)+1;
   m_event_counter   = 0;
@@ -76,6 +66,22 @@ TkrNoiseOcc::initAnalysis(int nEvent, int evt_interval, int coincidence_cut,
     }
   }
   
+}
+
+void 
+TkrNoiseOcc::setCoincidenceCut(int coincidence_cut){
+  m_coincidence_cut = coincidence_cut;
+}
+
+void 
+TkrNoiseOcc::setMultiRange(int multi_ld, int multi_hd){
+  m_multi_ld = multi_ld;       
+  m_multi_hd = multi_hd;
+}
+
+void 
+TkrNoiseOcc::setPeriodicTrigCut(int periodic_trig){
+  m_periodic_trig = periodic_trig;
 }
 
 void
