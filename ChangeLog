@@ -1,4 +1,18 @@
 ------------------------------------------------------------
+User: sugizaki  Wed May 24 20:07:21 PDT 2006
+calibTkrUtil/src
+
+Modified Files:
+	TkrNoiseOcc.cxx 
+Log Message:
+By Mutsumi 
+Modified TkrNoiseOcc.h to include GeoConstants.h
+By Mutsumi
+Modified TkrNoiseOcc.cxx to include GeoConstants.h.
+Changed the directory stracure of the histograms.
+
+    *
+------------------------------------------------------------
 User: sugizaki  Wed May 24 20:05:37 PDT 2006
 calibTkrUtil/calibTkrUtil
 
