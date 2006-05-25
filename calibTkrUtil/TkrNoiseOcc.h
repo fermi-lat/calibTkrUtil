@@ -32,11 +32,12 @@ class TkrNoiseOcc {
   TkrNoiseOcc();
   ~TkrNoiseOcc();  
 
-  //void initPar(int coincidence_cut, int multi_ld, int multi_hd);
-  //void initArrDat( int nEvent, int evt_interval );
-  //void initPar(int coincidence_cut, int multi_ld, int multi_hd);
-  void initAnalysis(int nEvent, int evt_interval, int coincidence_cut,\
-		    int multi_ld, int multi_hd, int periodic_trig);
+  //void initAnalysis(int nEvent, int evt_interval, int coincidence_cut,
+  //		    int multi_ld, int multi_hd, int periodic_trig);
+  void initAnalysis(int nEvent, int evt_interval);
+  void setCoincidenceCut(int coincidence_cut);
+  void setMultiRange(int multi_ld, int multi_hd);
+  void setPeriodicTrigCut(int periodic_trig);
   void clearAnalysis();
 
   void setDigiEvtPtr(DigiEvent *digiEvt);
