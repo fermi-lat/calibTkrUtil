@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: sugizaki  Wed May 24 20:05:37 PDT 2006
+calibTkrUtil/calibTkrUtil
+
+Modified Files:
+	TkrNoiseOcc.h 
+Log Message:
+By Mutsumi 
+Modified TkrNoiseOcc.h to include GeoConstants.h
+
+    *
+------------------------------------------------------------
 User: cohen  Wed May 24 09:27:04 PDT 2006
 calibTkrUtil
 
