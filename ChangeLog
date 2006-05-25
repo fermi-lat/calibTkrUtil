@@ -1,4 +1,16 @@
 ------------------------------------------------------------
+User: sugizaki  Thu May 25 11:12:35 PDT 2006
+calibTkrUtil/src
+
+Modified Files:
+	TkrNoiseOcc.cxx 
+Log Message:
+by Mutsumi
+modified the format of parameters in initAnalysis
+modified the format of parameters in initAnalysis
+
+    *
+------------------------------------------------------------
 User: sugizaki  Thu May 25 11:11:55 PDT 2006
 calibTkrUtil/calibTkrUtil
 
