@@ -14,10 +14,14 @@
 //#include "mcRootData/McEvent.h"
 #include <iostream>
 
+#include "GeoConstants.h"
+
+/*
 #define NUMTOWER 16
 #define NUMLAYER 18
 #define NUMVIEW  2
 #define NUMSTRIP 1536
+*/
 
 #define TOT_MAX 300
 #define MUL_MAX 150
@@ -31,7 +35,8 @@ class TkrNoiseOcc {
   //void initPar(int coincidence_cut, int multi_ld, int multi_hd);
   //void initArrDat( int nEvent, int evt_interval );
   //void initPar(int coincidence_cut, int multi_ld, int multi_hd);
-  void initAnalysis(int nEvent, int evt_interval, int coincidence_cut, int multi_ld, int multi_hd);
+  void initAnalysis(int nEvent, int evt_interval, int coincidence_cut,\
+		    int multi_ld, int multi_hd, int periodic_trig);
   void clearAnalysis();
 
   void setDigiEvtPtr(DigiEvent *digiEvt);
@@ -44,6 +49,8 @@ class TkrNoiseOcc {
   
   void setCritStripRate(float crit_strip_rate);
   void setCritLayerRate(float crit_layer_rate);
+  void setTrigCut(int trig_cut);
+
  private:
 
   DigiEvent *m_digiEvt;
@@ -52,19 +59,19 @@ class TkrNoiseOcc {
   TFile *m_histFile;
   
   /// analysis parameter
-  int m_coincidence_cut, m_multi_ld, m_multi_hd;
+  int m_coincidence_cut, m_multi_ld, m_multi_hd, m_periodic_trig, m_trig_cut;
   float m_crit_strip_rate, m_crit_layer_rate;
   /// data parameter
   int m_nEvent, m_evt_interval, m_nx, m_event_counter;
 
   /// data array definition
-  float  *vTkrExposure[NUMTOWER][NUMLAYER];
-  float  *vTkrStripOcc[NUMTOWER][NUMLAYER][NUMVIEW];
-  float  *vTkrLayerOcc[NUMTOWER][NUMLAYER][NUMVIEW];
-  float  *vTkrHitMap[NUMTOWER][NUMLAYER][NUMVIEW];
-  float  *vTkrNoiseMul[NUMTOWER][NUMLAYER][NUMVIEW];
-  float  *vTkrNoiseTot0[NUMTOWER][NUMLAYER][NUMVIEW];
-  float  *vTkrNoiseTot1[NUMTOWER][NUMLAYER][NUMVIEW];
+  float  *vTkrExposure[g_nTower][g_nTkrLayer];
+  float  *vTkrStripOcc[g_nTower][g_nTkrLayer][g_nView];
+  float  *vTkrLayerOcc[g_nTower][g_nTkrLayer][g_nView];
+  float  *vTkrHitMap[g_nTower][g_nTkrLayer][g_nView];
+  float  *vTkrNoiseMul[g_nTower][g_nTkrLayer][g_nView];
+  float  *vTkrNoiseTot0[g_nTower][g_nTkrLayer][g_nView];
+  float  *vTkrNoiseTot1[g_nTower][g_nTkrLayer][g_nView];
 
 };
 
