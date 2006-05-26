@@ -1,5 +1,16 @@
 ------------------------------------------------------------
 User: cohen  Thu May 25 18:35:33 PDT 2006
+calibTkrUtil/src/test
+
+Added Files:
+	AnalyzerOption.dat GeoConstants.h RootTestAnalyzer.cxx 
+	RootTestAnalyzer.h test_calibTkrUtil.cxx 
+Log Message:
+add a test executable
+
+    *
+------------------------------------------------------------
+User: cohen  Thu May 25 18:35:33 PDT 2006
 calibTkrUtil/src
 
 Modified Files:
