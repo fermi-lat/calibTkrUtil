@@ -2,7 +2,7 @@ package calibTkrUtil
 
 version v0
 
-# $Header:  $
+# $Header: /nfs/slac/g/glast/ground/cvs/calibTkrUtil/cmt/requirements,v 1.1.1.1 2006/05/24 16:27:04 cohen Exp $
 
 author Johann Cohen-Tanugi <cohen@slac.stanford.edu>
 
@@ -24,3 +24,7 @@ apply_pattern package_include
 apply_pattern package_headers
 macro_append calibTkrUtil_headers "" WIN32 "../calibTkrUtil/*.h"
 
+use ROOT * IExternal
+macro_append ROOT_libs " ${ROOT_GUI_libs}"
+macro_prepend includes " -I../src/test/"
+application test_calibTkrUtil ../src/test/*.cxx $(calibTkrUtil_srcs)

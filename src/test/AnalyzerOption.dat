@@ -1,0 +1,20 @@
+// Do not change order of the lines. Blank lines and lines starting with "//" 
+// are skipped. If you don't want to analyze a particular type of root files
+// such as mc root files, you still need to give a false file name. The file
+// will be ignored if it does not exist or is not a root file.
+
+// a set of input mc root files separated by blank space(s)
+/nfs/farm/g/glast/u12/Integration/rootData/135000894/v4r060302p8/grRoot/digitization-v3r1p2_135000894_digi_MC.root
+
+// a set of input digi root files separated by blank space(s)
+/nfs/farm/g/glast/u12/Integration/rootData/135000894/v4r060302p8/grRoot/digitization-v3r1p2_135000894_digi_DIGI.root
+
+// a set of input recon root files separated by blank space(s)
+/nfs/farm/g/glast/u12/Integration/rootData/135000894/v4r060302p8/calib-v1r0/grRoot/svacTuple-v3r1p2_135000894_recon_RECON.root
+
+// output SVAC ntuple file
+svac.root
+
+// output SVAC histogram file
+hist.root
+

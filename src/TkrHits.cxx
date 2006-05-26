@@ -502,7 +502,7 @@ TkrHits::TkrHits( bool initHistsFlag ):
   tag.assign( tag, 0, i ) ;
   m_tag = tag;
 
-  std::string version = "$Revision: 1.2 $";
+  std::string version = "$Revision: 1.1.1.1 $";
   i = version.find( " " );
   version.assign( version, i+1, version.size() );
   i = version.find( " " );
@@ -785,8 +785,8 @@ void TkrHits::setTowerInfo(){
   while ( ( tkrDigi = (TkrDigi*)tkrIter.Next() ) ) {
     Int_t tower = tkrDigi->getTower().id();
     // register tower id pointer if this is the first encounter
-    if(tower!=2 && tower!=3)
-      std::cout<<tower<<" "<<m_towerVar.size()<<std::endl;
+    //    if(tower!=2 && tower!=3)
+    //      std::cout<<tower<<" "<<m_towerVar.size()<<std::endl;
     if( m_towerPtr[ tower ] < 0 ){
       m_towerPtr[ tower ] = m_towerVar.size();
       m_towerVar.push_back( towerVar( tower, m_badStrips ) );
