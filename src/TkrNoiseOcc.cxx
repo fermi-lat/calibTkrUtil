@@ -324,12 +324,10 @@ TkrNoiseOcc::writeAnaToHis(TDirectory* dirTkrNoise){
 
   ///  histgram definitions
   //TDirectory *dirTower;
-  TDirectory *dirExposure, *dirStripOcc, *dirLayerOcc, *dirStripRaw, *dirLayerRaw, *dirHitmap, *dirMulti, *dirTOT;
-  TDirectory *dirExposureRt, *dirStripOccRt, *dirLayerOccRt, *dirStripRawRt, *dirLayerRawRt, *dirHitmapRt, *dirMultiRt, *dirTOTRt;
+  TDirectory *dirExposure, *dirStripOcc, *dirLayerOcc, *dirHitmap, *dirMulti, *dirTOT;
+  TDirectory *dirExposureRt, *dirStripOccRt, *dirLayerOccRt, *dirHitmapRt, *dirMultiRt, *dirTOTRt;
 
   dirExposureRt  = dirTkrNoise->mkdir("Exposure");
-  dirStripRawRt  = dirTkrNoise->mkdir("StripRaw");
-  dirLayerRawRt  = dirTkrNoise->mkdir("LayerRaw");
   dirStripOccRt  = dirTkrNoise->mkdir("StripOcc");
   dirLayerOccRt  = dirTkrNoise->mkdir("LayerOcc");
   dirHitmapRt    = dirTkrNoise->mkdir("Hitmap");
@@ -350,8 +348,8 @@ TkrNoiseOcc::writeAnaToHis(TDirectory* dirTkrNoise){
     sprintf(dirname, "Tower%d", tower);
     //dirTower = dirTkrNoise->mkdir(dirname);
     dirExposure  = dirExposureRt->mkdir(dirname);
-    dirStripRaw  = dirStripRawRt->mkdir(dirname);
-    dirLayerRaw  = dirLayerRawRt->mkdir(dirname);
+    dirStripOcc  = dirStripOccRt->mkdir(dirname);
+    dirLayerOcc  = dirLayerOccRt->mkdir(dirname);
     dirHitmap    = dirHitmapRt->mkdir(dirname);
     dirMulti     = dirMultiRt->mkdir(dirname);
     dirTOT       = dirTOTRt->mkdir(dirname);
@@ -367,7 +365,7 @@ TkrNoiseOcc::writeAnaToHis(TDirectory* dirTkrNoise){
       for(xyview=0; xyview<g_nView; xyview++) {
 
 	// StripOcc
-	dirStripRaw->cd();
+	dirStripOcc->cd();
 	sprintf(hname, "hTkrStripOccTwr%dLayer%d", tower, bilayer*g_nView+xyview);
 	sprintf(htitle, "Tower%d-TKR Averaged Hit-Strip Occupancy per Layer%d", tower, bilayer*g_nView+xyview);
 	hTkrStripOcc[tower][bilayer][xyview]  = new TH1F(hname, htitle, m_nx, xmi, xma);
@@ -375,7 +373,7 @@ TkrNoiseOcc::writeAnaToHis(TDirectory* dirTkrNoise){
 	hTkrStripOcc[tower][bilayer][xyview]->Write("",TObject::kOverwrite);
 
 	// LayerOcc
-	dirLayerRaw->cd();
+	dirLayerOcc->cd();
 	sprintf(hname, "hTkrLayerOccTwr%dLayer%d", tower, bilayer*g_nView+xyview);
 	sprintf(htitle, "Tower%d-TKR Layer Occupancy per Layer%d", tower, bilayer*g_nView+xyview);
 	hTkrLayerOcc[tower][bilayer][xyview]  = new TH1F(hname, htitle, m_nx, xmi, xma);
@@ -417,21 +415,19 @@ TkrNoiseOcc::writeAnaToHis(TDirectory* dirTkrNoise){
   
   /// scale histgram
   for (tower=0;tower<g_nTower; tower++){
-    
+
     sprintf(dirname, "Tower%d", tower);
-    dirStripOcc = dirStripOccRt->mkdir(dirname);
-    dirLayerOcc = dirLayerOccRt->mkdir(dirname);
 
     for (bilayer=0; bilayer<g_nTkrLayer; bilayer++) {
       for (xyview=0; xyview<g_nView; xyview++) { 
 
-	dirStripOcc->cd();
+	dirStripOccRt->cd(dirname);
 	// scale of Strip Occupancy
 	hTkrStripOcc[tower][bilayer][xyview]->Divide(hTkrExposure[tower][bilayer]);
 	hTkrStripOcc[tower][bilayer][xyview]->Scale(1.0/g_nStripsPerLayer);
 	hTkrStripOcc[tower][bilayer][xyview]->Write(0,TObject::kOverwrite);
 
-	dirLayerOcc->cd();
+	dirLayerOccRt->cd(dirname);
 	// scale of Layer Occupancy
 	hTkrLayerOcc[tower][bilayer][xyview]->Divide(hTkrExposure[tower][bilayer]);
 	hTkrLayerOcc[tower][bilayer][xyview]->Write(0,TObject::kOverwrite);
