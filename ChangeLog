@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: cohen  Tue Jun 13 09:25:59 PDT 2006
+calibTkrUtil/cmt
+
+Modified Files:
+	requirements 
+Log Message:
+consolidate release and fix an oops for windows build
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: v0r0p2, operation: add
 Package: calibTkrUtil
