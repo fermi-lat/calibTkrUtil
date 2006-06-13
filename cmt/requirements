@@ -1,8 +1,10 @@
 package calibTkrUtil
+# $Header:$
+version v0r0p3
+author Johann Cohen-Tanugi <cohen@slac.stanford.edu>
 
-version v0
 
-# $Header: /nfs/slac/g/glast/ground/cvs/calibTkrUtil/cmt/requirements,v 1.1.1.1 2006/05/24 16:27:04 cohen Exp $
+# $Header: /nfs/slac/g/glast/ground/cvs/calibTkrUtil/cmt/requirements,v 1.2 2006/05/26 01:35:32 cohen Exp $
 
 author Johann Cohen-Tanugi <cohen@slac.stanford.edu>
 
@@ -10,7 +12,7 @@ author Johann Cohen-Tanugi <cohen@slac.stanford.edu>
 #this is needed for svac/EngineeringModelRoot
 #apply_pattern package_linkopts
 
-macro  calibTkrUtil_srcs "${CALIBTKRUTILROOT}/src/*.cxx" WIN32 "$CALIBTKRUTILROOT\src\*.cxx" 
+macro  calibTkrUtil_srcs "${CALIBTKRUTILROOT}/src/*.cxx" WIN32 "${CALIBTKRUTILROOT}\src\*.cxx" 
 
 private 
 
