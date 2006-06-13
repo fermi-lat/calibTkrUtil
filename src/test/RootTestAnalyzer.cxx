@@ -754,7 +754,7 @@ void RootAnalyzer::analyzeData()
   }
 
 
-  nEvent = 10000;
+  nEvent = 1000;
 
   m_tkrCalib->setNevents(nEvent);
   m_tkrCalib->setOutputFile(m_outputFile);
