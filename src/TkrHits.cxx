@@ -490,7 +490,7 @@ void towerVar::readHists( TFile* hfile, UInt_t iRoot, UInt_t nRoot ){
 // TkrHits implementation 
 //
 TkrHits::TkrHits( bool initHistsFlag ): 
-  m_reconEvent(0), m_digiEvent(0), m_rootFile(0), 
+  m_numErrors(0), m_reconEvent(0), m_digiEvent(0), m_rootFile(0), 
   m_maxDirZ(-0.85), m_maxTrackRMS(0.3), m_maxDelta(3.0), m_trackRMS(-1.0)
 {
 
@@ -502,7 +502,7 @@ TkrHits::TkrHits( bool initHistsFlag ):
   tag.assign( tag, 0, i ) ;
   m_tag = tag;
 
-  std::string version = "$Revision: 1.1.1.1 $";
+  std::string version = "$Revision: 1.2 $";
   i = version.find( " " );
   version.assign( version, i+1, version.size() );
   i = version.find( " " );
@@ -733,6 +733,14 @@ void TkrHits::saveAllHist( bool saveWaferOcc )
 	    << " +- " << m_tresProfY->GetBinError( twr+1 ) << std::endl;
     }
   }
+
+  //
+  // Error counts
+  //
+  if( m_log.is_open() && m_numErrors > 0 ){
+    std::cout << "Number of data errors: " << m_numErrors << std::endl;
+    m_log << "Number of data errors: " << m_numErrors << std::endl;
+  }
 }
 
 
@@ -765,6 +773,7 @@ void TkrHits::analyzeEvent()
     selectGoodClusters();
     
     fillOccupancy( 0 );
+
 }
 
 
@@ -796,10 +805,16 @@ void TkrHits::setTowerInfo(){
 
 
 layerId TkrHits::getLayerId( Cluster* cluster ){
-
+  
   int tower = cluster->getTowerId();
   int unp = cluster->getUniPlane();
 
+  if( tower < 0 || tower >= g_nTower || unp < 0 || unp >= g_nUniPlane ){
+    m_numErrors++;
+    layerId lid( 0 );
+    lid.setTower( -1 );
+    return lid;
+  }
   layerId lid( unp );
   lid.setTower ( tower );
   return lid;
@@ -808,10 +823,17 @@ layerId TkrHits::getLayerId( Cluster* cluster ){
 
 layerId TkrHits::getLayerId( const TkrCluster* cluster )
 {
+
   commonRootData::TkrId id = cluster->getTkrId();
   int tower = TowerId( id.getTowerX(), id.getTowerY() ).id();
   int view = id.getView();
   int layer = cluster->getLayer();
+  if( tower < 0 || tower >= g_nTower || layer < 0 || layer >= g_nLayer || view < 0 || view >= g_nView ){
+    m_numErrors++;
+    layerId lid( 0 );
+    lid.setTower( -1 );
+    return lid;
+  }
   layerId lid( layer, view, tower);
   return lid;
 }
@@ -823,7 +845,7 @@ void TkrHits::monitorTKR(){
   if (!tkrDigiCol) return;
   TIter tkrIter(tkrDigiCol);
   TkrDigi *tkrDigi = 0;
-  while ( ( tkrDigi = (TkrDigi*)tkrIter.Next() ) ) {
+  while ( ( tkrDigi = (TkrDigi*)tkrIter.Next() ) ) { 
     Int_t totl = tkrDigi->getToT(0);
     if( totl > 0 ) m_rawTOT->Fill( totl );
     Int_t toth = tkrDigi->getToT(1);
@@ -840,7 +862,22 @@ void TkrHits::monitorTKR(){
       else numl++;
     }
     Int_t tower = tkrDigi->getTower().id();
-    Int_t tw = m_towerPtr[ tower ];
+    Int_t tw = -1;
+    if( tower >= 0 && tower < g_nTower ) tw = m_towerPtr[ tower ];
+    if( tw < 0 ){
+      if( m_log.is_open() && m_numErrors == 0 ){
+	std::cout << "Data Error, invalid tower ID: " << tower << std::endl;
+	m_log << "Data Error, invalid tower ID: " << tower << std::endl;
+	std::cout << "Data error is issued only once and total number of " 
+		  << "occurnaces will be reported at the end of analysis." 
+		  << std::endl;
+	m_log << "Data error is issued only once and total number of " 
+	      << "occurnaces will be reported at the end of analysis." 
+	      << std::endl;
+      }
+      m_numErrors++;
+      continue;
+    }
     if( numl > 0 ){
       m_numHitGTRC->Fill( numl );
       m_towerVar[tw].numHitGTRC->Fill( numl );
@@ -853,6 +890,10 @@ void TkrHits::monitorTKR(){
       Int_t layer = tkrDigi->getBilayer();
       GlastAxis::axis viewId = tkrDigi->getView();
       int view = (viewId == GlastAxis::X) ? 0 : 1;
+      if( layer < 0 || layer >= g_nLayer || view < 0 || view >= g_nView ){
+	m_numErrors++;
+	continue;
+      }      
       layerId lid( layer, view );
       if( numl > maxHitGTRC ) m_largeMulGTRC->Fill( lid.uniPlane );	
       if( numh > maxHitGTRC ) m_largeMulGTRC->Fill( lid.uniPlane );
@@ -879,6 +920,14 @@ void TkrHits::getDigiClusters()
   std::cout << "getDigiClusters start" << std::endl;
 #endif
   //
+  // check data errors
+  if( m_numErrors > 1E4 ){
+    std::cout << "Too many data errrors are observed: " << m_numErrors 
+	      << std::endl << "EXIT." << std::endl;
+    exit( EXIT_FAILURE );
+  }
+  //
+  //
   // clear cluster information.
   for( UInt_t tw=0; tw!=m_towerVar.size(); tw++)
     for( int unp=0; unp!=g_nUniPlane; unp++)
@@ -896,15 +945,24 @@ void TkrHits::getDigiClusters()
     // Identify the tower and layer
     Int_t tower = tkrDigi->getTower().id();
     Int_t tw = m_towerPtr[ tower ];
+    if( tw < 0 ) continue; // invalid trower ID
     Int_t totl = tkrDigi->getToT(0);
     Int_t toth = tkrDigi->getToT(1);
     Int_t lastRC0Strip = tkrDigi->getLastController0Strip();
 
     Int_t layer = tkrDigi->getBilayer();
+    if( layer < 0 || layer >= g_nLayer ){
+      m_numErrors++;
+      continue;
+    }
   
     // Returns the orientation of the strips
     GlastAxis::axis viewId = tkrDigi->getView();
     int view = (viewId == GlastAxis::X) ? 0 : 1;
+    if( view < 0 || view >= g_nView ){
+      m_numErrors++;
+      continue;
+    }
 
     layerId lid( layer, view );
     int uniPlane = lid.uniPlane;
@@ -916,6 +974,10 @@ void TkrHits::getDigiClusters()
     for (ihit = 0; ihit < numHits; ihit++) {
       // Retrieve the strip number
       Int_t iStrip = tkrDigi->getStrip(ihit);
+      if( iStrip < 0 || iStrip >= g_nStrip ){
+	m_numErrors++;
+	continue;
+      }
       strips.push_back( iStrip );
       m_towerVar[tw].dHits[uniPlane][iStrip]++;      
     }
@@ -976,8 +1038,16 @@ void TkrHits::getReconClusters()
     layerId lid = getLayerId( cluster );
     //std::cout << lid.tower << " " << lid.uniPlane << " " << lid.layer << " " << lid.view << std::endl;
     // check if this cluster belong to good track segment.
+    if( lid.tower < 0 ){
+      m_numErrors++;
+      continue;
+    }
     if( !m_goodTrackTowerFlag[lid.tower] ) continue;
     int tw = m_towerPtr[ lid.tower ];
+    if( tw < 0 ){
+      m_numErrors++;
+      continue;
+    }
     m_towerVar[tw].reconClusters[lid.uniPlane] = cluster;
     if( lid.tower != lastTower ){
       lastTower = lid.tower;
@@ -1258,6 +1328,14 @@ float TkrHits::getTrackRMS(){
     if(!cluster) continue;
     layerId lid = getLayerId( cluster );
     int twr = lid.tower;
+    if( twr < 0 ){
+      m_numErrors++;
+      continue;
+    }
+    if( m_towerPtr[lid.tower] < 0 ){
+      m_numErrors++;
+      continue;
+    }
     towerBits |= (1<<lid.tower);
     Double_t z = (cluster->getPosition()).Z();
     if( lid.view == 0 ){
@@ -1572,12 +1650,28 @@ void TkrHits::fillOccupancy( int tDiv )
     int view = lid.view;
     int layer = lid.layer;
     int unp = lid.uniPlane;
+
+    // check if track moves across towers.
+    if( tower != lastTower ){
+      if( lastTower < 0 ){ 
+	lastTower = tower;
+	towers[0] = tower;
+	nTowers = 1;
+      }
+      else{
+	towers[0] = lastTower;
+	towers[1] = tower;
+	nTowers = 2;
+	lastTower = -1;
+      }
+    }
     
     // fill track positions in all layer between previous and current layer
     // carefull for moving across towers.
     int elyr = layer;
     if( cls == numCls-1 ) elyr = 0;
     for( int lyr=preLayer-1; lyr>= elyr; lyr--){ 
+      if( nTowers > 1 ) continue; // avoid tower transition region
       // layers where hits are expected.
       // hit in the same layer or hits in both layers below and above.
       if( hitLayers[lyr] != 0
@@ -1589,20 +1683,6 @@ void TkrHits::fillOccupancy( int tDiv )
 	dyz = posz - preYZ;
 	tpos[1] = preY + dirY*dyz;
 	
-	// check if track moves across towers.
-	if( tower != lastTower ){
-	  if( lastTower < 0 ){ 
-	    lastTower = tower;
-	    towers[0] = tower;
-	    nTowers = 1;
-	  }
-	  else{
-	    towers[0] = lastTower;
-	    towers[1] = tower;
-	    nTowers = 2;
-	    lastTower = -1;
-	  }
-	}
 	int margin = 20;
 	for( int tw=0; tw<nTowers; tw++){ // check both tower
 	  int twr = towers[tw];
