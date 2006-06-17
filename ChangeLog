@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: htajima  Fri Jun 16 18:51:24 PDT 2006
+calibTkrUtil/src
+
+Modified Files:
+	TkrHits.cxx 
+Log Message:
+add protection against illegal tower, layer, strip numbers.
+more roburst efficiency calculation algorithm.
+
+    *
+------------------------------------------------------------
 User: htajima  Fri Jun 16 18:50:54 PDT 2006
 calibTkrUtil/calibTkrUtil
 
