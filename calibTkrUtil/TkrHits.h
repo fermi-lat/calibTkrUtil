@@ -290,7 +290,7 @@ class TkrHits {
   TH1F *m_chargeScale, *m_entries, *m_langauWidth, *m_langauGSigma;
   TProfile *m_dirProfile;
 
-  int m_nEvents;
+  int m_nEvents, m_numErrors;
 
   ReconEvent* m_reconEvent;
   DigiEvent* m_digiEvent;
