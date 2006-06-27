@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Tue Jun 27 05:10:08 PDT 2006
+calibTkrUtil/src
+
+Modified Files:
+	TkrHits.cxx 
+Log Message:
+use layers during tower transition of tracks to avoid dip in the layer edge
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: v0r1, operation: add
 Package: calibTkrUtil
