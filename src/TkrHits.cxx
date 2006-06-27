@@ -502,7 +502,7 @@ TkrHits::TkrHits( bool initHistsFlag ):
   tag.assign( tag, 0, i ) ;
   m_tag = tag;
 
-  std::string version = "$Revision: 1.2 $";
+  std::string version = "$Revision: 1.3 $";
   i = version.find( " " );
   version.assign( version, i+1, version.size() );
   i = version.find( " " );
@@ -1671,7 +1671,8 @@ void TkrHits::fillOccupancy( int tDiv )
     int elyr = layer;
     if( cls == numCls-1 ) elyr = 0;
     for( int lyr=preLayer-1; lyr>= elyr; lyr--){ 
-      if( nTowers > 1 ) continue; // avoid tower transition region
+      // disable following statement since it reduces the tracks in the layer edge.
+      //if( nTowers > 1 ) continue; // avoid tower transition region
       // layers where hits are expected.
       // hit in the same layer or hits in both layers below and above.
       if( hitLayers[lyr] != 0
