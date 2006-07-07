@@ -38,6 +38,8 @@ class TkrNoiseOcc {
   void setCoincidenceCut(int coincidence_cut);
   void setMultiRange(int multi_ld, int multi_hd);
   void setPeriodicTrigCut(int periodic_trig);
+  void setTrigCut(int trig_cut);
+
   void clearAnalysis();
 
   void setDigiEvtPtr(DigiEvent *digiEvt);
@@ -50,7 +52,6 @@ class TkrNoiseOcc {
   
   void setCritStripRate(float crit_strip_rate);
   void setCritLayerRate(float crit_layer_rate);
-  void setTrigCut(int trig_cut);
 
  private:
 
@@ -60,12 +61,14 @@ class TkrNoiseOcc {
   TFile *m_histFile;
   
   /// analysis parameter
-  int m_coincidence_cut, m_multi_ld, m_multi_hd, m_periodic_trig, m_trig_cut;
-  float m_crit_strip_rate, m_crit_layer_rate;
+  int    m_coincidence_cut, m_multi_ld, m_multi_hd, m_periodic_trig, m_trig_cut;
+  float  m_crit_strip_rate, m_crit_layer_rate;
   /// data parameter
-  int m_nEvent, m_evt_interval, m_nx, m_event_counter;
+  int    m_nEvent, m_evt_interval, m_nx, m_event_counter;
+  double m_evtTime;
 
   /// data array definition
+  double *vEvtTime;
   float  *vTkrExposure[g_nTower][g_nTkrLayer];
   float  *vTkrStripOcc[g_nTower][g_nTkrLayer][g_nView];
   float  *vTkrLayerOcc[g_nTower][g_nTkrLayer][g_nView];
