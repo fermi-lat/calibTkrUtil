@@ -1,4 +1,4 @@
-#include "calibTkrUtil/TkrNoiseOcc.h"
+#include "TkrNoiseOcc.h"
 
 TkrNoiseOcc::TkrNoiseOcc() 
 {}
@@ -43,6 +43,8 @@ TkrNoiseOcc::initAnalysis(int nEvent, int evt_interval){
   m_nx = (int)(m_nEvent/m_evt_interval)+1;
   m_event_counter   = 0;
   
+  vEvtTime = new double[m_nx];
+
   for(tower=0;tower<g_nTower; tower++){
     for (bilayer=0; bilayer<g_nTkrLayer; bilayer++) {
       vTkrExposure[tower][bilayer] = new float[m_nx];
@@ -126,6 +128,7 @@ TkrNoiseOcc::anaDigiEvt() {
   }
 
   ievent = m_digiEvt->getEventId(); 
+  m_evtTime = m_digiEvt->getTimeStamp(); 
 
   ///////////////////////
   // Tkr Digi Analysis
@@ -238,7 +241,12 @@ TkrNoiseOcc::anaDigiEvt() {
       }
     }
   }
+
+  if ((m_event_counter%m_evt_interval)==0) {
+     vEvtTime[(int)(m_event_counter/m_evt_interval)] = m_evtTime;
+  }
   m_event_counter +=1;
+
 }  
 
 
@@ -316,7 +324,6 @@ TkrNoiseOcc::writeAnaToHis(TDirectory* dirTkrNoise){
   }
 
   dirTkrNoise->cd();
-
   xmi = 0.5;
   xma = (float)(m_nx*m_evt_interval)+0.5;
 
@@ -327,12 +334,21 @@ TkrNoiseOcc::writeAnaToHis(TDirectory* dirTkrNoise){
   TDirectory *dirExposure, *dirStripOcc, *dirLayerOcc, *dirHitmap, *dirMulti, *dirTOT;
   TDirectory *dirExposureRt, *dirStripOccRt, *dirLayerOccRt, *dirHitmapRt, *dirMultiRt, *dirTOTRt;
 
+  TDirectory *dirTowerAveOcc;
+
   dirExposureRt  = dirTkrNoise->mkdir("Exposure");
   dirStripOccRt  = dirTkrNoise->mkdir("StripOcc");
   dirLayerOccRt  = dirTkrNoise->mkdir("LayerOcc");
   dirHitmapRt    = dirTkrNoise->mkdir("Hitmap");
   dirMultiRt     = dirTkrNoise->mkdir("Multi");
   dirTOTRt       = dirTkrNoise->mkdir("TOT");
+
+  dirTowerAveOcc = dirTkrNoise->mkdir("TowerAveOcc");
+
+  TH1D *hEvtTime;
+  TH1F *hTkrTowerAveOcc[g_nTower];
+  TH1F *hTkrTowerSumExp[g_nTower];
+
 
   TH1F *hTkrExposure[g_nTower][g_nTkrLayer];
   TH1F *hTkrStripOcc[g_nTower][g_nTkrLayer][g_nView];
@@ -342,6 +358,11 @@ TkrNoiseOcc::writeAnaToHis(TDirectory* dirTkrNoise){
   TH1F *hTkrNoiseTot0[g_nTower][g_nTkrLayer][g_nView];
   TH1F *hTkrNoiseTot1[g_nTower][g_nTkrLayer][g_nView];
 
+  sprintf(hname, "hEvtTime");
+  sprintf(htitle, "Event Time (UT from 2001/1/1)");
+  hEvtTime  = new TH1D(hname, htitle, m_nx, xmi, xma);
+  for (ix=0; ix<m_nx; ix++) hEvtTime->SetBinContent(ix+1, vEvtTime[ix]);
+  hEvtTime->Write("",TObject::kOverwrite);
 
   for(tower=0;tower<g_nTower; tower++){
 
@@ -353,9 +374,23 @@ TkrNoiseOcc::writeAnaToHis(TDirectory* dirTkrNoise){
     dirHitmap    = dirHitmapRt->mkdir(dirname);
     dirMulti     = dirMultiRt->mkdir(dirname);
     dirTOT       = dirTOTRt->mkdir(dirname);
-    
+
+    //Tower Average Occupancy
+    dirTowerAveOcc->cd();
+    sprintf(hname, "hTkrTowerAveOccTwr%d", tower);
+    sprintf(htitle, "Tower%d-TKR tower-average noise occupancy", tower);
+    hTkrTowerAveOcc[tower] = new TH1F(hname, htitle, m_nx, xmi, xma);
+     
+     //Sum of esposures of entire layers in Tower
+    dirTowerAveOcc->cd();
+    sprintf(hname, "hTkrTowerSumExpTwr%d", tower);
+    sprintf(htitle, "Tower%d-TKR exposure of entire layer in Tower", tower);
+    hTkrTowerSumExp[tower]  = new TH1F(hname, htitle, m_nx, xmi, xma);
+
+
     for (bilayer=0; bilayer<g_nTkrLayer; bilayer++) {
 
+      // Exposure
       dirExposure->cd();
       sprintf(hname, "hTkrExposTwr%dbiLayer%d", tower, bilayer);
       sprintf(htitle, " TKR  Tower%d biLayer%d Exposure", tower, bilayer);
@@ -379,7 +414,38 @@ TkrNoiseOcc::writeAnaToHis(TDirectory* dirTkrNoise){
 	hTkrLayerOcc[tower][bilayer][xyview]  = new TH1F(hname, htitle, m_nx, xmi, xma);
 	for (ix=0; ix<m_nx; ix++) hTkrLayerOcc[tower][bilayer][xyview]->SetBinContent(ix+1, vTkrLayerOcc[tower][bilayer][xyview][ix]);
 	hTkrLayerOcc[tower][bilayer][xyview]->Write("",TObject::kOverwrite);
+	
+	// For tower average occupancy
+	hTkrTowerAveOcc[tower]->Add(hTkrStripOcc[tower][bilayer][xyview]);
+	hTkrTowerSumExp[tower]->Add(hTkrExposure[tower][bilayer]);
 
+
+	///// Tune histogram scale
+	// scale of Strip Occupancy
+	hTkrStripOcc[tower][bilayer][xyview]->Divide(hTkrExposure[tower][bilayer]);
+	hTkrStripOcc[tower][bilayer][xyview]->Scale(1.0/g_nStripsPerLayer);
+	hTkrStripOcc[tower][bilayer][xyview]->Write(0,TObject::kOverwrite);
+
+	// scale of Layer Occupancy
+	hTkrLayerOcc[tower][bilayer][xyview]->Divide(hTkrExposure[tower][bilayer]);
+	hTkrLayerOcc[tower][bilayer][xyview]->Write(0,TObject::kOverwrite);
+
+	// check maximum strip rate
+	max_rate = hTkrStripOcc[tower][bilayer][xyview]->GetMaximum();
+	if (max_rate>m_crit_strip_rate) {
+	  std::cout << " Tower" << tower;
+	  std::cout << " Layer" << bilayer*g_nView+xyview;
+	  std::cout << std::scientific << " Max Strip Occupancy=" << max_rate << std::endl;
+	}
+	// check maximum layer rate
+	max_rate = hTkrLayerOcc[tower][bilayer][xyview]->GetMaximum();
+	if (max_rate>m_crit_layer_rate) {
+	  std::cout << " Tower" << tower;
+	  std::cout << " Layer" << bilayer*g_nView+xyview;
+	  std::cout << std::scientific << " Max Layer ccupancy=" << max_rate << std::endl;
+	}
+
+	///////////////////////////////////////////////////////////////////////////
 	// Hitmap
 	dirHitmap->cd();
 	sprintf(hname, "hTkrHitMapTwr%dLayer%d", tower, bilayer*g_nView+xyview);
@@ -409,57 +475,26 @@ TkrNoiseOcc::writeAnaToHis(TDirectory* dirTkrNoise){
 	hTkrNoiseTot1[tower][bilayer][xyview]  = new TH1F(hname, htitle, 300, -0.5, 299.5);
 	for (ix=0; ix<300; ix++) hTkrNoiseTot1[tower][bilayer][xyview]->SetBinContent(ix+1, vTkrNoiseTot1[tower][bilayer][xyview][ix]);
 	hTkrNoiseTot1[tower][bilayer][xyview]->Write("",TObject::kOverwrite);
-      }
-    }
+
+
+      } //xyview
+    } // bilayer
+
+    // Tower Average Occupancy scale
+    hTkrTowerAveOcc[tower]->Divide(hTkrTowerSumExp[tower]);
+    hTkrTowerAveOcc[tower]->Scale(1.0/g_nStripsPerLayer);
+    hTkrTowerAveOcc[tower]->Write("",TObject::kOverwrite);
+    hTkrTowerSumExp[tower]->Write("",TObject::kOverwrite);
+
   }
   
-  /// scale histgram
-  for (tower=0;tower<g_nTower; tower++){
 
-    sprintf(dirname, "Tower%d", tower);
-
-    for (bilayer=0; bilayer<g_nTkrLayer; bilayer++) {
-      for (xyview=0; xyview<g_nView; xyview++) { 
-
-	dirStripOccRt->cd(dirname);
-	// scale of Strip Occupancy
-	hTkrStripOcc[tower][bilayer][xyview]->Divide(hTkrExposure[tower][bilayer]);
-	hTkrStripOcc[tower][bilayer][xyview]->Scale(1.0/g_nStripsPerLayer);
-	hTkrStripOcc[tower][bilayer][xyview]->Write(0,TObject::kOverwrite);
-
-	dirLayerOccRt->cd(dirname);
-	// scale of Layer Occupancy
-	hTkrLayerOcc[tower][bilayer][xyview]->Divide(hTkrExposure[tower][bilayer]);
-	hTkrLayerOcc[tower][bilayer][xyview]->Write(0,TObject::kOverwrite);
-
-	// check maximum strip rate
-	max_rate = hTkrStripOcc[tower][bilayer][xyview]->GetMaximum();
-	if (max_rate>m_crit_strip_rate) {
-	  std::cout << " Tower" << tower;
-	  std::cout << " Layer" << bilayer*g_nView+xyview;
-	  std::cout << std::scientific << " Max Strip Occupancy=" << max_rate << std::endl;
-	}
-	// check maximum layer rate
-	max_rate = hTkrLayerOcc[tower][bilayer][xyview]->GetMaximum();
-	if (max_rate>m_crit_layer_rate) {
-	  std::cout << " Tower" << tower;
-	  std::cout << " Layer" << bilayer*g_nView+xyview;
-	  std::cout << std::scientific << " Max Layer ccupancy=" << max_rate << std::endl;
-	}
-	
-      }
-    }
-  }
-  
-  
   /// Summary plot
   dirTkrNoise->cd();
   TH2F *hMaxStripOcc = new TH2F("hMaxStripOcc", "Max Noise Occupancy averaged over layer", g_nTower, -0.5, g_nTower-0.5, 36, -0.5, 35.5);
   TH2F *hMaxLayerOcc = new TH2F("hMaxLayerOcc", "Max Layer Occupancy averaged over layer", g_nTower, -0.5, g_nTower-0.5, 36, -0.5, 35.5);
   TH2F *hAveStripOcc = new TH2F("hAveStripOcc", "Average Noise Occupancy averaged over layer", g_nTower, -0.5, g_nTower-0.5, 36, -0.5, 35.5);
   TH2F *hAveLayerOcc = new TH2F("hAveLayerOcc", "Average Layer Occupancy averaged over layer", g_nTower, -0.5, g_nTower-0.5, 36, -0.5, 35.5);
-
-  //TH1F *hTowerAveOcc = new TH1F("hTowerAveOcc", "Tower Average Noise Occupancy", 16, -0.5, 15.5);
 
   for(tower=0; tower<g_nTower; tower++){
     for (bilayer=0; bilayer<g_nTkrLayer; bilayer++) {
@@ -484,25 +519,6 @@ TkrNoiseOcc::writeAnaToHis(TDirectory* dirTkrNoise){
   hMaxLayerOcc->Write("",TObject::kOverwrite);
   hAveStripOcc->Write("",TObject::kOverwrite);
   hAveLayerOcc->Write("",TObject::kOverwrite);
-
-
-  /*
-  //Overwite histgram
-  for (tower=0;tower<g_nTower; tower++){
-    for (bilayer=0; bilayer<g_nTkrLayer; bilayer++) {
-      hTkrExposure [tower][bilayer]->Write("",TObject::kOverwrite);
-      for (xyview=0; xyview<g_nView; xyview++) { 
-	hTkrStripOcc [tower][bilayer][xyview]->Write("",TObject::kOverwrite);
-	hTkrLayerOcc [tower][bilayer][xyview]->Write("",TObject::kOverwrite);
-	hTkrHitMap   [tower][bilayer][xyview]->Write("",TObject::kOverwrite);
-	hTkrNoiseMul [tower][bilayer][xyview]->Write("",TObject::kOverwrite);
-	hTkrNoiseTot0[tower][bilayer][xyview]->Write("",TObject::kOverwrite);
-	hTkrNoiseTot1[tower][bilayer][xyview]->Write("",TObject::kOverwrite);
-      }
-    }
-  }
-  */
-
-
+  
   dirTkrNoise->Write("",TObject::kOverwrite);
 }
