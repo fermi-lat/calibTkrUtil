@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: sugizaki  Fri Jul  7 15:10:28 PDT 2006
+calibTkrUtil/src
+
+Modified Files:
+	TkrNoiseOcc.cxx 
+Log Message:
+fix a bug in TkrNoiseOcc.cxx
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: v1r2, operation: add
 Package: calibTkrUtil
