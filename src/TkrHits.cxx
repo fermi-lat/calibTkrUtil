@@ -27,49 +27,49 @@ bool Cluster::addStrip( int strip ){
 //
 // layerId class implementation
 //
-inline layerId::layerId( int lyr, int vw, int twr ){ 
+layerId::layerId( int lyr, int vw, int twr ){ 
   setLayer( lyr, vw, twr ); }
 layerId::layerId( int tr, std::string wh, int twr ){ 
   setTray( tr, wh, twr ); }
-inline layerId::layerId( int unp ){ 
+layerId::layerId( int unp ){ 
   setUniPlane( unp ); }
 layerId::layerId( std::string tspt, int twr ){ 
   setSPT( tspt, twr ); }
 
-inline void layerId::setLayer( int lyr, int vw, int twr ){
+void layerId::setLayer( int lyr, int vw, int twr ){
   layer = lyr; view = vw; tower = twr;
   layerToTray();
   trayToUniPlane();
   layerToSPT();
 }
 
-inline void layerId::setUniPlane( int unp, int twr ){
+void layerId::setUniPlane( int unp, int twr ){
   uniPlane = unp; tower = twr;
   uniPlaneToTray();
   trayToLayer();
   layerToSPT();
 }
 
-inline void layerId::setTray( int tr, std::string wh, int twr ){
+void layerId::setTray( int tr, std::string wh, int twr ){
   tray = tr; which=wh; tower=twr;
   trayToUniPlane();
   trayToLayer();
   layerToSPT();
 }
 
-inline void layerId::setSPT( std::string tspt, int twr ){
+void layerId::setSPT( std::string tspt, int twr ){
   spt = tspt; tower = twr;
   sptToLayer();
   layerToTray();
   trayToUniPlane();
 }
 
-inline void layerId::trayToUniPlane(){
+void layerId::trayToUniPlane(){
   uniPlane = tray * 2;
   if( which == "bot" ) uniPlane--;
 }
 
-inline void layerId::trayToLayer(){
+void layerId::trayToLayer(){
   view = (tray+1) % 2;
   layer = tray;
   if( which == "bot" ) layer--;
@@ -88,13 +88,13 @@ void layerId::layerToTray(){
   }
 }
 
-inline void layerId::uniPlaneToTray(){
+void layerId::uniPlaneToTray(){
   tray = (uniPlane+1) / 2;
   if( uniPlane%2 == 0 ) which ="top";
   else which = "bot";
 }
 
-inline void layerId::layerToSPT(){
+void layerId::layerToSPT(){
   char cspt[] = "+x0";
   if( view==0 )
     if( layer%2==0 ) sprintf( cspt, "+y%d", layer/2 );
@@ -105,7 +105,7 @@ inline void layerId::layerToSPT(){
   spt = cspt;
 }
 
-inline void layerId::sptToLayer(){
+void layerId::sptToLayer(){
   // carefull this is different from normal definition.
   if( spt.substr(1,1) == 'y' ) view = 0; 
   else view = 1;
@@ -113,7 +113,7 @@ inline void layerId::sptToLayer(){
   else layer = 2*atoi(spt.substr(2,1).c_str()) + 1;
 }
 
-inline std::string layerId::getLayerName(){
+std::string layerId::getLayerName(){
   char lname[] = "X17";
   std::string layerName;
   if( view==0 ) sprintf(lname, "X%d", layer );
@@ -502,7 +502,7 @@ TkrHits::TkrHits( bool initHistsFlag ):
   tag.assign( tag, 0, i ) ;
   m_tag = tag;
 
-  std::string version = "$Revision: 1.3 $";
+  std::string version = "$Revision: 1.4 $";
   i = version.find( " " );
   version.assign( version, i+1, version.size() );
   i = version.find( " " );
