@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: kuss  Tue Jul 11 03:29:05 PDT 2006
+calibTkrUtil/src
+
+Modified Files:
+	TkrHits.cxx 
+Log Message:
+linux optimized build chokes on inline directives in implementation files
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: v1r2p1, operation: add
 Package: calibTkrUtil
