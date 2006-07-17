@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: sugizaki  Mon Jul 17 12:17:26 PDT 2006
+calibTkrUtil/cmt
+
+Modified Files:
+	requirements 
+Log Message:
+add a program to generate TKR noise reports (genTkrNoiseRep)
+
+    *
+------------------------------------------------------------
 User: sugizaki  Mon Jul 17 12:15:44 PDT 2006
 calibTkrUtil/src/TkrRep
 
