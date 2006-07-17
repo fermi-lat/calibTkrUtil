@@ -1,10 +1,10 @@
 package calibTkrUtil
-# $Header:$
+# $Header: /nfs/slac/g/glast/ground/cvs/calibTkrUtil/cmt/requirements,v 1.3 2006/06/13 16:25:59 cohen Exp $
 version v0r0p3
 author Johann Cohen-Tanugi <cohen@slac.stanford.edu>
 
 
-# $Header: /nfs/slac/g/glast/ground/cvs/calibTkrUtil/cmt/requirements,v 1.2 2006/05/26 01:35:32 cohen Exp $
+# $Header: /nfs/slac/g/glast/ground/cvs/calibTkrUtil/cmt/requirements,v 1.3 2006/06/13 16:25:59 cohen Exp $
 
 author Johann Cohen-Tanugi <cohen@slac.stanford.edu>
 
@@ -14,19 +14,23 @@ author Johann Cohen-Tanugi <cohen@slac.stanford.edu>
 
 macro  calibTkrUtil_srcs "${CALIBTKRUTILROOT}/src/*.cxx" WIN32 "${CALIBTKRUTILROOT}\src\*.cxx" 
 
-private 
-
-use commonRootData *
-use digiRootData *
-use reconRootData *
-use facilities * 
-
-apply_pattern package_include
-
-apply_pattern package_headers
-macro_append calibTkrUtil_headers "" WIN32 "../calibTkrUtil/*.h"
-
 use ROOT * IExternal
 macro_append ROOT_libs " ${ROOT_GUI_libs}"
-macro_prepend includes " -I../src/test/"
-application test_calibTkrUtil ../src/test/*.cxx $(calibTkrUtil_srcs)
+
+application genTkrNoiseRep ../src/TkrRep/genTkrNoiseRep.cxx ../src/TkrRep/TkrNoiseRep.cxx
+
+#private 
+
+#use commonRootData *
+#use digiRootData *
+#use reconRootData *
+#use facilities * 
+
+#apply_pattern package_include
+
+#apply_pattern package_headers
+#macro_append calibTkrUtil_headers "" WIN32 "../calibTkrUtil/*.h"
+
+#macro_prepend includes " -I../src/test/"
+#application test_calibTkrUtil ../src/test/*.cxx $(calibTkrUtil_srcs)
+
