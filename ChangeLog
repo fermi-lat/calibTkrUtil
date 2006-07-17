@@ -1,4 +1,30 @@
 ------------------------------------------------------------
+TAG
+Tag name: v1r3, operation: add
+Package: calibTkrUtil
+User: sugizaki  Mon Jul 17 16:19:23 2006
+Files:
+  calibTkrUtil/.cvsignore  1.1.1.1
+  calibTkrUtil/ChangeLog  1.34
+  calibTkrUtil/calibTkrUtil/TkrNoiseOcc.h  1.4
+  calibTkrUtil/calibTkrUtil/TkrHits.h  1.2
+  calibTkrUtil/cmt/.cvsignore  1.1.1.1
+  calibTkrUtil/cmt/requirements  1.4
+  calibTkrUtil/doc/release.notes  1.2
+  calibTkrUtil/src/mainpage.h  1.1.1.1
+  calibTkrUtil/src/TkrHits.cxx  1.5
+  calibTkrUtil/src/TkrNoiseOcc.cxx  1.7
+  calibTkrUtil/src/TkrRep/TkrNoiseRep.cxx  1.1
+  calibTkrUtil/src/TkrRep/genTkrNoiseRep.cxx  1.1
+  calibTkrUtil/src/TkrRep/TkrNoiseRep.h  1.1
+  calibTkrUtil/src/test/RootTestAnalyzer.h  1.1
+  calibTkrUtil/src/test/RootTestAnalyzer.cxx  1.2
+  calibTkrUtil/src/test/GeoConstants.h  1.1
+  calibTkrUtil/src/test/test_calibTkrUtil.cxx  1.1
+  calibTkrUtil/src/test/AnalyzerOption.dat  1.2
+
+    *
+------------------------------------------------------------
 User: sugizaki  Mon Jul 17 12:18:18 PDT 2006
 calibTkrUtil/src/TkrRep
 
