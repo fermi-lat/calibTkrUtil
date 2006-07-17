@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: sugizaki  Mon Jul 17 12:18:18 PDT 2006
+calibTkrUtil/src/TkrRep
+
+Added Files:
+	TkrNoiseRep.cxx TkrNoiseRep.h genTkrNoiseRep.cxx 
+Log Message:
+add a program to generate TKR noise reports (genTkrNoiseRep)
+Add files for TkrNoiseRep module
+
+    *
+------------------------------------------------------------
 User: sugizaki  Mon Jul 17 12:17:26 PDT 2006
 calibTkrUtil/cmt
 
