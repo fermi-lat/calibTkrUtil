@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: cohen  Thu Jul 20 11:56:09 PDT 2006
+calibTkrUtil/cmt
+
+Modified Files:
+	requirements 
+Log Message:
+fix an oops
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: v1r3, operation: add
 Package: calibTkrUtil
