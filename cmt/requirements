@@ -1,10 +1,10 @@
 package calibTkrUtil
-# $Header: /nfs/slac/g/glast/ground/cvs/calibTkrUtil/cmt/requirements,v 1.3 2006/06/13 16:25:59 cohen Exp $
+# $Header: /nfs/slac/g/glast/ground/cvs/calibTkrUtil/cmt/requirements,v 1.4 2006/07/17 19:17:26 sugizaki Exp $
 version v0r0p3
 author Johann Cohen-Tanugi <cohen@slac.stanford.edu>
 
 
-# $Header: /nfs/slac/g/glast/ground/cvs/calibTkrUtil/cmt/requirements,v 1.3 2006/06/13 16:25:59 cohen Exp $
+# $Header: /nfs/slac/g/glast/ground/cvs/calibTkrUtil/cmt/requirements,v 1.4 2006/07/17 19:17:26 sugizaki Exp $
 
 author Johann Cohen-Tanugi <cohen@slac.stanford.edu>
 
@@ -17,6 +17,8 @@ macro  calibTkrUtil_srcs "${CALIBTKRUTILROOT}/src/*.cxx" WIN32 "${CALIBTKRUTILRO
 use ROOT * IExternal
 macro_append ROOT_libs " ${ROOT_GUI_libs}"
 
+apply_pattern package_include
+
 application genTkrNoiseRep ../src/TkrRep/genTkrNoiseRep.cxx ../src/TkrRep/TkrNoiseRep.cxx
 
 #private 
@@ -26,7 +28,6 @@ application genTkrNoiseRep ../src/TkrRep/genTkrNoiseRep.cxx ../src/TkrRep/TkrNoi
 #use reconRootData *
 #use facilities * 
 
-#apply_pattern package_include
 
 #apply_pattern package_headers
 #macro_append calibTkrUtil_headers "" WIN32 "../calibTkrUtil/*.h"
