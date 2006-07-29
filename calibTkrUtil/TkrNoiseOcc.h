@@ -69,7 +69,8 @@ class TkrNoiseOcc {
 
   /// data array definition
   double *vEvtTime;
-  float  *vTkrExposure[g_nTower][g_nTkrLayer];
+  //float  *vTkrExposure[g_nTower][g_nTkrLayer];
+  float  *vTkrExposure[g_nTower][g_nTkrLayer][g_nView];
   float  *vTkrStripOcc[g_nTower][g_nTkrLayer][g_nView];
   float  *vTkrLayerOcc[g_nTower][g_nTkrLayer][g_nView];
   float  *vTkrHitMap[g_nTower][g_nTkrLayer][g_nView];
