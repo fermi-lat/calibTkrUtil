@@ -47,10 +47,11 @@ TkrNoiseOcc::initAnalysis(int nEvent, int evt_interval){
 
   for(tower=0;tower<g_nTower; tower++){
     for (bilayer=0; bilayer<g_nTkrLayer; bilayer++) {
-      vTkrExposure[tower][bilayer] = new float[m_nx];
-      for(ix=0; ix<m_nx; ix++) vTkrExposure[tower][bilayer][ix]=0.0;
-      
+      //vTkrExposure[tower][bilayer] = new float[m_nx];
+      //for(ix=0; ix<m_nx; ix++) vTkrExposure[tower][bilayer][ix]=0.0;
       for(xyview=0; xyview<g_nView; xyview++) {
+
+	vTkrExposure[tower][bilayer][xyview]   = new float[m_nx];
 	vTkrStripOcc[tower][bilayer][xyview]   = new float[m_nx];
 	vTkrLayerOcc[tower][bilayer][xyview]   = new float[m_nx];
 	vTkrHitMap[tower][bilayer][xyview]     = new float[g_nStripsPerLayer];
@@ -58,6 +59,7 @@ TkrNoiseOcc::initAnalysis(int nEvent, int evt_interval){
 	vTkrNoiseTot0[tower][bilayer][xyview]  = new float[TOT_MAX];
 	vTkrNoiseTot1[tower][bilayer][xyview]  = new float[TOT_MAX];
 
+	for(ix=0; ix<m_nx; ix++)   vTkrExposure[tower][bilayer][xyview][ix]  =0.0;
 	for(ix=0; ix<m_nx; ix++)   vTkrStripOcc[tower][bilayer][xyview][ix]  =0.0;
 	for(ix=0; ix<m_nx; ix++)   vTkrLayerOcc[tower][bilayer][xyview][ix]  =0.0;
 	for(ix=0; ix<g_nStripsPerLayer; ix++) vTkrHitMap[tower][bilayer][xyview][ix] =0.0;
@@ -172,11 +174,13 @@ TkrNoiseOcc::anaDigiEvt() {
       if ( (m_trig_cut==1) && ( ((gemTkrVector>>tower)&0x1)==1 ) ) {
 	continue;
       }
+
+      /*
       /// check track hits on the adjacent layers
       if (m_coincidence_cut>0) {
-	if ( (numHitLayer[tower][bilayer][0]>0) && (numHitLayer[tower][bilayer][1]>0) ) {
-	  continue;
-	}
+	//if ( (numHitLayer[tower][bilayer][0]>0) && (numHitLayer[tower][bilayer][1]>0) ) {
+	//  continue;
+	//}
 	if (bilayer>0) {
 	  if ( (numHitLayer[tower][bilayer-1][0]>0) || (numHitLayer[tower][bilayer-1][1]>0) ) {
 	    continue;
@@ -188,11 +192,31 @@ TkrNoiseOcc::anaDigiEvt() {
 	  }
 	}
       }
-      
       // Fill Exposure
       vTkrExposure[tower][bilayer][(int)(m_event_counter/m_evt_interval)] +=1.0;
+      */
       
       for(xyview=0; xyview<g_nView; xyview++){ 
+	
+	
+	/// check track hits on the adjacent layers
+	if (m_coincidence_cut>0) {
+	  if (numHitLayer[tower][bilayer][(xyview+1)%2]>0) {
+	    continue;
+	  }
+	  if (bilayer>0) {
+	    if ( (numHitLayer[tower][bilayer-1][0]>0) || (numHitLayer[tower][bilayer-1][1]>0) ) {
+	      continue;
+	    }
+	  } 
+	  if ( bilayer<(g_nTkrLayer-1) ){
+	    if ( (numHitLayer[tower][bilayer+1][0]>0) || (numHitLayer[tower][bilayer+1][1]>0) ) {
+	      continue;
+	    }
+	  }
+	} // coincidence_cut
+	// Fill Exposure
+	vTkrExposure[tower][bilayer][xyview][(int)(m_event_counter/m_evt_interval)] +=1.0;
 	
 	// Cut by Multiplicity
 	if( numHitLayer[tower][bilayer][xyview]<m_multi_ld) {
@@ -260,10 +284,8 @@ TkrNoiseOcc::clearAnalysis() {
   /// delete histgram array
   for(tower=0;tower<g_nTower; tower++){
     for (bilayer=0; bilayer<g_nTkrLayer; bilayer++) {
-      delete[] vTkrExposure[tower][bilayer];
-      vTkrExposure[tower][bilayer] = NULL;
-      
       for(xyview=0; xyview<g_nView; xyview++) {
+	delete[] vTkrExposure[tower][bilayer][xyview];
 	delete[] vTkrStripOcc[tower][bilayer][xyview]; 
 	delete[] vTkrLayerOcc[tower][bilayer][xyview]; 
 	delete[] vTkrHitMap[tower][bilayer][xyview];   
@@ -271,6 +293,7 @@ TkrNoiseOcc::clearAnalysis() {
 	delete[] vTkrNoiseTot0[tower][bilayer][xyview];
 	delete[] vTkrNoiseTot1[tower][bilayer][xyview];
 	
+	vTkrExposure[tower][bilayer][xyview]   = NULL;
 	vTkrStripOcc[tower][bilayer][xyview]   = NULL;
 	vTkrLayerOcc[tower][bilayer][xyview]   = NULL;
 	vTkrHitMap[tower][bilayer][xyview]     = NULL;
@@ -350,7 +373,7 @@ TkrNoiseOcc::writeAnaToHis(TDirectory* dirTkrNoise){
   TH1F *hTkrTowerSumExp[g_nTower];
 
 
-  TH1F *hTkrExposure[g_nTower][g_nTkrLayer];
+  TH1F *hTkrExposure[g_nTower][g_nTkrLayer][g_nView];
   TH1F *hTkrStripOcc[g_nTower][g_nTkrLayer][g_nView];
   TH1F *hTkrLayerOcc[g_nTower][g_nTkrLayer][g_nView];
   TH1F *hTkrHitMap[g_nTower][g_nTkrLayer][g_nView];
@@ -390,15 +413,15 @@ TkrNoiseOcc::writeAnaToHis(TDirectory* dirTkrNoise){
 
     for (bilayer=0; bilayer<g_nTkrLayer; bilayer++) {
 
-      // Exposure
-      dirExposure->cd();
-      sprintf(hname, "hTkrExposTwr%dbiLayer%d", tower, bilayer);
-      sprintf(htitle, " TKR  Tower%d biLayer%d Exposure", tower, bilayer);
-      hTkrExposure[tower][bilayer] = new TH1F(hname, htitle, m_nx, xmi, xma);
-      for (ix=0; ix<m_nx; ix++) hTkrExposure[tower][bilayer]->SetBinContent(ix+1, vTkrExposure[tower][bilayer][ix]);
-      
       for(xyview=0; xyview<g_nView; xyview++) {
 
+	// Exposure
+	dirExposure->cd();
+	sprintf(hname, "hTkrExposTwr%dLayer%d",  tower, bilayer*g_nView+xyview);
+	sprintf(htitle, " TKR  Tower%d Layer%d Exposure", tower, bilayer*g_nView+xyview);
+	hTkrExposure[tower][bilayer][xyview] = new TH1F(hname, htitle, m_nx, xmi, xma);
+	for (ix=0; ix<m_nx; ix++) hTkrExposure[tower][bilayer][xyview]->SetBinContent(ix+1, vTkrExposure[tower][bilayer][xyview][ix]);
+      
 	// StripOcc
 	dirStripOcc->cd();
 	sprintf(hname, "hTkrStripOccTwr%dLayer%d", tower, bilayer*g_nView+xyview);
@@ -417,17 +440,17 @@ TkrNoiseOcc::writeAnaToHis(TDirectory* dirTkrNoise){
 	
 	// For tower average occupancy
 	hTkrTowerAveOcc[tower]->Add(hTkrStripOcc[tower][bilayer][xyview]);
-	hTkrTowerSumExp[tower]->Add(hTkrExposure[tower][bilayer]);
+	hTkrTowerSumExp[tower]->Add(hTkrExposure[tower][bilayer][xyview]);
 
 
 	///// Tune histogram scale
 	// scale of Strip Occupancy
-	hTkrStripOcc[tower][bilayer][xyview]->Divide(hTkrExposure[tower][bilayer]);
+	hTkrStripOcc[tower][bilayer][xyview]->Divide(hTkrExposure[tower][bilayer][xyview]);
 	hTkrStripOcc[tower][bilayer][xyview]->Scale(1.0/g_nStripsPerLayer);
 	hTkrStripOcc[tower][bilayer][xyview]->Write(0,TObject::kOverwrite);
 
 	// scale of Layer Occupancy
-	hTkrLayerOcc[tower][bilayer][xyview]->Divide(hTkrExposure[tower][bilayer]);
+	hTkrLayerOcc[tower][bilayer][xyview]->Divide(hTkrExposure[tower][bilayer][xyview]);
 	hTkrLayerOcc[tower][bilayer][xyview]->Write(0,TObject::kOverwrite);
 
 	// check maximum strip rate
