@@ -60,39 +60,6 @@ TkrNoiseRep::findNoisyLayer(){
     }
   }
   
-  /*
-  FILE *fout = fopen(outputFilename, "w");
-    
-  printf("### Strip Occupancy\n");
-  printf("#Tower\tLayer\tOccupancy\n");
-  fprintf(fout, "### Strip Occupancy\n");
-  fprintf(fout, "#Tower\tLayer\tOccupancy\n");
-  for(tower=0; tower<16; tower++){
-    for(layer=0; layer<36; layer++){
-      max_rate = hStrip->GetBinContent(tower+1, layer+1);
-      if (max_rate>m_critical_strip_rate) {
-	printf("%d\t%d\t%e\n",tower, layer, max_rate);
-	fprintf(fout, "%d\t%d\t%e\n",tower, layer, max_rate);
-      }
-    }
-  }
-
-  printf("### Layer Occupancy\n");
-  printf("#Tower\tLayer\tOccupancy\n");
-  fprintf(fout, "### Layer Occupancy\n");
-  fprintf(fout, "#Tower\tLayer\tOccupancy\n");
-  for(tower=0; tower<16; tower++){
-    for(layer=0; layer<36; layer++){
-      max_rate = hLayer->GetBinContent(tower+1, layer+1);
-      if (max_rate>m_critical_layer_rate) {
-	printf("%d\t%d\t%e\n",tower, layer, max_rate);
-	fprintf(fout, "%d\t%d\t%e\n",tower, layer, max_rate);
-      }
-    }
-  }
-  fclose(fout);
-
-  */
 }
 
 void 
@@ -107,17 +74,17 @@ TkrNoiseRep::writeSummaryXML(){
   else strcpy(statusStr,"Fail");
 
   m_ancRootFile->cd();
+  TH2F *hExpos = (TH2F*) gROOT->FindObject("hExposure");
   TH2F *hStrip = (TH2F*) gROOT->FindObject("hMaxStripOcc");
   TH2F *hLayer = (TH2F*) gROOT->FindObject("hMaxLayerOcc");
   TH2F *hMulti = (TH2F*) gROOT->FindObject("hLargeMultiRatio");
-
 
   sprintf(xmlFilename, "%s/%s_summary.xml", m_reportDirName, m_prefix);
   FILE *outfile = fopen(xmlFilename, "w");
   
   fprintf(outfile, "<?xml version=\"1.0\"?>\n");
   fprintf(outfile, "<tkrNoiseData>\n");
-  fprintf(outfile, "<testRun status=\"%s\" runId=\"%s\" startTime=\"%s\" duration=\"%s\"/>\n", statusStr, m_prefix, m_startTimeStr, m_durationStr);
+  fprintf(outfile, "<testRun status=\"%s\" runId=\"%s\" startTime=\"%s\" duration=\"%s\" minExposure=\"%.0f\"/>\n", statusStr, m_prefix, m_startTimeStr, m_durationStr, m_minExpos);
   fprintf(outfile, "<towerAve>\n");
   for(tower=0; tower<16; tower++){
     fprintf(outfile, "<stripOcc tower=\"%d\" mean=\"%.4e\" max=\"%.4e\"/>\n", tower, m_aveTwrOccList[tower], m_maxTwrOccList[tower]);
@@ -196,8 +163,13 @@ TkrNoiseRep::makeAncRootFile(){
       // exposure
       sprintf(dirname, "TkrNoiseOcc/Exposure/Tower%d", tower);
       m_svacFile->cd(dirname);
-      sprintf(hname, "hTkrExposTwr%dbiLayer%d", tower, int(layer/2));
-      TH1F *hexpos = (TH1F*) m_svacFile->FindObjectAny(hname);      
+
+      sprintf(hname, "hTkrExposTwr%dLayer%d", tower, layer);
+      TH1F *hexpos = (TH1F*) gROOT->FindObject(hname);      
+      if(hexpos==NULL) {
+	sprintf(hname, "hTkrExposTwr%dbiLayer%d", tower, int(layer/2));
+	hexpos = (TH1F*) gROOT->FindObject(hname);      
+      }
 
       // Hitmap
       sprintf(dirname, "TkrNoiseOcc/Hitmap/Tower%d", tower);
@@ -262,6 +234,10 @@ TkrNoiseRep::makeAncRootFile(){
       hTwrAveLayerOcc->Fill(tower, 0.0);
     }
   }
+
+  /// number of event  
+  m_minExpos = hExposure->GetMinimum();
+
 
   //////////////////////////////////////
   ////// Large Multiplicity Ratio //////
@@ -682,10 +658,16 @@ TkrNoiseRep::drawStripHist(int tower, int layer){
   //Expos
   sprintf(dirname, "TkrNoiseOcc/Exposure/Tower%d", tower);
   m_svacFile->cd(dirname);
-  sprintf(hname, "hTkrExposTwr%dbiLayer%d", tower, layer/2);
-  TH1F *h_exp = (TH1F*) gROOT->FindObject(hname);
-  expos = h_exp->GetSum();
 
+  sprintf(hname, "hTkrExposTwr%dLayer%d", tower, layer);
+  //TH1F *h_exp = (TH1F*) m_svacFile->FindObjectAny(hname);      
+  TH1F *h_exp = (TH1F*) gROOT->FindObject(hname);      
+  if(h_exp==NULL) {
+    sprintf(hname, "hTkrExposTwr%dbiLayer%d", tower, int(layer/2));
+    //h_exp = (TH1F*) m_svacFile->FindObjectAny(hname);      
+    h_exp = (TH1F*) gROOT->FindObject(hname);      
+  }
+  expos = h_exp->GetSum();
 
   //Hitmap
   sprintf(dirname, "TkrNoiseOcc/Hitmap/Tower%d", tower);
@@ -942,6 +924,7 @@ TkrNoiseRep::generateSummaryPage(){
   fprintf(outfile, "<dt>RunID</dt><dd>%s</dd>\n", m_prefix);
   fprintf(outfile, "<dt>Start Time</dt><dd>%s</dd>\n", m_startTimeStr);
   fprintf(outfile, "<dt>Duraion [s]</dt><dd>%s</dd>\n", m_durationStr);
+  fprintf(outfile, "<dt>Number of noise-sample triggers (minimum in the entire layers)</dt><dd>%.0f</dd>\n", m_minExpos);
   if (m_test_status == 1) fprintf(outfile, "<dt>Status</dt><dd><font color=blue>Pass</font></dd>\n");
   else fprintf(outfile, "<dt>Status</dt><dd><font color=red> Fail</font></dd>\n");
 

@@ -75,6 +75,7 @@ class TkrNoiseRep {
 
   double m_start_time;
   double m_end_time;
+  float  m_minExpos;
   char   m_startTimeStr[80];
   char   m_durationStr[80];
   char   m_timeAxTitle[80];
