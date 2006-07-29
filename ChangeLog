@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: sugizaki  Fri Jul 28 21:26:06 PDT 2006
+calibTkrUtil/calibTkrUtil
+
+Modified Files:
+	TkrNoiseOcc.h 
+Log Message:
+add a parameter m_minExpos
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: v1r3p1, operation: add
 Package: calibTkrUtil
