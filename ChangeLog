@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: sugizaki  Fri Jul 28 21:29:56 PDT 2006
+calibTkrUtil/src/TkrRep
+
+Modified Files:
+	TkrNoiseRep.cxx TkrNoiseRep.h 
+Log Message:
+add a new parameter
+modified for the chenage of the TkrExposure histogram
+
+    *
+------------------------------------------------------------
 User: sugizaki  Fri Jul 28 21:27:56 PDT 2006
 calibTkrUtil/src
 
