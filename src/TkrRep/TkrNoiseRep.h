@@ -34,6 +34,7 @@ class TkrNoiseRep {
 
   void drawStripOcc_TowerAve(int tower);
   void drawStripOccGr_TowerAve(int tower);
+  void drawStripOccGr_LatAve();
 
   void drawStripOcc_perLayer(int tower, int layer);
   void drawLayerOcc_perLayer(int tower, int layer);
@@ -67,6 +68,7 @@ class TkrNoiseRep {
   double m_critical_strip_occ;
   double m_critical_layer_occ;
   double m_critical_multi_ratio;
+  double m_latAveOccMean, m_latAveOccMax;
   double m_aveTwrOccList[16], m_maxTwrOccList[16];
 
   int    m_failStripOcc[16][18][2];
