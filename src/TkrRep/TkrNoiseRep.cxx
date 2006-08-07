@@ -85,13 +85,18 @@ TkrNoiseRep::writeSummaryXML(){
   fprintf(outfile, "<?xml version=\"1.0\"?>\n");
   fprintf(outfile, "<tkrNoiseData>\n");
   fprintf(outfile, "<testRun status=\"%s\" runId=\"%s\" startTime=\"%s\" duration=\"%s\" minExposure=\"%.0f\"/>\n", statusStr, m_prefix, m_startTimeStr, m_durationStr, m_minExpos);
+  // latAve
+  fprintf(outfile, "<latAve>\n");
+  fprintf(outfile, "<stripOcc mean=\"%.4e\" max=\"%.4e\"/>\n", m_latAveOccMean, m_latAveOccMax);
+  fprintf(outfile, "</latAve>\n");
+  // towerAve
   fprintf(outfile, "<towerAve>\n");
   for(tower=0; tower<16; tower++){
     fprintf(outfile, "<stripOcc tower=\"%d\" mean=\"%.4e\" max=\"%.4e\"/>\n", tower, m_aveTwrOccList[tower], m_maxTwrOccList[tower]);
   }
   fprintf(outfile, "</towerAve>\n");
+  // bad layers
   fprintf(outfile, "<badLayers>\n");
-  
   for(tower=0; tower<16; tower++){
     for(bilayer=0; bilayer<18; bilayer++){
       for(view=0; view<2; view++){
@@ -418,6 +423,94 @@ TkrNoiseRep::drawStripOccGr_TowerAve(int tower){
   sprintf(gifFileName, "%s_TowerAveOccGr_Tower%d.gif", m_prefix, tower);
   epstogif(m_reportDirName, epsFileName, gifFileName, 750, 500);
   sprintf(gifFileName, "%s_TowerAveOccGr_Tower%d_s.gif", m_prefix, tower);
+  epstogif(m_reportDirName, epsFileName, gifFileName, 300, 200);
+
+}
+
+void
+TkrNoiseRep::drawStripOccGr_LatAve(){
+  
+  char   dirname[80], hname[80], htitle[120]; //, t_title[80];
+  int    ix, nx, tower;
+  double *vx; 
+  double *vy;
+  char   epsFilePath[250], epsFileName[250], gifFileName[250];
+
+  TCanvas *c1 = new TCanvas("c1", "c1", 600, 400);
+  c1->SetLogy();
+  gStyle->SetOptStat(0);
+
+  m_svacFile->cd("TkrNoiseOcc");
+
+  TH1F *hEvtTime = (TH1F*) gROOT->FindObject("hEvtTime");
+  nx = (hEvtTime->GetNbinsX());
+  if ( (hEvtTime->GetBinContent(nx))==0.0 ) nx = nx-1;
+
+  sprintf(dirname, "TkrNoiseOcc/TowerAveOcc");
+  m_svacFile->cd(dirname);
+
+  sprintf(hname, "hTkrTowerAveOccTwr0");
+  TH1F *hOcc = (TH1F*)gROOT->FindObject(hname);
+  TH1F *hLatOcc = hOcc->Clone();
+  TH1F *hLatExp = hOcc->Clone();
+
+  hLatOcc->SetName("hLatAveOcc");
+  sprintf(htitle,"LAT Average Noise Occupancy :RunId=%s", m_prefix);
+  hLatOcc->SetTitle(htitle);
+  for(ix=1; ix<=hLatOcc->GetNbinsX(); ix++) {
+    hLatOcc->SetBinContent(ix,0.0);
+  }
+
+  hLatExp->SetName("hLatExp");
+  sprintf(htitle,"Sum of number of noise sampling events in all the layers of the 16-Tower LAT :RunId=%s", m_prefix);
+  hLatExp->SetTitle(htitle);
+  for(ix=1; ix<=hLatOcc->GetNbinsX(); ix++) {
+    hLatExp->SetBinContent(ix,0.0);
+  }
+  
+  for(tower=0; tower<16; tower++) {
+    sprintf(hname, "hTkrTowerAveOccTwr%d", tower);
+    TH1F *hOcc = (TH1F*)gROOT->FindObject(hname);
+    TH1F *hNumHits = (TH1F*) hOcc->Clone();
+    sprintf(hname, "hTkrTowerSumExpTwr%d", tower);
+    TH1F *hExpos = (TH1F*)gROOT->FindObject(hname);
+    
+    hNumHits->Multiply(hExpos);
+    hLatOcc->Add(hNumHits);
+    hLatExp->Add(hExpos);
+  }
+
+  hLatOcc->Divide(hLatExp);
+  m_latAveOccMax  = hLatOcc->GetMaximum();
+  m_latAveOccMean = hLatOcc->GetSum()/hLatOcc->GetNbinsX();
+
+  
+  vx = new double[nx];
+  vy = new double[nx];
+
+  for (ix=0; ix<nx; ix++) {
+    vx[ix] = (double)hEvtTime->GetBinContent(ix+1)-m_start_time;
+    vy[ix] = (double)hLatOcc->GetBinContent(ix+1);
+  }
+  
+  TGraph *gr = new TGraph(nx, vx, vy);
+  gr->SetMinimum(0.3e-7);
+  gr->SetMaximum(0.3e-3);
+  
+  gr->SetMarkerStyle(7);
+  gr->SetMarkerColor(2);
+  gr->SetLineColor(2);
+
+  gr->SetTitle(hLatOcc->GetTitle());
+  gr->GetXaxis()->SetTitle(m_timeAxTitle);
+  gr->Draw("AP");
+  sprintf(epsFilePath, "%s/%s_LatAveOccGr.eps", m_reportDirName, m_prefix);
+  c1->SaveAs(epsFilePath);
+
+  sprintf(epsFileName, "%s_LatAveOccGr.eps", m_prefix);
+  sprintf(gifFileName, "%s_LatAveOccGr.gif", m_prefix);
+  epstogif(m_reportDirName, epsFileName, gifFileName, 750, 500);
+  sprintf(gifFileName, "%s_LatAveOccGr_s.gif", m_prefix);
   epstogif(m_reportDirName, epsFileName, gifFileName, 300, 200);
 
 }
@@ -880,6 +973,7 @@ TkrNoiseRep::generateSummary(){
   for (tower=0; tower<16; tower++) {
     drawStripOccGr_TowerAve(tower);
   }
+  drawStripOccGr_LatAve();
 
   drawStripOccAve();
   drawStripOccMax();
@@ -981,6 +1075,26 @@ TkrNoiseRep::generateSummaryPage(){
 
     
   fprintf(outfile, "<ul>\n");
+  ///// LAT Average Noise Occupancy
+  fprintf(outfile, "<li><h3> Time variation of LAT-average noise occupancy </h3>\n");
+  fprintf(outfile, "<table border=1>\n");
+  fprintf(outfile, "<tr>\n");
+  fprintf(outfile, "<th>Tower</th>\n");
+  fprintf(outfile, "<th>Time Variation</th>\n");
+  fprintf(outfile, "<th>Mean</th>\n");
+  fprintf(outfile, "<th>Maximum</th>\n");
+  fprintf(outfile, "</tr>\n");
+  fprintf(outfile, "<tr>\n");
+  fprintf(outfile, "<th>LAT (16-Tower)</th>\n");
+  fprintf(outfile, "<td><a href=\"%s_LatAveOccGr.gif\"><img src=\"%s_LatAveOccGr_s.gif\"></a></td>\n", m_prefix, m_prefix);
+  if (m_latAveOccMax > m_critical_strip_occ) sprintf(font_color, "red");
+  else sprintf(font_color, "blue");
+  fprintf(outfile, "<td><font color=%s> %.4e </font></td>\n", font_color, m_latAveOccMean);
+  fprintf(outfile, "<td><font color=%s> %.4e </font></td>\n", font_color, m_latAveOccMax);
+  fprintf(outfile, "</tr>\n");
+  fprintf(outfile, "</table>\n");
+  
+  ///// Tower Average Noise Occupancy
   fprintf(outfile, "<li><h3> Time variation of Tower-average noise occupancy </h3>\n");
   fprintf(outfile, "<table border=1>\n");
   fprintf(outfile, "<tr>\n");
