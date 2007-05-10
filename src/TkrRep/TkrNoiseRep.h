@@ -5,6 +5,9 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TGraph.h"
+#include "TLine.h"
+#include "TText.h"
+#include "TLegend.h"
 #include <iostream>
 #include <string.h>
 #include <time.h>
@@ -32,6 +35,7 @@ class TkrNoiseRep {
   void drawLayerOccMax();
   void drawLargeMultiRatio();
 
+  void drawTowerAveStripOccHist();
   void drawStripOcc_TowerAve(int tower);
   void drawStripOccGr_TowerAve(int tower);
   void drawStripOccGr_LatAve();
@@ -67,6 +71,7 @@ class TkrNoiseRep {
   int    m_test_status;
   double m_critical_strip_occ;
   double m_critical_layer_occ;
+  int    m_critical_multi;
   double m_critical_multi_ratio;
   double m_latAveOccMean, m_latAveOccMax;
   double m_aveTwrOccList[16], m_maxTwrOccList[16];
