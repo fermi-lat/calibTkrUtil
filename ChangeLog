@@ -1,4 +1,18 @@
 ------------------------------------------------------------
+User: sugizaki  Thu May 10 14:21:51 PDT 2007
+calibTkrUtil/src/TkrRep
+
+Modified Files:
+	TkrNoiseRep.cxx TkrNoiseRep.h 
+Log Message:
+
+Modified by Mutsumi
+
+changed Pass/Fail threshold
+changed order of plot figures
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: v1r5, operation: add
 Package: calibTkrUtil
