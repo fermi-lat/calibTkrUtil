@@ -2,6 +2,7 @@
 
 TkrNoiseRep::TkrNoiseRep() 
 {
+  m_fail_strip_occ     = 1.0e-4;
   m_critical_strip_occ = 5.0e-5;
   m_critical_layer_occ = 0.08;
   m_critical_multi = 13; //20
@@ -30,6 +31,7 @@ TkrNoiseRep::findNoisyLayer(){
       for(view=0; view<2; view++){
 	m_failStripOcc[tower][bilayer][view]=0;
 	m_failLayerOcc[tower][bilayer][view]=0;
+	m_failAveLayerOcc[tower][bilayer][view]=0;
 	m_failMultiRatio[tower][bilayer][view]=0;
       }
     }
@@ -41,6 +43,7 @@ TkrNoiseRep::findNoisyLayer(){
   TH2F *hStrip = (TH2F*) gROOT->FindObject("hMaxStripOcc");
   TH2F *hLayer = (TH2F*) gROOT->FindObject("hMaxLayerOcc");
   TH2F *hMulti = (TH2F*) gROOT->FindObject("hLargeMultiRatio");
+  TH2F *hAveLayer = (TH2F*) gROOT->FindObject("hAveLayerOcc");
 
   for(tower=0; tower<16; tower++){
     for(bilayer=0; bilayer<18; bilayer++){
@@ -52,6 +55,9 @@ TkrNoiseRep::findNoisyLayer(){
 	}
 	if ( m_critical_layer_occ < (hLayer->GetBinContent(tower+1, layer+1)) ) {
 	  m_failLayerOcc[tower][bilayer][view]=1;
+	}
+	if ( m_critical_layer_occ < (hAveLayer->GetBinContent(tower+1, layer+1)) ) {
+	  m_failAveLayerOcc[tower][bilayer][view]=1;
 	}
 	if ( m_critical_multi_ratio < (hMulti->GetBinContent(tower+1, layer+1)) ) {
 	  m_failMultiRatio[tower][bilayer][view]=1;
@@ -72,6 +78,7 @@ TkrNoiseRep::writeSummaryXML(){
   char statusStr[10];
 
   if (m_test_status==1) strcpy(statusStr,"Pass");
+  if (m_test_status==2) strcpy(statusStr,"Pass*");
   else strcpy(statusStr,"Fail");
 
   m_ancRootFile->cd();
@@ -157,6 +164,7 @@ TkrNoiseRep::makeAncRootFile(){
   
   sprintf(htitle, "Number of Noise Events: RunID=%s", m_prefix);
   TH2F *hExposure = new TH2F("hExposure", htitle, 16, -0.5, 15.5, 36, -0.5, 35.5);
+
 
   for(tower=0; tower<16; tower++){
 
@@ -316,8 +324,6 @@ TkrNoiseRep::makeAncRootFile(){
       TH1F *hMulti = (TH1F*) gROOT->FindObject(hname);
       numEvt = (int)hMulti->Integral(1,129);
       numMultiEvt = (int)hMulti->Integral(m_critical_multi,129);
-      //numEvt = hMulti->Integral(0.5,128.5);
-      //numMultiEvt = hMulti->Integral(m_critical_multi-0.5,128.5);
       if (numEvt>0) fract = (float)numMultiEvt/(float)numEvt;
       else          fract = 0.0;
       hMultiRatio->Fill(tower, layer, fract);
@@ -325,14 +331,12 @@ TkrNoiseRep::makeAncRootFile(){
   }
 
   m_ancRootFile->Write();
-  //m_ancRootFile->Write("",TObject::kOverwrite);
-  //m_ancRootFile->Close();
-  //m_svacFile->Close();
 
   ///// check pass/fail /////
-  m_test_status=1;
-  if ( m_critical_strip_occ < m_latAveOccMean ) m_test_status=0;
-  if ( m_critical_layer_occ < hAveLayerOcc->GetMaximum() ) m_test_status=0;
+  m_test_status=1; // default : pass
+  if ( m_fail_strip_occ < m_latAveOccMean ) m_test_status=0; //Fail
+  if ( m_critical_strip_occ < m_latAveOccMean ) m_test_status=2;            //Warning
+  if ( m_critical_layer_occ < hAveLayerOcc->GetMaximum() ) m_test_status=2; //Warning
 
 }
 
@@ -374,6 +378,41 @@ TkrNoiseRep::drawAncRootHist(const char *hname){
   epstogif(m_reportDirName, epsFileName, gifFileName, 750, 500);
   sprintf(gifFileName, "%s_%s_s.gif", m_prefix, hname);
   epstogif(m_reportDirName, epsFileName, gifFileName, 300, 200);
+}
+
+
+void
+TkrNoiseRep::drawLayerOccMax_sum(){
+
+  const char *hname="hAveLayerOcc";
+  char epsFilePath[250], epsFileName[250], gifFileName[250];
+  
+  gStyle->SetOptStat(0);
+  gStyle->SetPalette(1); 
+
+  TCanvas *c1 = new TCanvas("c1", "c1", 600, 400);
+  c1->SetRightMargin(0.15);
+  c1->SetLogz();
+
+  m_ancRootFile->cd();
+  TH2F *h2 = (TH2F*) gROOT->FindObject(hname);
+
+  h2->SetContour(1);
+  h2->SetMinimum(m_critical_layer_occ);
+  h2->SetMaximum(1.0);
+  h2->GetXaxis()->SetTitle("Tower No.");
+  h2->GetYaxis()->SetTitle("Layer No.");
+  h2->Draw("COLZ");
+  sprintf(epsFilePath, "%s/%s_%s_sum.eps", m_reportDirName, m_prefix, hname);
+  c1->SaveAs(epsFilePath);
+  
+  sprintf(epsFileName, "%s_%s_sum.eps", m_prefix, hname);
+  sprintf(gifFileName, "%s_%s_sum.gif", m_prefix, hname);
+  epstogif(m_reportDirName, epsFileName, gifFileName, 750, 500);
+  sprintf(gifFileName, "%s_%s_sum_s.gif", m_prefix, hname);
+  epstogif(m_reportDirName, epsFileName, gifFileName, 300, 200);
+  
+  h2->SetContour(0);
 }
 
 
@@ -1073,6 +1112,7 @@ TkrNoiseRep::generateSummary(){
   drawStripOccMax();
   drawLayerOccAve();
   drawLayerOccMax();
+  drawLayerOccMax_sum();
   drawLargeMultiRatio();
   drawTowerAveStripOccHist();
 
@@ -1116,13 +1156,41 @@ TkrNoiseRep::generateSummaryPage(){
   fprintf(outfile, "<dt>Number of noise-sample triggers (minimum in the entire layers)</dt><dd>%.0f</dd>\n", m_minExpos);
 
   ///// Status
-  fprintf(outfile, "<dt>Pass or Fail (LAT-average strip occupancy<%1.e and any layer occupacncy (time average) <%.1e)</dt>", m_critical_strip_occ, m_critical_layer_occ);
+  fprintf(outfile, "<dt>Pass or Fail (LAT-average strip occupancy<%1.e)</dt>\n", m_fail_strip_occ);
   if (m_test_status == 1) {
     fprintf(outfile, "<dd><font color=blue>Pass</font></dd>\n");
+  } else if (m_test_status == 2) {
+    fprintf(outfile, "<dd><font color=green>Pass*</font></dd>\n");
   } else {
-    fprintf(outfile, "<dd><font color=red> Fail</font></dd>\n");
+    fprintf(outfile, "<dd><font color=red>Fail</font></dd>\n");
   }
 
+  ///// Warning Message
+  // LAT average strip occupancy
+  fprintf(outfile, "<dt>LAT-average strip occupancy </dt>\n");
+  if ( m_fail_strip_occ < m_latAveOccMean ) {
+    fprintf(outfile, "<dd><font color=red> %.3e </font></dd>\n", m_latAveOccMean);
+  } else if ( m_critical_strip_occ < m_latAveOccMean ) {
+    fprintf(outfile, "<dd><font color=green> %.3e </font></dd>\n", m_latAveOccMean);
+  } else {
+    fprintf(outfile, "<dd><font color=blue> %.3e </font></dd>\n", m_latAveOccMean);
+  }
+  
+  // Time average layer occupancy
+  fprintf(outfile, "<dt>Noisy Layers with average layer occupancy > %.1e </dt>\n", m_critical_layer_occ);
+  fprintf(outfile, "<dd><font color=green>");
+  for(tower=0; tower<16; tower++) {
+    for(bilayer=0; bilayer<18; bilayer++) {
+      for(view=0; view<2; view++) {
+	if (m_failAveLayerOcc[tower][bilayer][view]==1) {
+	  fprintf(outfile, "Bay#%d-%c%d:", tower, xychar[view], bilayer); 
+	}
+      }
+    }
+  }
+  fprintf(outfile, "</font></dd>\n");
+  
+  ///// Marginal
   fprintf(outfile, "<dt>(Marginal) Noisy Layers </dt>\n");
   fprintf(outfile, "<dd>\n");
   fprintf(outfile, "<dl>\n");
@@ -1201,6 +1269,9 @@ TkrNoiseRep::generateSummaryPage(){
   fprintf(outfile, "</table>\n");
   fprintf(outfile, "<li><h4> Noise occupancy time average and transient maximum per Tower </h4>\n");
   fprintf(outfile, "<a href=\"%s_TowerAveStripOcc.gif\"><img src=\"%s_TowerAveStripOcc_s.gif\"></a>\n", m_prefix, m_prefix);
+  //Layer Occupancy warning
+  fprintf(outfile, "<li><h4> Layer Occupanacy time average > %.1e </h4>\n", m_critical_layer_occ);
+  fprintf(outfile, "<a href=\"%s_hAveLayerOcc_sum.gif\"><img src=\"%s_hAveLayerOcc_sum_s.gif\"></a>\n", m_prefix, m_prefix);
   fprintf(outfile, "</ul>\n");
   
   ///// Properties per layer

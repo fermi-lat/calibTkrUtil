@@ -33,6 +33,7 @@ class TkrNoiseRep {
   void drawStripOccMax();
   void drawLayerOccAve();
   void drawLayerOccMax();
+  void drawLayerOccMax_sum();
   void drawLargeMultiRatio();
 
   void drawTowerAveStripOccHist();
@@ -68,7 +69,8 @@ class TkrNoiseRep {
   const char  *m_reportDirName;
   const char  *m_prefix;
 
-  int    m_test_status;
+  int    m_test_status;   // 1:pass, 0:Fail, 2: Warning
+  double m_fail_strip_occ;
   double m_critical_strip_occ;
   double m_critical_layer_occ;
   int    m_critical_multi;
@@ -78,6 +80,7 @@ class TkrNoiseRep {
 
   int    m_failStripOcc[16][18][2];
   int    m_failLayerOcc[16][18][2];
+  int    m_failAveLayerOcc[16][18][2];
   int    m_failMultiRatio[16][18][2];
 
   double m_start_time;
