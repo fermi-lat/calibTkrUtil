@@ -1,4 +1,17 @@
 ------------------------------------------------------------
+User: sugizaki  Wed May 23 01:54:54 PDT 2007
+calibTkrUtil/src/TkrRep
+
+Modified Files:
+	TkrNoiseRep.cxx TkrNoiseRep.h 
+Log Message:
+By Mutsumi
+modified TkrRep change pass/fail criteion LAT-ave occupancy<1.0e-4 ...
+Add a plot for time-average layer occupancy
+
+
+    *
+------------------------------------------------------------
 User: sugizaki  Wed May 23 01:53:51 PDT 2007
 calibTkrUtil/doc
 
