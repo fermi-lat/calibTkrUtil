@@ -1,15 +1,4 @@
 ------------------------------------------------------------
-User: sugizaki  Wed May 23 01:53:51 PDT 2007
-calibTkrUtil/doc
-
-Modified Files:
-	release.notes 
-Log Message:
-By Mutsumi
-modified TkrRep change pass/fail criteion LAT-ave occupancy<1.0e-4 ...
-
-    *
-------------------------------------------------------------
 TAG
 Tag name: v1r6, operation: add
 Package: calibTkrUtil
