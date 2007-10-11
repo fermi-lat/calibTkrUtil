@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: heather  Thu Oct 11 12:25:55 PDT 2007
+calibTkrUtil/cmt
+
+Modified Files:
+	requirements 
+Log Message:
+minor patch for ROOT v5.16
+    *
+------------------------------------------------------------
 TAG
 Tag name: v1r7, operation: add
 Package: calibTkrUtil
