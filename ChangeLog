@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: heather  Thu Oct 11 12:25:55 PDT 2007
+calibTkrUtil/src/TkrRep
+
+Modified Files:
+	TkrNoiseRep.cxx 
+Log Message:
+minor patch for ROOT v5.16
+    *
+------------------------------------------------------------
+User: heather  Thu Oct 11 12:25:55 PDT 2007
 calibTkrUtil/doc
 
 Modified Files:
