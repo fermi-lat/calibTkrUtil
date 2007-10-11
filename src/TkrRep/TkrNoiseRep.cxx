@@ -1,3 +1,4 @@
+#include <TROOT.h>
 #include "TkrNoiseRep.h"
 
 TkrNoiseRep::TkrNoiseRep() 
