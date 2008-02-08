@@ -1,10 +1,10 @@
 package calibTkrUtil
-# $Header: /nfs/slac/g/glast/ground/cvs/calibTkrUtil/cmt/requirements,v 1.5 2006/07/20 18:56:09 cohen Exp $
+# $Header: /nfs/slac/g/glast/ground/cvs/calibTkrUtil/cmt/requirements,v 1.6 2007/10/11 19:25:54 heather Exp $
 version v1r7p1
 author Johann Cohen-Tanugi <cohen@slac.stanford.edu>
 
 
-# $Header: /nfs/slac/g/glast/ground/cvs/calibTkrUtil/cmt/requirements,v 1.5 2006/07/20 18:56:09 cohen Exp $
+# $Header: /nfs/slac/g/glast/ground/cvs/calibTkrUtil/cmt/requirements,v 1.6 2007/10/11 19:25:54 heather Exp $
 
 author Johann Cohen-Tanugi <cohen@slac.stanford.edu>
 
@@ -21,17 +21,17 @@ apply_pattern package_include
 
 application genTkrNoiseRep ../src/TkrRep/genTkrNoiseRep.cxx ../src/TkrRep/TkrNoiseRep.cxx
 
-#private 
+private 
 
-#use commonRootData *
-#use digiRootData *
-#use reconRootData *
-#use facilities * 
+use commonRootData *
+use digiRootData *
+use reconRootData *
+use facilities * 
 
 
 #apply_pattern package_headers
-#macro_append calibTkrUtil_headers "" WIN32 "../calibTkrUtil/*.h"
+macro_append calibTkrUtil_headers "" WIN32 "../calibTkrUtil/*.h"
 
-#macro_prepend includes " -I../src/test/"
-#application test_calibTkrUtil ../src/test/*.cxx $(calibTkrUtil_srcs)
+macro_prepend includes " -I../src/test/ -I../"
+application test_calibTkrUtil ../src/test/*.cxx $(calibTkrUtil_srcs)
 
