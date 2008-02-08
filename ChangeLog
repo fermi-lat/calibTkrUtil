@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Thu Feb  7 22:21:32 PST 2008
+calibTkrUtil/calibTkrUtil
+
+Modified Files:
+	TkrHits.h 
+Log Message:
+add TOT monitoring capability
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: v1r7p1, operation: add
 Package: calibTkrUtil
