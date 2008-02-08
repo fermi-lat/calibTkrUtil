@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Thu Feb  7 22:22:30 PST 2008
+calibTkrUtil/src
+
+Modified Files:
+	TkrHits.cxx 
+Log Message:
+add TOT monitoring capability
+
+    *
+------------------------------------------------------------
 User: htajima  Thu Feb  7 22:22:12 PST 2008
 calibTkrUtil/cmt
 
