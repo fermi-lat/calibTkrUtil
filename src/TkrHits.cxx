@@ -14,6 +14,7 @@ using std::endl;
 //#define PRINT_DEBUG 1
 
 
+
 bool Cluster::addStrip( int strip ){
 
   if( strip == lastStrip+1 ){ // assume strip number is sorted.
@@ -153,7 +154,7 @@ towerVar::towerVar( int twr, bool badStrips ){
       }
     }
     if( badStrips ) bsVar.push_back( bsv );
-    else tcVar.push_back( tcv );
+    tcVar.push_back( tcv );
   }
 
   char name[] = "numHitGTRCT00";
@@ -490,7 +491,9 @@ void towerVar::readHists( TFile* hfile, UInt_t iRoot, UInt_t nRoot ){
 // TkrHits implementation 
 //
 TkrHits::TkrHits( bool initHistsFlag ): 
-  m_numErrors(0), m_reconEvent(0), m_digiEvent(0), m_rootFile(0), 
+  m_numErrors(0), m_reconEvent(0), m_digiEvent(0), m_rootFile(0),
+  m_peakMIP(4.92), m_totAngleCF(5.48E-1), m_RSigma(4.0), m_GFrac(0.78),
+  m_nDiv(1), m_correctedTot(true), m_histMode(true), m_badStrips(true),
   m_maxDirZ(-0.85), m_maxTrackRMS(0.3), m_maxDelta(3.0), m_trackRMS(-1.0)
 {
 
@@ -502,7 +505,7 @@ TkrHits::TkrHits( bool initHistsFlag ):
   tag.assign( tag, 0, i ) ;
   m_tag = tag;
 
-  std::string version = "$Revision: 1.4 $";
+  std::string version = "$Revision: 1.5 $";
   i = version.find( " " );
   version.assign( version, i+1, version.size() );
   i = version.find( " " );
@@ -514,10 +517,11 @@ TkrHits::TkrHits( bool initHistsFlag ):
   for(int tower = 0; tower != g_nTower; ++tower)
     m_towerPtr[tower] = -1;
 
-  m_badStrips = true;
   if( initHistsFlag ){
     initCommonHists();
     if( m_badStrips ) initOccHists();
+    initTotHists();
+
   }
 #ifdef DEBUG_PRINT
   std::cout << "TkrHits Initialization finished." << std::endl;
@@ -573,7 +577,27 @@ void TkrHits::initOccHists(){
 }
 
 
-void TkrHits::saveAllHist( bool saveWaferOcc )
+void TkrHits::initTotHists(){
+  std::cout << "initialize TOT hisograms." << std::endl;
+  m_fracBatTot = new TH1F("fracBadTot", "fraction of bad TOT", 50, 0, 0.2 );
+  m_fracErrDist = new TH1F("fracErrDist", "Peak error", 100, 0, 0.1);
+  m_chisqDist = new TH1F("chisqDist", "TOT fit chisq/ndf", 60, 0, 3);
+  m_chargeScale = new TH1F("chargeScale", "Charge Scale", 50, 0.5, 1.5);
+  m_entries = new TH1F("entries", "Entries", 200, 0, 2000);
+  m_langauWidth = new TH1F("langauWidth", "Langau Width", 50, 0.1, 0.6);
+  m_langauGSigma = new TH1F("langauGSigma", "Langau GSigma", 50, 0.0, 2.0);
+  m_dirProfile = new TProfile("dirProfile", "cons(theta) profile", 10, -1, -0.5);
+  m_chist[4] = new TH1F("chargeAll", "TOT charge distribution", nTotHistBin, 0, maxTot);
+  m_chist[0] = new TH1F("charge0", "TOT charge distribution (-1<cos<-0.95)", nTotHistBin, 0, maxTot);
+  m_chist[1] = new TH1F("charge1", "TOT charge distribution (-0.95<cos<-0.9)", nTotHistBin, 0, maxTot);
+  m_chist[2] = new TH1F("charge2", "TOT charge distribution (-0.9<cos<-0.85)", nTotHistBin, 0, maxTot);
+  m_chist[3] = new TH1F("charge3", "TOT charge distribution (-0.85<cos<-0.8)", nTotHistBin, 0, maxTot);
+
+
+}
+
+
+void TkrHits::saveAllHist( bool saveWaferOcc, bool runFitTot )
 {
   if( m_rootFile == 0 ) return;
   std::cout << "save histograms" << std::endl;
@@ -616,6 +640,26 @@ void TkrHits::saveAllHist( bool saveWaferOcc )
   sigDist->Write(0, TObject::kOverwrite);
   sigRMS->Write(0, TObject::kOverwrite);
   sigTrad->Write(0, TObject::kOverwrite);
+
+
+  if( runFitTot ) fitTot();
+  m_fracBatTot->Write(0, TObject::kOverwrite);
+  m_fracErrDist->Write(0, TObject::kOverwrite);
+  m_chisqDist->Write(0, TObject::kOverwrite);
+  m_chargeScale->Write(0, TObject::kOverwrite);
+  m_entries->Write(0, TObject::kOverwrite);
+  m_langauWidth->Write(0, TObject::kOverwrite);
+  m_langauGSigma->Write(0, TObject::kOverwrite);
+  m_dirProfile->Write(0, TObject::kOverwrite);
+  for( int i=0; i!=5; i++)
+    m_chist[i]->Write(0, TObject::kOverwrite);
+
+  gDirectory->mkdir( "ChargeDist" );
+  gDirectory->cd( "ChargeDist" );
+  for( UInt_t i=0; i!=m_chargeHist.size(); i++ )
+    m_chargeHist[i]->Write(0, TObject::kOverwrite);
+  gDirectory->cd( ".." );
+
 
   if( !m_badStrips ) return;
 
@@ -773,7 +817,227 @@ void TkrHits::analyzeEvent()
     selectGoodClusters();
     
     fillOccupancy( 0 );
+    fillTot();
 
+}
+
+
+void TkrHits::fillTot() 
+{
+  
+#ifdef PRINT_DEBUG
+  std::cout << "fillTot start" << std::endl;
+#endif
+
+  for( unsigned int cls=0; cls<m_clusters.size(); cls++){
+    Cluster* cluster = m_clusters[cls];
+    layerId lid = getLayerId( cluster );
+    int tower = lid.tower;
+    int unp = lid.uniPlane;
+    int tw = m_towerPtr[ tower ];
+
+    // require only a single strip
+    if(cluster->getSize() != 1) continue;
+    
+    int iStrip = cluster->getFirstStrip();
+    
+    int tot = cluster->getRawToT();
+    if( tot == 0 ) continue;
+ 
+    float charge;
+    if( m_correctedTot ) charge = cluster->getCorrectedTot();
+    else charge  = calcCharge( lid, iStrip, tot);
+    if( charge < 0.0 ) continue;
+    charge /= ( 1 + m_totAngleCF * (1+m_dir.z()) ); // emprial correction factor
+    m_chist[4]->Fill( charge );
+    int idirz = int( 20 + m_dir.z()*20 );
+    if( idirz < 4 ) m_chist[idirz]->Fill( charge );
+    m_dirProfile->Fill( m_dir.z(), m_dir.z() );
+
+    // fill TOT per layer for most cases
+    // or per TFE for charge scale calibration
+    int ibin = int( charge * nTotHistBin / maxTot );
+    int iDiv = 0;
+    iDiv = iStrip * m_nDiv / g_nStrip;
+    if( ibin < nTotHistBin && ibin >=0 )
+      m_towerVar[tw].tcVar[unp].chargeDist[iDiv][ibin]++;
+
+  }
+  
+#ifdef PRINT_DEBUG
+  std::cout << "fillTot end" << std::endl;
+#endif
+}
+
+
+void TkrHits::fitTot()
+{  
+  // define Gaussian convolved Laudau function.
+  TF1 *ffit = new TF1( "langau2", langau2fun, 0, 30, 6 );
+  ffit->SetParNames( "Width", "MP", "Area", "GSigma", "RSigma", "GFrac" );
+  std::cout << "Start fit." << std::endl;
+  m_chargeHist.clear();
+  
+  const float meanChargeScale = 1.12, rangeChargeScale=0.3;
+  for( unsigned int tw=0; tw<m_towerVar.size(); tw++ ){
+    int tower = m_towerVar[ tw ].towerId;
+    for(int unp = 0; unp != g_nUniPlane; ++unp) {
+      layerId lid( unp );
+      std::string lname = lid.getLayerName();
+      std::cout << "Tower " << tower << ": ";
+      std::cout << lname << std::endl;
+      for(int iDiv = 0; iDiv != m_nDiv; ++iDiv){
+	m_towerVar[tw].tcVar[unp].chargeScale[iDiv] = meanChargeScale;
+	
+	float area, ave, rms;
+	Double_t *par, *error;
+	float peak, errPeak, width, errWidth;
+	  
+	// fill charge for each FE
+	char name[] = "chargeT00X00fe0000";
+	if( m_nDiv != 1 )
+	  sprintf(name,"chargeT%d%sfe%d", tower, lname.c_str(), iDiv);
+	else
+	  sprintf(name,"chargeT%d%s", tower, lname.c_str());
+	TH1F* chargeHist = new TH1F(name, name, nTotHistBin, 0, maxTot);
+	float binWidth = maxTot / nTotHistBin;
+	for( int ibin=0; ibin!=nTotHistBin; ibin++)
+	  chargeHist->Fill( (ibin+0.5)*binWidth, 
+			    m_towerVar[tw].tcVar[unp].chargeDist[iDiv][ibin] );
+	m_chargeHist.push_back( chargeHist );
+	//std::cout << "T" << tower << " " << lname << " " << iDiv << std::endl;
+	//if( m_histMode ) continue; // do not fit during hist mode.
+
+	// fit charge for each FE
+	area = chargeHist->Integral();
+	ave = chargeHist->GetMean();
+	rms = chargeHist->GetRMS();
+	m_entries->Fill( area );
+	//std::cout << area << " " << ave << " " << rms << std::endl;
+	if( area<200 || ave==0.0 || rms==0.0 ){ 
+	  m_log << "T" << tower << " " << lname
+		<< " " << iDiv << ", Entries: " << area
+		<< ", Mean: " << ave << ", RMS: " << rms 
+		<< " skipped." << std::endl;
+	  continue;
+	}
+	
+	//
+	// check the presence of bad TOT values
+	// try not to include these TOT in the fit.
+	//
+	int bin = int(ave*0.5/binWidth) + 1;
+	float fracBadTot = chargeHist->Integral(1,bin)
+	  / chargeHist->Integral();
+	m_fracBatTot->Fill( fracBadTot );
+
+	float lowLim = ave - 1.4 * rms;
+	if( fracBadTot > 0.05 && lowLim < ave*0.5 ){
+	  lowLim = ave*0.5;
+	  std::cout << "WARNING, large bad TOT fraction: " 
+		    << fracBadTot << ", T" << tower << " " << lname
+		    << " " << iDiv << std::endl;
+	  m_log << "WARNING, large bad TOT fraction: " 
+		<< fracBadTot << ", T" << tower << " " << lname
+		<< " " << iDiv << std::endl;
+	}
+
+	ffit->SetParLimits( 0, 0.10, 0.5 );
+	ffit->SetParLimits( 1, 0.0, ave*2 );
+	ffit->SetParLimits( 2, 0.0, area*0.4 );
+	ffit->SetParLimits( 3, 0.35, 0.85 );
+	ffit->SetRange( lowLim, ave+2.5*rms );
+	ffit->SetParameters( rms*0.2, ave*0.75, area*0.1, rms*0.4 );
+	ffit->FixParameter( 4, m_RSigma );
+	ffit->FixParameter( 5, m_GFrac );
+	chargeHist->Fit( "langau2", "RBQ" );
+	
+	//0:width(scale) 1:peak 2:total area 3:width(sigma)
+	par = ffit->GetParameters();
+	error = ffit->GetParErrors();
+	
+	peak = float( *(par+1) );
+	errPeak = float( *(error+1) );
+	if( peak > 0 ) m_fracErrDist->Fill( errPeak*sqrt(area/1000)/peak );
+	
+	width = float( *(par+3) );
+	errWidth = float( *(error+3) );
+
+	float chisq = ffit->GetChisquare();
+	float ndf = ffit->GetNDF();
+	if( ndf > 0 ) m_chisqDist->Fill( chisq/ndf );
+	if( peak > 0.0 ){
+	  float chargeScale =  m_peakMIP / peak;
+	  m_chargeScale->Fill( chargeScale );
+	  m_langauWidth->Fill( *(par+0) ); //  width (scale)
+	  m_langauGSigma->Fill( *(par+3) ); // width (sigma)
+	  if( fabs(chargeScale-meanChargeScale) > rangeChargeScale ){
+	    std::cout << "WARNING, Abnormal charge scale: " 
+		      << chargeScale << ", T" << tower << " " << lname
+		      << " " << iDiv << std::endl;
+	    m_log << "WARNING, Abnormal charge scale: "
+		  << chargeScale << ", T" << tower << " " << lname 
+		  << " " << iDiv << std::endl;
+	    if( chargeScale > meanChargeScale ) 
+	      chargeScale = meanChargeScale + rangeChargeScale;
+	    if( chargeScale < meanChargeScale ) 
+	      chargeScale = meanChargeScale - rangeChargeScale;
+	  }
+	  if( chisq/ndf > maxChisq ){ // large chisq/ndf
+	    std::cout << "WARNING, large chisq/ndf: "
+		      << chisq/ndf << ", T" << tower << " " << lname
+		      << " " << iDiv << std::endl;
+	    m_log << "WARNING, large chisq/ndf: "
+		  << chisq/ndf << ", T" << tower << " " << lname
+		  << " " << iDiv << std::endl;
+	  }
+	  // large peak fit error
+	  if( errPeak*sqrt(area/1000)/peak > maxFracErr 
+	      || errPeak*sqrt(area/1000)/peak < minFracErr ){ 
+	    std::cout << "WARNING, abnormal peak fit error: "
+		      << errPeak*sqrt(area/1000)/peak << ", T" << tower 
+		      << " " << lname << " " << iDiv << std::endl;
+	    m_log << "WARNING, abnormal peak fit error: "
+		  << errPeak*sqrt(area/1000)/peak << ", T" << tower << " " 
+		  << lname << " " << iDiv << std::endl;
+	  }
+	  m_towerVar[tw].tcVar[unp].chargeScale[iDiv] = chargeScale;
+	}
+	else{
+	  std::cout << "WARNING, negative peak value: "
+		    << peak << ", T" << tower << " " << lname 
+		    << " " << iDiv << std::endl;
+	  m_log << "WARNING, negative peak value: "
+		<< peak << ", T" << tower << " " << lname 
+		<< " " << iDiv << std::endl;
+	}
+	
+	m_log << "Fit T" << tower << " " << lname << " " 
+	      << iDiv << ' ';
+	m_log.precision(3);
+	m_log << area << ' ' << ave << ' ' << rms << ", " << *(par+0) << ' '
+	      << *(par+1) << ' ' << *(par+2) << ' ' << *(par+3) << ", "
+	      << errPeak/peak << " " << int(chisq+0.5) << "/" << ndf
+	      << std::endl;
+	
+      }
+    }
+  }
+
+  for( int i=0; i!=5; i++){
+    float area = m_chist[i]->Integral();
+    float ave = m_chist[i]->GetMean();
+    float rms = m_chist[i]->GetRMS();
+    ffit->SetParLimits( 0, 0.0, rms );
+    ffit->SetParLimits( 1, 0.0, ave*2 );
+    ffit->SetParLimits( 2, 0.0, area*0.4 );
+    ffit->SetParLimits( 3, 0.0, rms );
+    ffit->SetRange( ave-1.25*rms, ave+2*rms );
+    ffit->ReleaseParameter( 4 );
+    ffit->ReleaseParameter( 5 );
+    ffit->SetParameters( rms*0.5, ave*0.75, area*0.1, rms*0.4, m_RSigma, m_GFrac );
+    m_chist[i]->Fit( "langau2", "RBQ" );
+  }
 }
 
 
@@ -1104,7 +1368,7 @@ void TkrHits::selectGoodClusters(){
 	  cluster->setXYZ( m_towerVar[twr].center[0], pos, zpos );
 	cluster->setId( tower, unp );
 	if( m_towerVar[twr].reconClusters[unp] )
-	  cluster->setCorrectedTot( 5.0 * m_towerVar[twr].reconClusters[unp]->getMips() );
+	  cluster->setCorrectedTot( m_peakMIP * m_towerVar[twr].reconClusters[unp]->getMips() );
 	
 	// check if this cluster is close to the track position
 	layerId tlid;
@@ -1801,4 +2065,176 @@ void TkrHits::fillOccupancy( int tDiv )
 #ifdef PRINT_DEBUG
   std::cout << "fillOccupancy end" << std::endl;
 #endif
+}
+
+
+//-----------------------------------------------------------------------
+//
+//      Convoluted Landau and Gaussian Fitting Funcion
+//         (using ROOT's Landau and Gauss functions)
+//
+//  Based on a Fortran code by R.Fruehwirth (fruhwirth@hephy.oeaw.ac.at)
+//  Adapted for C++/ROOT by H.Pernegger (Heinz.Pernegger@cern.ch) and
+//  Markus Friedl (Markus.Friedl@cern.ch)
+//  Modified by Hiro Tajima (tajima@stanford.edu) for speed up.
+//
+//-----------------------------------------------------------------------
+
+#include "TH1.h"
+#include "TF1.h"
+#include "TROOT.h"
+#include "TStyle.h"
+
+Double_t langaufun(Double_t *x, Double_t *par) {
+
+   //Fit parameters:
+   //par[0]=Width (scale) parameter of Landau density
+   //par[1]=Most Probable (MP, location) parameter of Landau density
+   //par[2]=Total area (integral -inf to inf, normalization constant)
+   //par[3]=Width (sigma) of convoluted Gaussian function
+   //
+   //In the Landau distribution (represented by the CERNLIB approximation),
+   //the maximum is located at x=-0.22278298 with the location parameter=0.
+   //This shift is corrected within this function, so that the actual
+   //maximum is identical to the MP parameter.
+
+  // Numeric constants
+  Double_t invsq2pi = 0.3989422804014;   // (2 pi)^(-1/2)
+  Double_t mpshift  = -0.22278298;       // Landau maximum location
+  
+  // Control constants
+  Double_t np = 40.0;   // number of convolution steps
+  Double_t sc =  2.0;   // convolution extends to +-sc Gaussian sigmas
+  Double_t np2 = 20.0;  // number of convolution steps
+  Double_t sc2 =  4.0;  // convolution extends to +-sc Gaussian sigmas
+  
+  // Variables
+  Double_t xx;
+  Double_t mpc;
+  Double_t fland, fgauss;
+  Double_t sum = 0.0;
+  Double_t xm, dx;
+  Double_t step;
+  Double_t sigma = par[3];
+  Double_t width = par[0];
+  if( sigma<=0.0 || width<=0.0 ) return 0.0;
+
+  // MP shift correction
+  mpc = par[1] - mpshift * width;
+  if( mpc < 0.0 ) return 0.0;
+  
+  // Convolution integral parameters
+  xm = x[0];
+  Double_t dxmax = sc * sigma;
+  step = dxmax * 2 / np;
+  
+  // Convolution integral of Landau and Gaussian by sum
+  for(dx=0.5*step; dx<=dxmax; dx+=step) {
+    fgauss = TMath::Gaus(0.0,dx,sigma);
+    
+    xx = xm + dx;
+    fland = TMath::Landau( xx, mpc, width );
+    sum += fland * fgauss;
+    
+    xx = xm - dx;
+    fland = TMath::Landau( xx, mpc, width );
+    sum += fland * fgauss;
+  }
+  sum *= step/width;
+  
+  Double_t dxmax2 = sc2 * sigma;
+  step = (dxmax2-dxmax) * 2 / np2;
+  Double_t sum2 = 0.0;
+  
+  // Convolution integral of Landau and Gaussian by sum
+  for(dx=dxmax+0.5*step; dx<=dxmax2; dx+=step) {
+    fgauss = TMath::Gaus(0.0,dx,sigma);
+    
+    xx = xm + dx;
+    fland = TMath::Landau( xx, mpc, width );
+    sum2 += fland * fgauss;
+    
+    xx = xm - dx;
+    fland = TMath::Landau( xx, mpc, width );
+    sum2 += fland * fgauss;
+  }
+  sum2 *= step/width;
+  
+  return (par[2] * (sum+sum2) * invsq2pi / sigma);
+}
+
+//
+// Two Gaussian convolved Lanbdau function
+// it also employs variable integration step.
+//
+Double_t langau2fun(Double_t *x, Double_t *par) {
+
+   //Fit parameters:
+   //par[0]=Width (scale) parameter of Landau density
+   //par[1]=Most Probable (MP, location) parameter of Landau density
+   //par[2]=Total area (integral -inf to inf, normalization constant)
+   //par[3]=Width (sigma) of convoluted Gaussian function
+   //par[4]=Width2/Width of convoluted Gaussian function
+   //par[5]=fraction of narrow Gaussian function
+   //
+   //In the Landau distribution (represented by the CERNLIB approximation),
+   //the maximum is located at x=-0.22278298 with the location parameter=0.
+   //This shift is corrected within this function, so that the actual
+   //maximum is identical to the MP parameter.
+
+  // Numeric constants
+  Double_t invsq2pi = 0.3989422804014;   // (2 pi)^(-1/2)
+  Double_t mpshift  = -0.22278298;       // Landau maximum location
+  
+  // Control constants
+  // variable interation step
+  // integration step increases as points move to outside.
+  Double_t np = 20.0;   // number of convolution steps in a region
+  Double_t sc =  1.0;   // convolution extends to +-sc Gaussian sigmas
+  Double_t sc2 =  4.0;  // convolution extends to +-sc Gaussian sigmas
+  
+  // Variables
+  Double_t xx;
+  Double_t mpc;
+  Double_t fland, fgauss;
+  Double_t sum = 0.0;
+  Double_t xm, dx;
+  Double_t step;
+  Double_t sigma = par[3];
+  Double_t sigma2 = par[4]*sigma;
+  Double_t frac = par[5];
+  Double_t width = par[0];
+  if( sigma<=0.0 || width<=0.0 ) return 0.0;
+
+  // MP shift correction
+  mpc = par[1] - mpshift * width;
+  if( mpc < 0.0 ) return 0.0;
+  
+  // Convolution integral parameters
+  xm = x[0];
+  Double_t dxmax = sc * sigma;
+  step = dxmax * 2 / np;
+  Double_t dxmax2 = sc2 * sigma2;
+  
+  // Convolution integral of Landau and Gaussian by sum
+  for(dx=0.5*step; dx<=dxmax2; dx+=step) {
+    fgauss = step * ( frac * TMath::Gaus(0.0,dx,sigma) / sigma
+                      + (1-frac) * TMath::Gaus(0.0,dx,sigma2) / sigma2 );
+    
+    xx = xm + dx;
+    fland = TMath::Landau( xx, mpc, width );
+    sum += fland * fgauss;
+    
+    xx = xm - dx;
+    fland = TMath::Landau( xx, mpc, width );
+    sum += fland * fgauss;
+
+    if( dx >= dxmax ){ // getting out of the curent region, change step
+      dxmax *= 2;
+      step *= 2;
+    }
+  }
+  sum /= width;
+  
+  return ( par[2] * sum * invsq2pi );
 }

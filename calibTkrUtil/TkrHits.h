@@ -51,6 +51,12 @@ const float posZ[g_nView][g_nLayer] = {
   {44.765, 74.335, 108.965, 139.538, 175.165, 205.738, 241.365,  271.14, 305.965, 335.74, 370.565, 400.34, 435.165, 464.94, 499.765, 529.54, 564.365, 594.14},
   {42.315, 76.865, 106.435, 142.065, 172.638, 208.265, 238.838, 273.665, 303.44, 338.265, 368.04, 402.865, 432.64, 467.465, 497.24, 532.065, 561.84, 596.665} };
 
+const float maxChisq = 1.75;
+const float maxFracErr = 0.015;
+const float minFracErr = 0.005;
+
+const float maxTot = 20.0;
+
 //
 // ****** class layerId *****
 //
@@ -247,6 +253,9 @@ class TkrHits {
   void setOutputFile( TFile* outputFile ) {m_rootFile=outputFile;}  
   void analyzeEvent();
   
+  void fillTot();   
+  void fitTot();
+
   void setNevents(int nEvent) {m_nEvents = nEvent;}
 
   void setEventPtrs(DigiEvent* digiEvent, ReconEvent* reconEvent)
@@ -255,12 +264,13 @@ class TkrHits {
     m_reconEvent=reconEvent;
   }
 
-  void saveAllHist( bool saveTimeOcc=false );
+  void saveAllHist( bool saveTimeOcc=false, bool runFitTot=true );
 
   //protected:
 
   void initOccHists();
   void saveOccHists();
+  void initTotHists();
 
   void initCommonHists();
   void setTowerInfo();
@@ -278,6 +288,9 @@ class TkrHits {
   Double_t leastSquareLinearFit( std::vector<Double_t> &vy, 
 			     std::vector<Double_t> &vx, 
 			     Double_t &y0, Double_t &dydx );
+
+  virtual float calcCharge( layerId lid, int iStrip, int tot){ return tot;};
+  
   
   TH1F *m_nTrackDist, *m_maxHitDist, *m_numClsDist, *m_dirzDist, 
     *m_numHitGTRC, *m_rawTOT, *m_largeMulGTRC,
@@ -286,6 +299,8 @@ class TkrHits {
   TProfile *m_rmsProf1TWR, *m_rmsProf2TWR, *m_tresProfX, *m_tresProfY;
   TProfile *m_sigDist, *m_sigRMS, *m_sigTrad;
   
+  std::vector<TH1F*> m_chargeHist;
+
   TH1F *m_fracErrDist, *m_chisqDist, *m_fracBatTot, *m_chist[5];
   TH1F *m_chargeScale, *m_entries, *m_langauWidth, *m_langauGSigma;
   TProfile *m_dirProfile;
@@ -321,9 +336,12 @@ class TkrHits {
   void fillOccupancy( int );
   void calculateEfficiency();
   
-  bool m_badStrips, m_towerInfoDefined; 
   TH1F* m_aPos[g_nWafer+1];
   TH1F *m_occDist, *m_poissonDist, *m_lrec, *m_ldigi, *m_lcls, *m_locc, *m_ltrk, *m_dist;
+  float m_peakMIP, m_totAngleCF, m_RSigma, m_GFrac;
+  int m_nDiv;
+  bool m_correctedTot, m_histMode;
+  bool m_badStrips, m_towerInfoDefined; 
 
   float m_maxDirZ, m_maxTrackRMS, m_maxDelta;
   float m_trackRMS;
