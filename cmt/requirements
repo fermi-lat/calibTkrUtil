@@ -1,10 +1,10 @@
 package calibTkrUtil
-# $Header: /nfs/slac/g/glast/ground/cvs/calibTkrUtil/cmt/requirements,v 1.6 2007/10/11 19:25:54 heather Exp $
+# $Header: /nfs/slac/g/glast/ground/cvs/calibTkrUtil/cmt/requirements,v 1.7 2008/02/08 06:22:12 htajima Exp $
 version v1r7p1
 author Johann Cohen-Tanugi <cohen@slac.stanford.edu>
 
 
-# $Header: /nfs/slac/g/glast/ground/cvs/calibTkrUtil/cmt/requirements,v 1.6 2007/10/11 19:25:54 heather Exp $
+# $Header: /nfs/slac/g/glast/ground/cvs/calibTkrUtil/cmt/requirements,v 1.7 2008/02/08 06:22:12 htajima Exp $
 
 author Johann Cohen-Tanugi <cohen@slac.stanford.edu>
 
@@ -14,6 +14,7 @@ author Johann Cohen-Tanugi <cohen@slac.stanford.edu>
 
 macro  calibTkrUtil_srcs "${CALIBTKRUTILROOT}/src/*.cxx" WIN32 "${CALIBTKRUTILROOT}\src\*.cxx" 
 
+use swig * IExternal
 use ROOT * IExternal
 macro_append ROOT_libs " ${ROOT_GUI_libs}"
 
@@ -34,4 +35,25 @@ macro_append calibTkrUtil_headers "" WIN32 "../calibTkrUtil/*.h"
 
 macro_prepend includes " -I../src/test/ -I../"
 application test_calibTkrUtil ../src/test/*.cxx $(calibTkrUtil_srcs)
+
+
+###PyRoot library  we assume all source files are in the src directory of the package
+# This is what I see in facilties - maybe Jim can explain why it's necessary to do the path_removes
+path_remove PYTHONPATH calibTkrUtil
+path_prepend PYTHONPATH $(CALIBTKRUTILROOT)/$(BINDIR)
+path_remove PYTHONPATH "" Linux "${calibTkrUtil_cmtpath}/lib" \
+                         WIN32 "${calibTkrUtil_cmtpath}\lib"
+path_append PYTHONPATH "" Linux "${calibTkrUtil_cmtpath}/lib" \
+                         WIN32 "${calibTkrUtil_cmtpath}\lib"
+path_append PYTHONPATH "" Linux "$(CALIBTKRUTILROOT)/python" \
+                         WIN32 "$(CALIBTKRUTILROOT)\python"
+
+private
+
+use SwigPolicy *
+
+# Hiro's new library that he wishes to make accessible from python
+library tkrPyRootLib tkrPyRoot.cxx
+
+apply_pattern swig_module name="tkrPyRoot"
 
