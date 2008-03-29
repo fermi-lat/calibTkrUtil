@@ -1,0 +1,5 @@
+%module tkrPyRoot
+%{
+#include "../src/tkrPyRoot.cxx"
+%}
+%include ../src/tkrPyRoot.cxx
