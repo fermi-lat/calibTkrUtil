@@ -1,4 +1,16 @@
 ------------------------------------------------------------
+User: htajima  Fri Mar 28 17:46:31 PDT 2008
+calibTkrUtil/src
+
+Modified Files:
+	TkrHits.cxx 
+Added Files:
+	tkrPyRoot.cxx tkrPyRoot.in 
+Log Message:
+nidified to produce a swig module to be used in python. Initially Gaussian convolved Landau function is included.
+
+    *
+------------------------------------------------------------
 User: htajima  Fri Mar 28 17:45:44 PDT 2008
 calibTkrUtil/cmt
 
