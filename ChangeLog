@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: htajima  Thu Apr  3 20:03:57 PDT 2008
+calibTkrUtil/src/tkrPyRoot
+
+Added Files:
+	LinkDef.h tkrPyRoot.cxx tkrPyRoot.h 
+Log Message:
+initial release of root cint library for TKR performance monitor
+define Gaussain convolved Landau function and return TF1*
+
+    *
+------------------------------------------------------------
 User: htajima  Thu Apr  3 20:02:43 PDT 2008
 calibTkrUtil/python
 
