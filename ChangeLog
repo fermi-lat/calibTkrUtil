@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Thu Apr  3 20:01:55 PDT 2008
+calibTkrUtil/cmt
+
+Modified Files:
+	requirements 
+Log Message:
+add rootcint package tkrPyRoot
+
+    *
+------------------------------------------------------------
 User: htajima  Thu Apr  3 19:58:13 PDT 2008
 calibTkrUtil/python
 
