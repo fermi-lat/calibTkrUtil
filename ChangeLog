@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Thu Apr  3 20:02:43 PDT 2008
+calibTkrUtil/python
+
+Added Files:
+	tkrMonitor.py tkrUtils.py 
+Log Message:
+initial release of python script and library for TKR performance montioring
+
+    *
+------------------------------------------------------------
 User: htajima  Thu Apr  3 20:01:55 PDT 2008
 calibTkrUtil/cmt
 
