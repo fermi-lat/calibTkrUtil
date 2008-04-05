@@ -3,9 +3,11 @@
 #include <ctime>
 #include <cassert>
 
-#include "calibTkrUtil/TkrHits.h"
 #include "facilities/Util.h"
 #include "commonRootData/idents/TowerId.h"
+
+#include "calibTkrUtil/TkrHits.h"
+#include "src/tkrPyRoot/tkrPyRoot.h"
 
 using std::string;
 using std::cout;
@@ -505,7 +507,7 @@ TkrHits::TkrHits( bool initHistsFlag ):
   tag.assign( tag, 0, i ) ;
   m_tag = tag;
 
-  std::string version = "$Revision: 1.6 $";
+  std::string version = "$Revision: 1.7 $";
   i = version.find( " " );
   version.assign( version, i+1, version.size() );
   i = version.find( " " );
