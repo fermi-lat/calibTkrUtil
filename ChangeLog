@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Fri Apr  4 18:28:17 PDT 2008
+calibTkrUtil/calibTkrUtil
+
+Modified Files:
+	TkrHits.h 
+Log Message:
+remove definition of langaufun since it is included in another header file.
+
+    *
+------------------------------------------------------------
 User: htajima  Thu Apr  3 20:03:57 PDT 2008
 calibTkrUtil/src/tkrPyRoot
 
