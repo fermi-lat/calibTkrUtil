@@ -349,7 +349,7 @@ class TkrHits {
 };
 
 // Gaussian convolved Landau function
-Double_t langaufun(Double_t *x, Double_t *par); 
+//Double_t langaufun(Double_t *x, Double_t *par); 
 // Two Gaussian convolved Landau function
-Double_t langau2fun(Double_t *x, Double_t *par); 
+//Double_t langau2fun(Double_t *x, Double_t *par); 
 #endif
