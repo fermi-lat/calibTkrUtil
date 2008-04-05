@@ -636,7 +636,7 @@ void RootAnalyzer::parseOptionFile(const char* f)
     if(!isEmptyOrCommentStr(line)) break;
   }
   cout << "Input mc file(s): " << line << endl;
-  makeTChain(line, m_mcChain);
+  if( line != "none" ) makeTChain(line, m_mcChain);
   
   while( getline(optF, line) ) {
     if(!isEmptyOrCommentStr(line)) break;

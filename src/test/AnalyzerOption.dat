@@ -4,13 +4,13 @@
 // will be ignored if it does not exist or is not a root file.
 
 // a set of input mc root files separated by blank space(s)
-/nfs/farm/g/glast/u34/Integration/rootData/077003165/v6r070329p16/grRoot/digitization-licos-v3r6p2_077003165_digi_MC.root
+none
 
 // a set of input digi root files separated by blank space(s)
-/nfs/farm/g/glast/u34/Integration/rootData/077003165/v6r070329p16/grRoot/digitization-licos-v3r6p2_077003165_digi_DIGI.root
+/nfs/farm/g/glast/u52/Integration/rootData/077016031/v13r6p1/digi/digitization-v4r0p1_077016031_digi_DIGI.root
 
 // a set of input recon root files separated by blank space(s)
-/nfs/farm/g/glast/u34/Integration/rootData/077003165/v6r070329p16/calib-v1r0/grRoot/recon-v3r6p2_077003165_recon_RECON.root
+/nfs/farm/g/glast/u52/Integration/rootData/077016031/v13r6p1/recon/recon-v4r0p1_077016031_recon_RECON.root
 
 
 // output SVAC ntuple file
