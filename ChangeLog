@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Fri Apr  4 18:28:50 PDT 2008
+calibTkrUtil/cmt
+
+Modified Files:
+	requirements 
+Log Message:
+make it possible to build swig library as well as rootcint.
+
+    *
+------------------------------------------------------------
 User: htajima  Fri Apr  4 18:28:17 PDT 2008
 calibTkrUtil/calibTkrUtil
 
