@@ -5,6 +5,7 @@
 
 #include "facilities/Util.h"
 #include "commonRootData/idents/TowerId.h"
+#include "commonRootData/idents/CalXtalId.h"
 
 #include "calibTkrUtil/TkrHits.h"
 #include "src/tkrPyRoot/tkrPyRoot.h"
@@ -494,6 +495,7 @@ void towerVar::readHists( TFile* hfile, UInt_t iRoot, UInt_t nRoot ){
 //
 TkrHits::TkrHits( bool initHistsFlag ): 
   m_numErrors(0), m_reconEvent(0), m_digiEvent(0), m_rootFile(0),
+  m_startTime(-1.0), m_endTime(-1.0),
   m_peakMIP(4.92), m_totAngleCF(5.48E-1), m_RSigma(4.0), m_GFrac(0.78),
   m_nDiv(1), m_correctedTot(true), m_histMode(true), m_badStrips(true),
   m_maxDirZ(-0.85), m_maxTrackRMS(0.3), m_maxDelta(3.0), m_trackRMS(-1.0)
@@ -507,7 +509,7 @@ TkrHits::TkrHits( bool initHistsFlag ):
   tag.assign( tag, 0, i ) ;
   m_tag = tag;
 
-  std::string version = "$Revision: 1.7 $";
+  std::string version = "$Revision: 1.8 $";
   i = version.find( " " );
   version.assign( version, i+1, version.size() );
   i = version.find( " " );
@@ -555,6 +557,16 @@ void TkrHits::initCommonHists(){
   m_sigDist = new TProfile("msigDist", "msigDist", 100, 0, 600.0);
   m_sigRMS = new TProfile("msigRMS", "msigRMS", 100, 0, 0.5);
   m_sigTrad = new TProfile("msigTrad", "msigTrad", 100, 0, 10.0);
+
+
+  //
+  // MIP filter hists
+  //
+  m_acdTileCount = new TH1F("acdTileCount", "AcdTileCount", 10, 0 , 10 );
+  m_acdTotalEnergy = new TH1F("acdTotalEnergy", "AcdTotalEnergy", 100, 0 , 10 );
+  m_calEnergyRaw = new TH1F("calEnergyRaw", "calEnergyRaw", 100, 0, 1000 );
+  m_numCalXtal = new TH1F("numCalXtal", "# of Cal Xtal with energy>0 per layer", 10, 0, 10 );
+
 }
 
 
@@ -643,6 +655,22 @@ void TkrHits::saveAllHist( bool saveWaferOcc, bool runFitTot )
   sigRMS->Write(0, TObject::kOverwrite);
   sigTrad->Write(0, TObject::kOverwrite);
 
+  //
+  // save MIP filter related stuff
+  //
+  m_acdTileCount->Write(0, TObject::kOverwrite);
+  m_acdTotalEnergy->Write(0, TObject::kOverwrite);
+  m_calEnergyRaw->Write(0, TObject::kOverwrite);
+  m_numCalXtal->Write(0, TObject::kOverwrite);
+  //
+  // save timestamp TTree
+  //
+  TTree *tree = new TTree("timeStamps","time stamps");
+  tree->Branch("startTime",&m_startTime,"startTime/D");
+  tree->Branch("endTime",&m_endTime,"endTime/D");
+  tree->Fill();
+  tree->Fill();
+  tree->Write();
 
   if( runFitTot ) fitTot();
   m_fracBatTot->Write(0, TObject::kOverwrite);
@@ -810,6 +838,7 @@ void TkrHits::saveOccHists(){
 void TkrHits::analyzeEvent()
 {
     if( ! m_towerInfoDefined ) setTowerInfo();
+    if( ! MIPfilter() ) return;
     monitorTKR();
 
     if(! passCut()) return;
@@ -821,6 +850,74 @@ void TkrHits::analyzeEvent()
     fillOccupancy( 0 );
     fillTot();
 
+}
+
+
+bool TkrHits::MIPfilter()
+{
+  //
+  // get timestamp
+  //
+  Double_t ts = m_digiEvent->getTimeStamp(); 
+  if( m_startTime < 0 ) m_startTime = ts;
+  if( ts > m_endTime ) m_endTime = ts;
+
+ //
+  // MIP filter
+  // check ACD variables
+  //
+  AcdRecon* acdRecon = m_reconEvent->getAcdRecon();
+  assert(acdRecon != 0);
+  int AcdTileCount = acdRecon->nAcdHit();
+  float AcdTotalEnergy = acdRecon->getEnergy();
+  m_acdTileCount->Fill( AcdTileCount );
+  m_acdTotalEnergy->Fill( AcdTotalEnergy );
+  
+  //
+  // check CAL variables
+  //
+  CalRecon* calRecon = m_reconEvent->getCalRecon();
+  assert(calRecon != 0);
+  TObjArray* clusters = calRecon->getCalClusterCol();
+  int numClusters = clusters->GetEntries();
+  //Event::CalCluster* calCluster = pCals->front();
+  float CalEnergyRaw = 0;
+  int num = 0;
+  for( int cl=0; cl!=numClusters; cl++){
+    CalCluster* calCluster = dynamic_cast<CalCluster*>(clusters->At(cl));
+    if(calCluster) {
+      CalEnergyRaw += calCluster->getParams().getEnergy();
+      num++;
+    }
+  }
+  if( num>0 ) CalEnergyRaw /= num;
+  m_calEnergyRaw->Fill( CalEnergyRaw );
+  TObjArray* xtals = calRecon->getCalXtalRecCol();
+  int numXtals = xtals->GetEntries();
+  const int maxXtal = 7;
+  int numXtal[maxXtal];
+  for( int i=0; i<maxXtal; i++) numXtal[i] = 0;
+  for( int xtal=0; xtal!=numXtals; xtal++){
+    CalXtalRecData* calXtal = dynamic_cast<CalXtalRecData*>(xtals->At(xtal));
+    if( calXtal->getEnergy() <= 0 ) continue;
+    CalXtalId xtalId = calXtal->getPackedId();
+    Short_t layerId = xtalId.getLayer();
+    if( layerId > 7 ) std::cout << "Xtal layerId: " << layerId << std::endl;
+    numXtal[layerId]++;
+  }
+  int maxNumXtal = 0;
+  for( int i=0; i<maxXtal; i++){
+    m_numCalXtal->Fill( numXtal[i] );
+    if( numXtal[i] > maxNumXtal ) maxNumXtal = numXtal[i];
+  }
+  m_numCalXtal->Fill( maxNumXtal );
+  
+  if( AcdTileCount < 1 || AcdTileCount > 2 ) return false;
+  //if( abs(AcdTotalEnergy - 1.8) > 1.0 ) return false;
+  if( abs(CalEnergyRaw - 100) > 50 ) return false;
+  if( maxNumXtal > 2 ) return false;
+  
+  return true;
 }
 
 
