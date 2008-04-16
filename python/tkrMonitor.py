@@ -18,7 +18,7 @@ nelem = {}
 nelem["layer"] = tkrUtils.g_nTowers * tkrUtils.g_nUniPlanes
 typecode = { "C":"c", "B":"b", "b":"B", "S":"i", "s":"I", "F":"f", "D":"d" }
 
-rname = "/nfs/slac/work/htajima/outputs/TE403_080308-065401.root"
+rname = "/nfs/slac/work/htajima/outputs/TE403_080416-072720.root"
 tname = "tkrMonitorTrees.root"
 
 #
@@ -31,10 +31,23 @@ for (key, type, vtype) in keys:
 ffit = ROOT.defLangau( "langau", 0, 30 )
 ffit.SetParNames( "LWidth", "MP", "Area", "GSigma" )
 
+rf = ROOT.TFile( rname )
+tree = rf.FindObjectAny( "timeStamps" )
+tStartTime = array.array( 'd', [0] )
+tEndTime = array.array( 'd', [0] )
+tree.SetBranchAddress( "startTime", tStartTime )
+tree.SetBranchAddress( "endTime", tEndTime )
+startTime = array.array( 'd', [-1] )
+endTime = array.array( 'd', [1] )
+for i in range(tree.GetEntries()):
+  tree.GetEntry( i )
+  if startTime[0] < 0 or tStartTime[0] < startTime[0]:
+    startTime[0] = tStartTime[0]
+  if tEndTime[0] > endTime[0]: endTime[0] = tEndTime[0]
+print startTime, endTime
 #
 # loop towers/layers ann fit TOT distributions
 #
-rf = ROOT.TFile( rname )
 for tower in range(tkrUtils.g_nTowers):
   for unp in range(tkrUtils.g_nUniPlanes):
     ielm = unp + tower*tkrUtils.g_nUniPlanes
@@ -101,7 +114,10 @@ for (key, type, vtype) in keys:
   elif type == "tower":
     leaflist = "%s[%d]/%s" % (key, tkrUtils.g_nTowers, vtype )
   tree.Branch(key, values[key], leaflist)
-  
+
+tree.Branch( "startTime", startTime, "startTime/D" )
+tree.Branch( "endTime", endTime, "endTime/D" )
+
 tree.Fill()
 tree.Write()
 tf.Close()
