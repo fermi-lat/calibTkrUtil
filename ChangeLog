@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Fri Apr 18 12:17:20 PDT 2008
+calibTkrUtil/src
+
+Modified Files:
+	TkrHits.cxx 
+Log Message:
+improved MIPfilter (allows monitoring of the effective of the filter) and improved warning in fitTOT.
+
+    *
+------------------------------------------------------------
 User: htajima  Fri Apr 18 00:00:56 PDT 2008
 calibTkrUtil/src/test
 
