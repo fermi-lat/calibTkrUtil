@@ -23,8 +23,10 @@ class RootAnalyzer {
 
   /// parse option file to the RootAnalyzer
   void parseOptionFile(const char* f);
+  void setInputRootFiles( const string&, const string&, const string& );
+  void setOutputRootFile( const char* );
 
-  void analyzeData();
+  void analyzeData( int );
 
   /// produce output ntuple and histogram files based on analysis results
   void produceOutputFile();
@@ -69,9 +71,9 @@ class RootAnalyzer {
 /* 			     int& iLayer, int& iView) const; */
 
   // fill stripHits and map histogrammes
-  void fillStripHits(const TkrDigi* tkrDigi);
+  //void fillStripHits(const TkrDigi* tkrDigi);
 
-  void fillOutputTree();
+  //void fillOutputTree();
 
   // calculate a couple of tot values based on event topology
   //  void analyzeTot();
@@ -80,10 +82,9 @@ class RootAnalyzer {
   //  void createBranches();
 
   TFile* m_outputFile;
-  TTree* m_tree;
-  TBranch* m_branch;
+  /*  TTree* m_tree;
+      TBranch* m_branch; */
   //  NtupleDef m_ntuple;
-
   TChain* m_mcChain;
   TBranch* m_mcBranch;
   //  McEvent* m_mcEvent;
@@ -96,11 +97,12 @@ class RootAnalyzer {
   TBranch* m_digiBranch;
   DigiEvent* m_digiEvent;
 
-  TFile* m_histFile;
+  /*  TFile* m_histFile;
   TH1F* m_stripHits[g_nTower][g_nTkrLayer][g_nView];
   TH2F* m_stripMap[g_nTower][g_nTkrLayer][g_nView];
+  */
 
-  TkrHits* m_tkrCalib;
+  TkrHits* m_tkrHits;
 
   TkrNoiseOcc* m_tkrNoiseOcc;
   TDirectory* m_tkrNoiseOcc_dir;
