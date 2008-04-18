@@ -1,4 +1,18 @@
 ------------------------------------------------------------
+User: htajima  Fri Apr 18 00:00:56 PDT 2008
+calibTkrUtil/src/test
+
+Modified Files:
+	AnalyzerOption.dat RootTestAnalyzer.cxx RootTestAnalyzer.h 
+Added Files:
+	tkrRootAanalysis.cxx 
+Removed Files:
+	test_calibTkrUtil.cxx 
+Log Message:
+modifed to take command argument to specify input and out root files in addtion to default behavior where it takes job option file in test directory.
+
+    *
+------------------------------------------------------------
 User: htajima  Thu Apr 17 23:59:12 PDT 2008
 calibTkrUtil/src
 
