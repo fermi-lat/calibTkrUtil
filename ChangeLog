@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Thu Apr 17 23:59:12 PDT 2008
+calibTkrUtil/src
+
+Modified Files:
+	TkrHits.cxx TkrNoiseOcc.cxx 
+Log Message:
+improve MIP finder, add time stamps, change naming scheme for noise plot to use layer name instead of layer number which is ambiguous, add tree for exposures so that this can be merged.
+
+    *
+------------------------------------------------------------
 User: htajima  Thu Apr 17 23:57:03 PDT 2008
 calibTkrUtil/cmt
 
