@@ -509,7 +509,7 @@ TkrHits::TkrHits( bool initHistsFlag ):
   tag.assign( tag, 0, i ) ;
   m_tag = tag;
 
-  std::string version = "$Revision: 1.8 $";
+  std::string version = "$Revision: 1.9 $";
   i = version.find( " " );
   version.assign( version, i+1, version.size() );
   i = version.find( " " );
@@ -668,7 +668,6 @@ void TkrHits::saveAllHist( bool saveWaferOcc, bool runFitTot )
   TTree *tree = new TTree("timeStamps","time stamps");
   tree->Branch("startTime",&m_startTime,"startTime/D");
   tree->Branch("endTime",&m_endTime,"endTime/D");
-  tree->Fill();
   tree->Fill();
   tree->Write();
 
@@ -980,11 +979,11 @@ void TkrHits::fitTot()
   const float meanChargeScale = 1.12, rangeChargeScale=0.3;
   for( unsigned int tw=0; tw<m_towerVar.size(); tw++ ){
     int tower = m_towerVar[ tw ].towerId;
+    std::cout << "Tower " << tower << ": ";
     for(int unp = 0; unp != g_nUniPlane; ++unp) {
       layerId lid( unp );
       std::string lname = lid.getLayerName();
-      std::cout << "Tower " << tower << ": ";
-      std::cout << lname << std::endl;
+      std::cout << " " << lname;
       for(int iDiv = 0; iDiv != m_nDiv; ++iDiv){
 	m_towerVar[tw].tcVar[unp].chargeScale[iDiv] = meanChargeScale;
 	
@@ -1033,7 +1032,7 @@ void TkrHits::fitTot()
 	float lowLim = ave - 1.4 * rms;
 	if( fracBadTot > 0.05 && lowLim < ave*0.5 ){
 	  lowLim = ave*0.5;
-	  std::cout << "WARNING, large bad TOT fraction: " 
+	  std::cout << std::endl << "WARNING, large bad TOT fraction: " 
 		    << fracBadTot << ", T" << tower << " " << lname
 		    << " " << iDiv << std::endl;
 	  m_log << "WARNING, large bad TOT fraction: " 
@@ -1071,7 +1070,7 @@ void TkrHits::fitTot()
 	  m_langauWidth->Fill( *(par+0) ); //  width (scale)
 	  m_langauGSigma->Fill( *(par+3) ); // width (sigma)
 	  if( fabs(chargeScale-meanChargeScale) > rangeChargeScale ){
-	    std::cout << "WARNING, Abnormal charge scale: " 
+	    std::cout << std::endl << "WARNING, Abnormal charge scale: " 
 		      << chargeScale << ", T" << tower << " " << lname
 		      << " " << iDiv << std::endl;
 	    m_log << "WARNING, Abnormal charge scale: "
@@ -1083,7 +1082,7 @@ void TkrHits::fitTot()
 	      chargeScale = meanChargeScale - rangeChargeScale;
 	  }
 	  if( chisq/ndf > maxChisq ){ // large chisq/ndf
-	    std::cout << "WARNING, large chisq/ndf: "
+	    std::cout << std::endl << "WARNING, large chisq/ndf: "
 		      << chisq/ndf << ", T" << tower << " " << lname
 		      << " " << iDiv << std::endl;
 	    m_log << "WARNING, large chisq/ndf: "
@@ -1093,7 +1092,7 @@ void TkrHits::fitTot()
 	  // large peak fit error
 	  if( errPeak*sqrt(area/1000)/peak > maxFracErr 
 	      || errPeak*sqrt(area/1000)/peak < minFracErr ){ 
-	    std::cout << "WARNING, abnormal peak fit error: "
+	    std::cout << std::endl << "WARNING, abnormal peak fit error: "
 		      << errPeak*sqrt(area/1000)/peak << ", T" << tower 
 		      << " " << lname << " " << iDiv << std::endl;
 	    m_log << "WARNING, abnormal peak fit error: "
@@ -1103,7 +1102,7 @@ void TkrHits::fitTot()
 	  m_towerVar[tw].tcVar[unp].chargeScale[iDiv] = chargeScale;
 	}
 	else{
-	  std::cout << "WARNING, negative peak value: "
+	  std::cout << std::endl << "WARNING, negative peak value: "
 		    << peak << ", T" << tower << " " << lname 
 		    << " " << iDiv << std::endl;
 	  m_log << "WARNING, negative peak value: "
@@ -1121,6 +1120,7 @@ void TkrHits::fitTot()
 	
       }
     }
+    std::cout << std::endl;
   }
 
   for( int i=0; i!=5; i++){
