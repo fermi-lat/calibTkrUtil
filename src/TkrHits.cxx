@@ -494,8 +494,9 @@ void towerVar::readHists( TFile* hfile, UInt_t iRoot, UInt_t nRoot ){
 // TkrHits implementation 
 //
 TkrHits::TkrHits( bool initHistsFlag ): 
-  m_numErrors(0), m_reconEvent(0), m_digiEvent(0), m_rootFile(0),
-  m_startTime(-1.0), m_endTime(-1.0),
+  m_numErrors(0), m_startTime(-1.0), m_endTime(-1.0), 
+  m_firstRunId(0), m_lastRunId(0),
+  m_reconEvent(0), m_digiEvent(0), m_rootFile(0),
   m_peakMIP(4.92), m_totAngleCF(5.48E-1), m_RSigma(4.0), m_GFrac(0.78),
   m_nDiv(1), m_correctedTot(true), m_histMode(true), m_badStrips(true),
   m_maxDirZ(-0.85), m_maxTrackRMS(0.3), m_maxDelta(3.0), m_trackRMS(-1.0)
@@ -509,7 +510,7 @@ TkrHits::TkrHits( bool initHistsFlag ):
   tag.assign( tag, 0, i ) ;
   m_tag = tag;
 
-  std::string version = "$Revision: 1.9 $";
+  std::string version = "$Revision: 1.10 $";
   i = version.find( " " );
   version.assign( version, i+1, version.size() );
   i = version.find( " " );
@@ -562,10 +563,14 @@ void TkrHits::initCommonHists(){
   //
   // MIP filter hists
   //
-  m_acdTileCount = new TH1F("acdTileCount", "AcdTileCount", 10, 0 , 10 );
-  m_acdTotalEnergy = new TH1F("acdTotalEnergy", "AcdTotalEnergy", 100, 0 , 10 );
-  m_calEnergyRaw = new TH1F("calEnergyRaw", "calEnergyRaw", 100, 0, 1000 );
-  m_numCalXtal = new TH1F("numCalXtal", "# of Cal Xtal with energy>0 per layer", 10, 0, 10 );
+  m_hAcdTileCount = new TH1F("acdTileCount", "AcdTileCount", 10, 0 , 10 );
+  m_hAcdTotalEnergy = new TH1F("acdTotalEnergy", "AcdTotalEnergy", 100, 0 , 10 );
+  m_hCalEnergyRaw = new TH1F("calEnergyRaw", "calEnergyRaw", 100, 0, 1000 );
+  m_hNumCalXtal = new TH1F("numCalXtal", "# of Cal Xtal with energy>0 per layer", 10, 0, 10 );
+  m_HAcdTileCount = new TH1F("acdTileCountC", "AcdTileCount after track cut", 10, 0 , 10 );
+  m_HAcdTotalEnergy = new TH1F("acdTotalEnergyC", "AcdTotalEnergy after track cut", 100, 0 , 10 );
+  m_HCalEnergyRaw = new TH1F("calEnergyRawC", "calEnergyRaw after track cut", 100, 0, 1000 );
+  m_HNumCalXtal = new TH1F("numCalXtalC", "# of Cal Xtal with energy>0 per layer after track cut", 10, 0, 10 );
 
 }
 
@@ -658,16 +663,22 @@ void TkrHits::saveAllHist( bool saveWaferOcc, bool runFitTot )
   //
   // save MIP filter related stuff
   //
-  m_acdTileCount->Write(0, TObject::kOverwrite);
-  m_acdTotalEnergy->Write(0, TObject::kOverwrite);
-  m_calEnergyRaw->Write(0, TObject::kOverwrite);
-  m_numCalXtal->Write(0, TObject::kOverwrite);
+  m_hAcdTileCount->Write(0, TObject::kOverwrite);
+  m_hAcdTotalEnergy->Write(0, TObject::kOverwrite);
+  m_hCalEnergyRaw->Write(0, TObject::kOverwrite);
+  m_hNumCalXtal->Write(0, TObject::kOverwrite);
+  m_HAcdTileCount->Write(0, TObject::kOverwrite);
+  m_HAcdTotalEnergy->Write(0, TObject::kOverwrite);
+  m_HCalEnergyRaw->Write(0, TObject::kOverwrite);
+  m_HNumCalXtal->Write(0, TObject::kOverwrite);
   //
   // save timestamp TTree
   //
   TTree *tree = new TTree("timeStamps","time stamps");
   tree->Branch("startTime",&m_startTime,"startTime/D");
   tree->Branch("endTime",&m_endTime,"endTime/D");
+  tree->Branch("fistRunId",&m_firstRunId,"firstRunId/i"); // unsigned int
+  tree->Branch("lastRunId",&m_lastRunId,"lastRunId/i"); // unsigned int
   tree->Fill();
   tree->Write();
 
@@ -837,7 +848,8 @@ void TkrHits::saveOccHists(){
 void TkrHits::analyzeEvent()
 {
     if( ! m_towerInfoDefined ) setTowerInfo();
-    if( ! MIPfilter() ) return;
+    //if( ! MIPfilter() ) return;
+    MIPfilter(); // result of MIP is used in passCut()
     monitorTKR();
 
     if(! passCut()) return;
@@ -855,11 +867,19 @@ void TkrHits::analyzeEvent()
 bool TkrHits::MIPfilter()
 {
   //
-  // get timestamp
+  // get timestamp and runId
   //
   Double_t ts = m_digiEvent->getTimeStamp(); 
   if( m_startTime < 0 ) m_startTime = ts;
   if( ts > m_endTime ) m_endTime = ts;
+
+  UInt_t runId = m_digiEvent->getRunId();
+  if( m_firstRunId == 0 ){
+    m_firstRunId = runId;
+    m_lastRunId = runId;
+  }
+  else if( runId > m_lastRunId ) m_lastRunId = runId;
+  else if( runId < m_firstRunId ) m_firstRunId = runId;
 
  //
   // MIP filter
@@ -867,11 +887,11 @@ bool TkrHits::MIPfilter()
   //
   AcdRecon* acdRecon = m_reconEvent->getAcdRecon();
   assert(acdRecon != 0);
-  int AcdTileCount = acdRecon->nAcdHit();
-  float AcdTotalEnergy = acdRecon->getEnergy();
-  m_acdTileCount->Fill( AcdTileCount );
-  m_acdTotalEnergy->Fill( AcdTotalEnergy );
-  
+  m_acdTileCount = acdRecon->nAcdHit();
+  m_acdTotalEnergy = acdRecon->getEnergy();
+  m_hAcdTileCount->Fill( m_acdTileCount );
+  m_hAcdTotalEnergy->Fill( m_acdTotalEnergy );
+
   //
   // check CAL variables
   //
@@ -880,21 +900,21 @@ bool TkrHits::MIPfilter()
   TObjArray* clusters = calRecon->getCalClusterCol();
   int numClusters = clusters->GetEntries();
   //Event::CalCluster* calCluster = pCals->front();
-  float CalEnergyRaw = 0;
+  m_calEnergyRaw = 0;
   int num = 0;
   for( int cl=0; cl!=numClusters; cl++){
     CalCluster* calCluster = dynamic_cast<CalCluster*>(clusters->At(cl));
     if(calCluster) {
-      CalEnergyRaw += calCluster->getParams().getEnergy();
+      m_calEnergyRaw += calCluster->getParams().getEnergy();
       num++;
     }
   }
-  if( num>0 ) CalEnergyRaw /= num;
-  m_calEnergyRaw->Fill( CalEnergyRaw );
+  if( num>0 ) m_calEnergyRaw /= num;
+  m_hCalEnergyRaw->Fill( m_calEnergyRaw );
   TObjArray* xtals = calRecon->getCalXtalRecCol();
   int numXtals = xtals->GetEntries();
   const int maxXtal = 7;
-  int numXtal[maxXtal];
+  UInt_t numXtal[maxXtal];
   for( int i=0; i<maxXtal; i++) numXtal[i] = 0;
   for( int xtal=0; xtal!=numXtals; xtal++){
     CalXtalRecData* calXtal = dynamic_cast<CalXtalRecData*>(xtals->At(xtal));
@@ -904,19 +924,19 @@ bool TkrHits::MIPfilter()
     if( layerId > 7 ) std::cout << "Xtal layerId: " << layerId << std::endl;
     numXtal[layerId]++;
   }
-  int maxNumXtal = 0;
+  m_numCalXtal = 0;
   for( int i=0; i<maxXtal; i++){
-    m_numCalXtal->Fill( numXtal[i] );
-    if( numXtal[i] > maxNumXtal ) maxNumXtal = numXtal[i];
+    if( numXtal[i] > m_numCalXtal ) m_numCalXtal = numXtal[i];
   }
-  m_numCalXtal->Fill( maxNumXtal );
+  m_hNumCalXtal->Fill( m_numCalXtal );
   
-  if( AcdTileCount < 1 || AcdTileCount > 2 ) return false;
-  //if( abs(AcdTotalEnergy - 1.8) > 1.0 ) return false;
-  if( abs(CalEnergyRaw - 100) > 50 ) return false;
-  if( maxNumXtal > 2 ) return false;
+  m_MIPfilter = true;
+  if( m_acdTileCount < 1 || m_acdTileCount > 2 ) m_MIPfilter = false;
+  //if( abs(m_acdTotalEnergy - 1.8) > 1.0 ) m_MIPfilter = false;
+  if( abs(m_calEnergyRaw - 110) > 50 ) m_MIPfilter = false;
+  if( m_numCalXtal > 2 ) m_MIPfilter = false;
   
-  return true;
+  return m_MIPfilter;
 }
 
 
@@ -984,6 +1004,7 @@ void TkrHits::fitTot()
       layerId lid( unp );
       std::string lname = lid.getLayerName();
       std::cout << " " << lname;
+      bool alarm = false;
       for(int iDiv = 0; iDiv != m_nDiv; ++iDiv){
 	m_towerVar[tw].tcVar[unp].chargeScale[iDiv] = meanChargeScale;
 	
@@ -1032,9 +1053,10 @@ void TkrHits::fitTot()
 	float lowLim = ave - 1.4 * rms;
 	if( fracBadTot > 0.05 && lowLim < ave*0.5 ){
 	  lowLim = ave*0.5;
+	  alarm = true;
 	  std::cout << std::endl << "WARNING, large bad TOT fraction: " 
 		    << fracBadTot << ", T" << tower << " " << lname
-		    << " " << iDiv << std::endl;
+		    << " " << iDiv;
 	  m_log << "WARNING, large bad TOT fraction: " 
 		<< fracBadTot << ", T" << tower << " " << lname
 		<< " " << iDiv << std::endl;
@@ -1070,9 +1092,10 @@ void TkrHits::fitTot()
 	  m_langauWidth->Fill( *(par+0) ); //  width (scale)
 	  m_langauGSigma->Fill( *(par+3) ); // width (sigma)
 	  if( fabs(chargeScale-meanChargeScale) > rangeChargeScale ){
+	    alarm = true;
 	    std::cout << std::endl << "WARNING, Abnormal charge scale: " 
 		      << chargeScale << ", T" << tower << " " << lname
-		      << " " << iDiv << std::endl;
+		      << " " << iDiv;
 	    m_log << "WARNING, Abnormal charge scale: "
 		  << chargeScale << ", T" << tower << " " << lname 
 		  << " " << iDiv << std::endl;
@@ -1082,9 +1105,10 @@ void TkrHits::fitTot()
 	      chargeScale = meanChargeScale - rangeChargeScale;
 	  }
 	  if( chisq/ndf > maxChisq ){ // large chisq/ndf
+	    alarm = true;
 	    std::cout << std::endl << "WARNING, large chisq/ndf: "
 		      << chisq/ndf << ", T" << tower << " " << lname
-		      << " " << iDiv << std::endl;
+		      << " " << iDiv;
 	    m_log << "WARNING, large chisq/ndf: "
 		  << chisq/ndf << ", T" << tower << " " << lname
 		  << " " << iDiv << std::endl;
@@ -1092,9 +1116,10 @@ void TkrHits::fitTot()
 	  // large peak fit error
 	  if( errPeak*sqrt(area/1000)/peak > maxFracErr 
 	      || errPeak*sqrt(area/1000)/peak < minFracErr ){ 
+	    alarm = true;
 	    std::cout << std::endl << "WARNING, abnormal peak fit error: "
 		      << errPeak*sqrt(area/1000)/peak << ", T" << tower 
-		      << " " << lname << " " << iDiv << std::endl;
+		      << " " << lname << " " << iDiv;
 	    m_log << "WARNING, abnormal peak fit error: "
 		  << errPeak*sqrt(area/1000)/peak << ", T" << tower << " " 
 		  << lname << " " << iDiv << std::endl;
@@ -1102,9 +1127,10 @@ void TkrHits::fitTot()
 	  m_towerVar[tw].tcVar[unp].chargeScale[iDiv] = chargeScale;
 	}
 	else{
+	  alarm = true;
 	  std::cout << std::endl << "WARNING, negative peak value: "
 		    << peak << ", T" << tower << " " << lname 
-		    << " " << iDiv << std::endl;
+		    << " " << iDiv;
 	  m_log << "WARNING, negative peak value: "
 		<< peak << ", T" << tower << " " << lname 
 		<< " " << iDiv << std::endl;
@@ -1119,6 +1145,7 @@ void TkrHits::fitTot()
 	      << std::endl;
 	
       }
+      if( alarm ) std::cout << std::endl;
     }
     std::cout << std::endl;
   }
@@ -1665,7 +1692,15 @@ bool TkrHits::passCut()
   //if( m_track->getScatter() > 2.0E-4 ) return false;
   if( m_trackRMS > m_maxTrackRMS ) return false;
 
-  return true;
+  //
+  // check MIP filter variable after track cuts
+  //
+  m_HAcdTileCount->Fill( m_acdTileCount );
+  m_HAcdTotalEnergy->Fill( m_acdTotalEnergy );
+  m_HCalEnergyRaw->Fill( m_calEnergyRaw );
+  m_HNumCalXtal->Fill( m_numCalXtal );
+
+  return m_MIPfilter;
 }
 
 
