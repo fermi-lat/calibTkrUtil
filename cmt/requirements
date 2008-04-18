@@ -1,10 +1,10 @@
 package calibTkrUtil
-# $Header: /nfs/slac/g/glast/ground/cvs/calibTkrUtil/cmt/requirements,v 1.9 2008/04/04 03:01:55 htajima Exp $
+# $Header: /nfs/slac/g/glast/ground/cvs/calibTkrUtil/cmt/requirements,v 1.10 2008/04/05 01:28:50 htajima Exp $
 version v1r7p1
 author Johann Cohen-Tanugi <cohen@slac.stanford.edu>
 
 
-# $Header: /nfs/slac/g/glast/ground/cvs/calibTkrUtil/cmt/requirements,v 1.9 2008/04/04 03:01:55 htajima Exp $
+# $Header: /nfs/slac/g/glast/ground/cvs/calibTkrUtil/cmt/requirements,v 1.10 2008/04/05 01:28:50 htajima Exp $
 
 author Johann Cohen-Tanugi <cohen@slac.stanford.edu>
 
@@ -34,7 +34,7 @@ use facilities *
 macro_append calibTkrUtil_headers "" WIN32 "../calibTkrUtil/*.h"
 
 macro_prepend includes " -I../src/test/ -I../"
-application test_calibTkrUtil ../src/test/*.cxx $(calibTkrUtil_srcs)
+application tkrRootAnalysis ../src/test/*.cxx $(calibTkrUtil_srcs)
 
 
 
