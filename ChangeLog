@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Thu Apr 17 23:56:30 PDT 2008
+calibTkrUtil/calibTkrUtil
+
+Modified Files:
+	TkrHits.h 
+Log Message:
+add MIP finder and time stamps
+
+    *
+------------------------------------------------------------
 User: htajima  Thu Apr 17 21:42:35 PDT 2008
 calibTkrUtil/src/test
 
