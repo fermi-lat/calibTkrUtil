@@ -277,6 +277,7 @@ class TkrHits {
   
   bool passCut();
   
+  bool MIPfilter();
   void monitorTKR();
   void getDigiClusters();
   void getReconClusters();
@@ -299,12 +300,15 @@ class TkrHits {
   TProfile *m_rmsProf1TWR, *m_rmsProf2TWR, *m_tresProfX, *m_tresProfY;
   TProfile *m_sigDist, *m_sigRMS, *m_sigTrad;
   
+  TH1F *m_acdTileCount, *m_acdTotalEnergy, *m_calEnergyRaw, *m_numCalXtal;
+
   std::vector<TH1F*> m_chargeHist;
 
   TH1F *m_fracErrDist, *m_chisqDist, *m_fracBatTot, *m_chist[5];
   TH1F *m_chargeScale, *m_entries, *m_langauWidth, *m_langauGSigma;
   TProfile *m_dirProfile;
 
+  Double_t m_startTime, m_endTime;
   int m_nEvents, m_numErrors;
 
   ReconEvent* m_reconEvent;
