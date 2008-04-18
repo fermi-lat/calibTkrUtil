@@ -9,18 +9,20 @@
 int main(int argc, char** argv)
 {
   std::string optionFileName;
-  if(argc == 1) {
-    optionFileName = "../src/test/AnalyzerOption.dat";
+  int numEvents = 10000;
+  if(argc > 1) numEvents = atoi( argv[1] );
+  if(argc > 2) {
+    optionFileName = argv[2];
   }
   else {
-    optionFileName = argv[1];
+    optionFileName = "../src/test/AnalyzerOption.dat";
   }
 
   RootAnalyzer analyzer;
 
   analyzer.parseOptionFile(optionFileName.c_str());
 
-  analyzer.analyzeData();
+  analyzer.analyzeData( numEvents );
 
   analyzer.produceOutputFile();
 
