@@ -22,12 +22,12 @@ using std::ifstream;
 using std::cout;
 using std::endl;
 
-RootAnalyzer::RootAnalyzer() : m_outputFile(0), m_tree(0), m_branch(0),
+RootAnalyzer::RootAnalyzer() : m_outputFile(0),
 			       m_mcChain(0), m_mcBranch(0), 
-			       //m_mcEvent(0), 
+			       //m_mcEvent(0),  m_tree(0), m_branch(0),
 			       m_reconChain(0), m_reconBranch(0), 
 			       m_reconEvent(0), m_digiChain(0),m_digiBranch(0),
-			       m_digiEvent(0), m_histFile(0)
+			       m_digiEvent(0)
 {
   // make sure unsigned int hold 32 bit data 
   assert(sizeof(unsigned int) == 4);
@@ -41,7 +41,7 @@ RootAnalyzer::RootAnalyzer() : m_outputFile(0), m_tree(0), m_branch(0),
   m_digiChain = new TChain("Digi");
   m_reconChain = new TChain("Recon");
 
-  m_tkrCalib = new TkrHits( true );
+  m_tkrHits = new TkrHits( true );
 
   m_tkrNoiseOcc = new TkrNoiseOcc();
 
@@ -51,7 +51,7 @@ RootAnalyzer::~RootAnalyzer()
 {
   // since root will do the garbage collection automatically for objects such
   // as TTree and TH1, we don't want to deallocate them once more
-  delete m_tkrCalib;
+  delete m_tkrHits;
   delete m_tkrNoiseOcc;
 }
 
@@ -60,22 +60,263 @@ void RootAnalyzer::produceOutputFile()
   //  TDirectory* saveDir = gDirectory;
 
   if(m_outputFile) {
-    m_outputFile->cd("TkrCalib");
-    m_tkrCalib->saveAllHist();
-    m_tkrNoiseOcc->writeAnaToHis(m_tkrNoiseOcc_dir);
     m_outputFile->cd();
-    m_outputFile->Write(0, TObject::kOverwrite);
+    m_outputFile->cd("TkrHits");
+    m_tkrHits->saveAllHist();
+    m_tkrNoiseOcc->writeAnaToHis(m_tkrNoiseOcc_dir);
+    //m_outputFile->cd();
+    //m_outputFile->Write(0, TObject::kOverwrite);
     m_outputFile->Close();
   }
 
+  /*
   if(m_histFile) {
     m_histFile->cd();
     m_histFile->Write(0, TObject::kOverwrite);
     m_histFile->Close();
   }
+  */
 
   //  saveDir->cd();
 }
+
+
+bool RootAnalyzer::isRootFile(const string& f)
+{
+  TFile rootF(f.c_str());
+  if(rootF.IsZombie()) {
+    return false;
+  }
+  else {
+    return true;
+  }
+}
+
+void RootAnalyzer::makeTChain(const string& line, TChain* chain)
+{
+  std::istringstream stream(line);
+  string f;
+  while(stream >> f) {
+    if(isRootFile(f)) {
+      chain->Add(f.c_str());
+    }
+    else {
+      cout << f << " does not exist or is not a root file! It will not be used to make the SVAC ntuple and histogram files!" << endl;
+    } 
+  }
+}
+
+
+void RootAnalyzer::setOutputRootFile( const char* rootF ){
+  cout << "Output TKR root file: " << rootF << endl;
+  m_outputFile = new TFile(rootF, "RECREATE");
+  m_outputFile->mkdir("TkrHits");
+  m_tkrNoiseOcc_dir = m_outputFile->mkdir("TkrNoiseOcc");
+}
+
+
+void RootAnalyzer::setInputRootFiles( const string& mcF, const string& digiF, const string& reconF ){
+  cout << "Input mc file(s): " << mcF << endl;
+  if( mcF != "none" ) makeTChain(mcF, m_mcChain);
+  cout << "Input digi file(s): " << digiF << endl;
+  makeTChain(digiF, m_digiChain);
+  cout << "Input recon file(s): " << reconF << endl;
+  makeTChain(reconF, m_reconChain);
+}
+
+
+void RootAnalyzer::parseLine(const string& line, string& str)
+{
+  std::istringstream stream(line);
+  stream >> str;
+}
+
+void RootAnalyzer::parseOptionFile(const char* f)
+{
+  ifstream optF(f);
+  string line, mcF, digiF, reconF;
+
+  while( getline(optF, line) ) {
+    if(!isEmptyOrCommentStr(line)) break;
+  }
+  mcF = line;
+  
+  while( getline(optF, line) ) {
+    if(!isEmptyOrCommentStr(line)) break;
+  }
+  digiF = line;
+  
+  while( getline(optF, line) ) {
+    if(!isEmptyOrCommentStr(line)) break;
+  }
+  reconF = line;
+
+  setInputRootFiles( mcF, digiF, reconF );
+
+  while( getline(optF, line) ) {
+    if(!isEmptyOrCommentStr(line)) break;
+  }
+  string rootF;
+  parseLine(line, rootF);
+  setOutputRootFile( rootF.c_str() );
+
+  /*
+  m_tree = new TTree("Output", "Root Analyzer");
+
+  // Set max file size to 500 GB:
+  Long64_t maxTreeSize = 5000000000000;
+  m_tree->SetMaxTreeSize(maxTreeSize);
+
+  // create branches for each ntuple variable
+  //  createBranches();
+
+  while( getline(optF, line) ) {
+    if(!isEmptyOrCommentStr(line)) break;
+  }
+  string histF;
+  parseLine(line, histF);
+  cout << "Output hist file: " << histF << endl;
+  m_histFile = new TFile(histF.c_str(), "RECREATE");
+
+  // create histograms for strip hits
+
+  for(int iTower = 0; iTower != g_nTower; ++iTower) {
+    for(int iLayer = 0; iLayer != g_nTkrLayer; ++iLayer) {
+      for(int iView = 0; iView != g_nView; ++iView) {
+
+	char name1[] = "hit00000";
+	sprintf(name1, "hit%02d%02d%1d", iTower, iLayer, iView);
+
+	m_stripHits[iTower][iLayer][iView] = 
+	  new TH1F(name1, name1, g_nStripsPerLayer, 0, g_nStripsPerLayer);
+
+	char name2[] = "map00000";
+	sprintf(name2, "map%02d%02d%1d", iTower, iLayer, iView);
+
+	m_stripMap[iTower][iLayer][iView] = 
+	  new TH2F(name2, name2, g_nFEC, 0, g_nFEC, g_nStripsPerLayer/g_nFEC,
+		   0, g_nStripsPerLayer/g_nFEC);
+
+      }
+    }
+  }
+  */
+}
+
+bool RootAnalyzer::isEmptyOrCommentStr(const string& s)
+{
+  int len = s.length();
+  if(len == 0) return true;
+  bool empty = true;
+  for(int i = 0; i != len; ++i) {
+    if(s[0] != ' ') empty = false;
+  }
+  if(empty) return true;
+
+  if(len >= 2 && s[0] == '/' && s[1] == '/') {
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+
+void RootAnalyzer::analyzeData( int numEvents = 10000 )
+{
+  Long64_t nMc = m_mcChain->GetEntries();
+  cout << "No. of Mc events to be processed: " << nMc << endl;
+
+  Long64_t nDigi = m_digiChain->GetEntries();
+  cout << "No. of Digi events to be processed: " << nDigi << endl;
+
+  Long64_t nRecon = m_reconChain->GetEntries();
+  cout << "No. of Recon events to be processed: " << nRecon << endl;
+
+  Long64_t nEvent = std::max(std::max(nMc, nDigi), nRecon);
+  if( (nEvent != nMc && nMc != 0) || (nEvent != nDigi && nDigi != 0) ||
+      (nEvent != nRecon && nRecon != 0) ) {
+    cout << "No. of events in mc, digi or recon files are not identical with each other, stop processing!" << endl;
+    exit(1);
+  }
+
+//   if(nMc != 0) {
+//     m_mcEvent = 0;  
+//     // what is stored in the root tree is actually a pointer rather than
+//     // mc event
+//     m_mcChain->SetBranchAddress("McEvent", &m_mcEvent);
+//   }
+
+  if(nRecon != 0) {
+    m_reconEvent = 0;
+    m_reconChain->SetBranchAddress("ReconEvent", &m_reconEvent);
+  }
+
+  if(nDigi != 0) {
+    m_digiEvent = 0;
+    m_digiChain->SetBranchAddress("DigiEvent", &m_digiEvent);
+  }
+
+  if( numEvents > 0 ) nEvent = numEvents;
+  cout << "# of events to be processed: " << nEvent << std::endl;
+
+  m_tkrHits->setNevents(nEvent);
+  m_tkrHits->setOutputFile(m_outputFile);
+  //Load current event pointers in TkrCalibManager
+  m_tkrHits->setEventPtrs(m_digiEvent, m_reconEvent);
+  
+  //TkrNoiseOcc::initAnalysis(int nEvent, int evt_interval, int coincidence_cut, int multi_ld, int multi_hd)
+  m_tkrNoiseOcc->initAnalysis(nEvent, 1000);
+  m_tkrNoiseOcc->setDigiEvtPtr(m_digiEvent);
+
+  time_t startTime, endTime;
+  time( &startTime );
+
+  for(Long64_t  iEvent = 0; iEvent != nEvent; ++iEvent) {
+
+    //    m_ntuple.reset();  
+    //    if(m_mcEvent) m_mcEvent->Clear();
+    if(m_digiEvent) m_digiEvent->Clear();
+    if(m_reconEvent) m_reconEvent->Clear();
+
+    if(nMc != 0) {
+      m_mcChain->GetEvent(iEvent);
+//       analyzeMcTree();
+    }
+
+     if(nDigi != 0) {
+       m_digiChain->GetEvent(iEvent);
+       //       analyzeDigiTree();
+     }
+
+     if(nRecon != 0) {
+       m_reconChain->GetEvent(iEvent);
+       //       analyzeReconTree();
+     }
+
+//     analyzeTot();
+    
+    //Tracker Calibration Analysis
+    m_tkrHits->analyzeEvent();
+    m_tkrNoiseOcc->anaDigiEvt();
+
+    //fillOutputTree();
+//     if(m_mcEvent) m_mcEvent->Clear();
+//     if(m_digiEvent) m_digiEvent->Clear();
+//     if(m_reconEvent) m_reconEvent->Clear();
+  }  
+  time( &endTime );
+  std::cout << "total # of events: " << nEvent 
+		<< " in " << (endTime-startTime) << " s, "
+		<< nEvent/(endTime-startTime) << " events/s"
+		<< std::endl;
+
+}
+
+//****************************************************************
+//
+// following are remant from original code.
+//
+//****************************************************************
 
 
 // void RootAnalyzer::analyzeMcTree()
@@ -586,6 +827,7 @@ void RootAnalyzer::produceOutputFile()
 //   */
 // }
 
+/*
 void RootAnalyzer::fillOutputTree()
 {
   if(m_outputFile) {
@@ -595,211 +837,8 @@ void RootAnalyzer::fillOutputTree()
     saveDir->cd();
   }
 }
+*/
 
-bool RootAnalyzer::isRootFile(const string& f)
-{
-  TFile rootF(f.c_str());
-  if(rootF.IsZombie()) {
-    return false;
-  }
-  else {
-    return true;
-  }
-}
-
-void RootAnalyzer::makeTChain(const string& line, TChain* chain)
-{
-  std::istringstream stream(line);
-  string f;
-  while(stream >> f) {
-    if(isRootFile(f)) {
-      chain->Add(f.c_str());
-    }
-    else {
-      cout << f << " does not exist or is not a root file! It will not be used to make the SVAC ntuple and histogram files!" << endl;
-    } 
-  }
-}
-
-void RootAnalyzer::parseLine(const string& line, string& str)
-{
-  std::istringstream stream(line);
-  stream >> str;
-}
-
-void RootAnalyzer::parseOptionFile(const char* f)
-{
-  ifstream optF(f);
-  string line;
-
-  while( getline(optF, line) ) {
-    if(!isEmptyOrCommentStr(line)) break;
-  }
-  cout << "Input mc file(s): " << line << endl;
-  if( line != "none" ) makeTChain(line, m_mcChain);
-  
-  while( getline(optF, line) ) {
-    if(!isEmptyOrCommentStr(line)) break;
-  }
-  cout << "Input digi file(s): " << line << endl;
-  makeTChain(line, m_digiChain);
-  
-  while( getline(optF, line) ) {
-    if(!isEmptyOrCommentStr(line)) break;
-  }
-  cout << "Input recon file(s): " << line << endl;
-  makeTChain(line, m_reconChain);
-
-  while( getline(optF, line) ) {
-    if(!isEmptyOrCommentStr(line)) break;
-  }
-  string svacF;
-  parseLine(line, svacF);
-  cout << "Output SVAC ntuple file: " << svacF << endl;
-  m_outputFile = new TFile(svacF.c_str(), "RECREATE");
-  m_outputFile->mkdir("TkrCalib");
-  m_tkrNoiseOcc_dir = m_outputFile->mkdir("TkrNoiseOcc");
-  m_tree = new TTree("Output", "Root Analyzer");
-
-  // Set max file size to 500 GB:
-  Long64_t maxTreeSize = 5000000000000;
-  m_tree->SetMaxTreeSize(maxTreeSize);
-
-  // create branches for each ntuple variable
-  //  createBranches();
-
-  while( getline(optF, line) ) {
-    if(!isEmptyOrCommentStr(line)) break;
-  }
-  string histF;
-  parseLine(line, histF);
-  cout << "Output hist file: " << histF << endl;
-  m_histFile = new TFile(histF.c_str(), "RECREATE");
-
-  // create histograms for strip hits
-
-  for(int iTower = 0; iTower != g_nTower; ++iTower) {
-    for(int iLayer = 0; iLayer != g_nTkrLayer; ++iLayer) {
-      for(int iView = 0; iView != g_nView; ++iView) {
-
-	char name1[] = "hit00000";
-	sprintf(name1, "hit%02d%02d%1d", iTower, iLayer, iView);
-
-	m_stripHits[iTower][iLayer][iView] = 
-	  new TH1F(name1, name1, g_nStripsPerLayer, 0, g_nStripsPerLayer);
-
-	char name2[] = "map00000";
-	sprintf(name2, "map%02d%02d%1d", iTower, iLayer, iView);
-
-	m_stripMap[iTower][iLayer][iView] = 
-	  new TH2F(name2, name2, g_nFEC, 0, g_nFEC, g_nStripsPerLayer/g_nFEC,
-		   0, g_nStripsPerLayer/g_nFEC);
-
-      }
-    }
-  }
-}
-
-bool RootAnalyzer::isEmptyOrCommentStr(const string& s)
-{
-  int len = s.length();
-  if(len == 0) return true;
-  bool empty = true;
-  for(int i = 0; i != len; ++i) {
-    if(s[0] != ' ') empty = false;
-  }
-  if(empty) return true;
-
-  if(len >= 2 && s[0] == '/' && s[1] == '/') {
-    return true;
-  }
-  else {
-    return false;
-  }
-}
-
-void RootAnalyzer::analyzeData()
-{
-  Long64_t nMc = m_mcChain->GetEntries();
-  cout << "No. of Mc events to be processed: " << nMc << endl;
-
-  Long64_t nDigi = m_digiChain->GetEntries();
-  cout << "No. of Digi events to be processed: " << nDigi << endl;
-
-  Long64_t nRecon = m_reconChain->GetEntries();
-  cout << "No. of Recon events to be processed: " << nRecon << endl;
-
-  Long64_t nEvent = std::max(std::max(nMc, nDigi), nRecon);
-  if( (nEvent != nMc && nMc != 0) || (nEvent != nDigi && nDigi != 0) ||
-      (nEvent != nRecon && nRecon != 0) ) {
-    cout << "No. of events in mc, digi or recon files are not identical with each other, stop processing!" << endl;
-    exit(1);
-  }
-
-//   if(nMc != 0) {
-//     m_mcEvent = 0;  
-//     // what is stored in the root tree is actually a pointer rather than
-//     // mc event
-//     m_mcChain->SetBranchAddress("McEvent", &m_mcEvent);
-//   }
-
-  if(nRecon != 0) {
-    m_reconEvent = 0;
-    m_reconChain->SetBranchAddress("ReconEvent", &m_reconEvent);
-  }
-
-  if(nDigi != 0) {
-    m_digiEvent = 0;
-    m_digiChain->SetBranchAddress("DigiEvent", &m_digiEvent);
-  }
-
-
-  nEvent = 10000;
-
-  m_tkrCalib->setNevents(nEvent);
-  m_tkrCalib->setOutputFile(m_outputFile);
-  //Load current event pointers in TkrCalibManager
-  m_tkrCalib->setEventPtrs(m_digiEvent, m_reconEvent);
-  
-  //TkrNoiseOcc::initAnalysis(int nEvent, int evt_interval, int coincidence_cut, int multi_ld, int multi_hd)
-  m_tkrNoiseOcc->initAnalysis(nEvent, 1000);
-  m_tkrNoiseOcc->setDigiEvtPtr(m_digiEvent);
-  
-  for(Long64_t  iEvent = 0; iEvent != nEvent; ++iEvent) {
-
-    //    m_ntuple.reset();  
-    //    if(m_mcEvent) m_mcEvent->Clear();
-    if(m_digiEvent) m_digiEvent->Clear();
-    if(m_reconEvent) m_reconEvent->Clear();
-
-    if(nMc != 0) {
-      m_mcChain->GetEvent(iEvent);
-//       analyzeMcTree();
-    }
-
-     if(nDigi != 0) {
-       m_digiChain->GetEvent(iEvent);
-       //       analyzeDigiTree();
-     }
-
-     if(nRecon != 0) {
-       m_reconChain->GetEvent(iEvent);
-       //       analyzeReconTree();
-     }
-
-//     analyzeTot();
-    
-    //Tracker Calibration Analysis
-    m_tkrCalib->analyzeEvent();
-    m_tkrNoiseOcc->anaDigiEvt();
-
-    fillOutputTree();
-//     if(m_mcEvent) m_mcEvent->Clear();
-//     if(m_digiEvent) m_digiEvent->Clear();
-//     if(m_reconEvent) m_reconEvent->Clear();
-  }  
-
-}
 
 // bool RootAnalyzer::extractTowerLayerView(const VolumeIdentifier& id, 
 // 					 int& iTower, int& iLayer, 
@@ -827,6 +866,7 @@ void RootAnalyzer::analyzeData()
 //   return 1;
 // }
 
+/*
 void RootAnalyzer::fillStripHits(const TkrDigi* tkrDigi)
 {
 
@@ -855,7 +895,7 @@ void RootAnalyzer::fillStripHits(const TkrDigi* tkrDigi)
 
   saveDir->cd();
 }
-
+*/
 
 
 // void RootAnalyzer::analyzeTot()

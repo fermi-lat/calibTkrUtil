@@ -10,17 +10,19 @@ int main(int argc, char** argv)
 {
   std::string optionFileName;
   int numEvents = 10000;
-  if(argc > 1) numEvents = atoi( argv[1] );
-  if(argc > 2) {
-    optionFileName = argv[2];
-  }
-  else {
-    optionFileName = "../src/test/AnalyzerOption.dat";
-  }
+  if(argc == 2) numEvents = atoi( argv[1] );
 
   RootAnalyzer analyzer;
 
-  analyzer.parseOptionFile(optionFileName.c_str());
+  if(argc == 4) {
+    numEvents = -1; // analyze all events
+    analyzer.setInputRootFiles( "none", argv[1], argv[2] );
+    analyzer.setOutputRootFile( argv[3] );
+  }
+  else {
+    optionFileName = "../src/test/AnalyzerOption.dat";
+    analyzer.parseOptionFile(optionFileName.c_str());
+  }
 
   analyzer.analyzeData( numEvents );
 
