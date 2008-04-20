@@ -510,7 +510,7 @@ TkrHits::TkrHits( bool initHistsFlag ):
   tag.assign( tag, 0, i ) ;
   m_tag = tag;
 
-  std::string version = "$Revision: 1.10 $";
+  std::string version = "$Revision: 1.11 $";
   i = version.find( " " );
   version.assign( version, i+1, version.size() );
   i = version.find( " " );
@@ -677,7 +677,7 @@ void TkrHits::saveAllHist( bool saveWaferOcc, bool runFitTot )
   TTree *tree = new TTree("timeStamps","time stamps");
   tree->Branch("startTime",&m_startTime,"startTime/D");
   tree->Branch("endTime",&m_endTime,"endTime/D");
-  tree->Branch("fistRunId",&m_firstRunId,"firstRunId/i"); // unsigned int
+  tree->Branch("firstRunId",&m_firstRunId,"firstRunId/i"); // unsigned int
   tree->Branch("lastRunId",&m_lastRunId,"lastRunId/i"); // unsigned int
   tree->Fill();
   tree->Write();
