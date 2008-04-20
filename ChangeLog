@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Sat Apr 19 21:12:12 PDT 2008
+calibTkrUtil/src
+
+Modified Files:
+	TkrHits.cxx 
+Log Message:
+bug fix for type of a tree name.
+
+    *
+------------------------------------------------------------
 User: htajima  Sat Apr 19 21:11:58 PDT 2008
 calibTkrUtil/python
 
