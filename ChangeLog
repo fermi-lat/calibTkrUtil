@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Sat Apr 19 21:10:57 PDT 2008
+calibTkrUtil/calibTkrUtil
+
+Modified Files:
+	TkrHits.h 
+Log Message:
+add histograms to monitor performance of MIPfilter
+
+    *
+------------------------------------------------------------
 User: htajima  Fri Apr 18 12:17:20 PDT 2008
 calibTkrUtil/src
 
