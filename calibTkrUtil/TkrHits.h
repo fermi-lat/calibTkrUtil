@@ -300,7 +300,11 @@ class TkrHits {
   TProfile *m_rmsProf1TWR, *m_rmsProf2TWR, *m_tresProfX, *m_tresProfY;
   TProfile *m_sigDist, *m_sigRMS, *m_sigTrad;
   
-  TH1F *m_acdTileCount, *m_acdTotalEnergy, *m_calEnergyRaw, *m_numCalXtal;
+  bool m_MIPfilter;
+  Double_t m_acdTotalEnergy, m_calEnergyRaw;
+  UInt_t m_acdTileCount, m_numCalXtal;
+  TH1F *m_hAcdTileCount, *m_hAcdTotalEnergy, *m_hCalEnergyRaw, *m_hNumCalXtal;
+  TH1F *m_HAcdTileCount, *m_HAcdTotalEnergy, *m_HCalEnergyRaw, *m_HNumCalXtal;
 
   std::vector<TH1F*> m_chargeHist;
 
@@ -309,6 +313,7 @@ class TkrHits {
   TProfile *m_dirProfile;
 
   Double_t m_startTime, m_endTime;
+  UInt_t m_firstRunId, m_lastRunId;
   int m_nEvents, m_numErrors;
 
   ReconEvent* m_reconEvent;
