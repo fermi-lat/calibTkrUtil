@@ -1,4 +1,16 @@
 ------------------------------------------------------------
+User: htajima  Sun Apr 20 23:38:44 PDT 2008
+calibTkrUtil/python
+
+Modified Files:
+	tkrMonitor.py 
+Log Message:
+first release of tkrMonitor script. 
+It create tentative html report which still requires some improvement.
+It does not create a standard alert xml file yet.
+
+    *
+------------------------------------------------------------
 User: htajima  Sat Apr 19 21:12:12 PDT 2008
 calibTkrUtil/src
 
