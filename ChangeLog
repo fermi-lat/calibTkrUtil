@@ -1,4 +1,36 @@
 ------------------------------------------------------------
+TAG
+Tag name: v2r0p1, operation: add
+Package: calibTkrUtil
+User: htajima  Mon Apr 21 00:01:44 2008
+Files:
+  calibTkrUtil/.cvsignore  1.1.1.1
+  calibTkrUtil/ChangeLog  1.81
+  calibTkrUtil/calibTkrUtil/TkrNoiseOcc.h  1.5
+  calibTkrUtil/calibTkrUtil/TkrHits.h  1.6
+  calibTkrUtil/cmt/.cvsignore  1.1.1.1
+  calibTkrUtil/cmt/requirements  1.11
+  calibTkrUtil/doc/release.notes  1.4
+  calibTkrUtil/python/tkrUtils.py  1.1
+  calibTkrUtil/python/limits.txt  1.1
+  calibTkrUtil/python/tkrMonitor.py  1.4
+  calibTkrUtil/src/tkrPyRoot.in  1.2
+  calibTkrUtil/src/TkrHits.cxx  1.12
+  calibTkrUtil/src/TkrNoiseOcc.cxx  1.9
+  calibTkrUtil/src/TkrRep/TkrNoiseRep.cxx  1.6
+  calibTkrUtil/src/TkrRep/genTkrNoiseRep.cxx  1.1
+  calibTkrUtil/src/TkrRep/TkrNoiseRep.h  1.5
+  calibTkrUtil/src/test/RootTestAnalyzer.h  1.2
+  calibTkrUtil/src/test/tkrRootAanalysis.cxx  1.1
+  calibTkrUtil/src/test/RootTestAnalyzer.cxx  1.5
+  calibTkrUtil/src/test/GeoConstants.h  1.1
+  calibTkrUtil/src/test/AnalyzerOption.dat  1.4
+  calibTkrUtil/src/tkrPyRoot/tkrPyRoot.h  1.1
+  calibTkrUtil/src/tkrPyRoot/tkrPyRoot.cxx  1.1
+  calibTkrUtil/src/tkrPyRoot/LinkDef.h  1.1
+
+    *
+------------------------------------------------------------
 User: htajima  Sun Apr 20 23:59:40 PDT 2008
 calibTkrUtil/python
 
