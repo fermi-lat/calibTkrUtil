@@ -268,8 +268,9 @@ void RootAnalyzer::analyzeData( int numEvents = 10000 )
   m_tkrNoiseOcc->initAnalysis(nEvent, 1000);
   m_tkrNoiseOcc->setDigiEvtPtr(m_digiEvent);
 
-  time_t startTime, endTime;
+  time_t startTime, endTime, cTime;
   time( &startTime );
+  Long64_t dEvent = 100;
 
   for(Long64_t  iEvent = 0; iEvent != nEvent; ++iEvent) {
 
@@ -303,6 +304,23 @@ void RootAnalyzer::analyzeData( int numEvents = 10000 )
 //     if(m_mcEvent) m_mcEvent->Clear();
 //     if(m_digiEvent) m_digiEvent->Clear();
 //     if(m_reconEvent) m_reconEvent->Clear();
+
+    //
+    // show status
+    //
+    if( iEvent%dEvent == 0 ){
+      if( iEvent/dEvent >= 10 ) dEvent *= 10;
+      time( &cTime );
+      float dt = cTime - startTime;
+      if( dt < 5 ) continue;
+      std::cout << iEvent << " events processed in "
+		<< dt << " s, "
+		<< int(iEvent/dt) << " events/s, estimated time: "
+		<< int( (nEvent-iEvent)*dt/iEvent ) << " s"
+		<< std::endl;
+    }
+
+
   }  
   time( &endTime );
   std::cout << "total # of events: " << nEvent 
