@@ -10,11 +10,12 @@ int main(int argc, char** argv)
 {
   std::string optionFileName;
   int numEvents = 10000;
-  if(argc == 2) numEvents = atoi( argv[1] );
+  if(argc == 2 or argc==3) numEvents = atoi( argv[1] );
 
   RootAnalyzer analyzer;
-
-  if(argc == 4) {
+  if(argc == 3)
+    analyzer.parseOptionFile( argv[2] );
+  else if(argc == 4) {
     numEvents = -1; // analyze all events
     analyzer.setInputRootFiles( "none", argv[1], argv[2] );
     analyzer.setOutputRootFile( argv[3] );
