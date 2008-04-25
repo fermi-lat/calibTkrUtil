@@ -99,6 +99,14 @@ def getStripListFromMask( mask, feId="0" ):
   return stripList
 
 
+def getGMT( timeStamp ):
+  gmt0 = time.gmtime( 0 ) # GMT base time
+  baseTimeDelta = datetime.datetime( 2001, 1, 1 ) \
+                  - datetime.datetime( gmt0[0], gmt0[1], gmt0[2] )
+  t0 = baseTimeDelta.days * 24 * 3600.0
+  return time.gmtime(timeStamp+t0)
+
+
 def getTimeStamps( xmlfile ):
   dom = xml.dom.minidom.parse( xmlfile )
   topElm = dom.getElementsByTagName("testReport")[0]
