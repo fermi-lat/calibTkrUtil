@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Fri Apr 25 10:24:51 PDT 2008
+calibTkrUtil/src
+
+Modified Files:
+	TkrHits.cxx TkrNoiseOcc.cxx 
+Log Message:
+add monitoring of trigger efficiency. add weighted strip occupancy plot.
+
+    *
+------------------------------------------------------------
 User: htajima  Fri Apr 25 10:23:47 PDT 2008
 calibTkrUtil/src/test
 
