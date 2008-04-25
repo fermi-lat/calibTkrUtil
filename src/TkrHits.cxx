@@ -510,7 +510,7 @@ TkrHits::TkrHits( bool initHistsFlag ):
   tag.assign( tag, 0, i ) ;
   m_tag = tag;
 
-  std::string version = "$Revision: 1.11 $";
+  std::string version = "$Revision: 1.12 $";
   i = version.find( " " );
   version.assign( version, i+1, version.size() );
   i = version.find( " " );
@@ -572,6 +572,31 @@ void TkrHits::initCommonHists(){
   m_HCalEnergyRaw = new TH1F("calEnergyRawC", "calEnergyRaw after track cut", 100, 0, 1000 );
   m_HNumCalXtal = new TH1F("numCalXtalC", "# of Cal Xtal with energy>0 per layer after track cut", 10, 0, 10 );
 
+  //
+  // siz in a row histograms
+  //
+  m_sixInARow = new TH1F( "sixInARow", "# of 6-in-a-row per Tower", 
+			  g_nTower, 0, g_nTower );
+  m_sixInARowWithTrig = new TH1F( "sixInARowWithTrig",
+				  "# of 6-in-a-row with trigger", 
+				  g_nTower, 0, g_nTower );
+  m_orphanTrig = new TH1F( "orphanTrig", "# of triggers without 6-in-a-row", 
+			   g_nTower, 0, g_nTower );
+  m_sixInARowMIP = new TH1F( "sixInARowMIP", 
+			     "# of 6-in-a-row per Tower (MIP)", 
+			     g_nTower, 0, g_nTower );
+  m_sixInARowWithTrigMIP = new TH1F( "sixInARowWithTrigMIP",
+				     "# of 6-in-a-row with trigger (MIP)", 
+				     g_nTower, 0, g_nTower );
+  m_orphanTrigMIP = new TH1F( "orphanTrigMIP", 
+			      "# of triggers without 6-in-a-row (MIP)", 
+			      g_nTower, 0, g_nTower );
+  m_sixInARowAll = new TH1F( "sixInARowAll", 
+			     "# of 6-in-a-row per Tower (MIP, All)", 
+			     g_nTower, 0, g_nTower );
+  m_sixInARowWithTrigAll = new TH1F( "sixInARowWithTrigAll",
+				     "# of 6-in-a-row with trig (MIP, All)", 
+				     g_nTower, 0, g_nTower );
 }
 
 
@@ -671,6 +696,17 @@ void TkrHits::saveAllHist( bool saveWaferOcc, bool runFitTot )
   m_HAcdTotalEnergy->Write(0, TObject::kOverwrite);
   m_HCalEnergyRaw->Write(0, TObject::kOverwrite);
   m_HNumCalXtal->Write(0, TObject::kOverwrite);
+  //
+  // save trgger eff related stuff
+  //
+  m_sixInARow->Write(0, TObject::kOverwrite);
+  m_sixInARowWithTrig->Write(0, TObject::kOverwrite);
+  m_orphanTrig->Write(0, TObject::kOverwrite);
+  m_sixInARowMIP->Write(0, TObject::kOverwrite);
+  m_sixInARowWithTrigMIP->Write(0, TObject::kOverwrite);
+  m_orphanTrigMIP->Write(0, TObject::kOverwrite);
+  m_sixInARowAll->Write(0, TObject::kOverwrite);
+  m_sixInARowWithTrigAll->Write(0, TObject::kOverwrite);
   //
   // save timestamp TTree
   //
@@ -881,7 +917,8 @@ bool TkrHits::MIPfilter()
   else if( runId > m_lastRunId ) m_lastRunId = runId;
   else if( runId < m_firstRunId ) m_firstRunId = runId;
 
- //
+
+  //
   // MIP filter
   // check ACD variables
   //
@@ -935,7 +972,66 @@ bool TkrHits::MIPfilter()
   //if( abs(m_acdTotalEnergy - 1.8) > 1.0 ) m_MIPfilter = false;
   if( abs(m_calEnergyRaw - 110) > 50 ) m_MIPfilter = false;
   if( m_numCalXtal > 2 ) m_MIPfilter = false;
-  
+
+
+  //
+  // find 6-in-a-row
+  //
+  const TObjArray* tkrDigiCol = m_digiEvent->getTkrDigiCol();
+  if (tkrDigiCol){
+    bool sixInARow[g_nTower];
+    int nHitLayers[g_nTower][g_nTkrLayer];
+    for(UInt_t tower=0; tower<g_nTower; tower++){
+      sixInARow[tower] = false;
+      for (UInt_t bilayer=0; bilayer<g_nTkrLayer; bilayer++)
+	nHitLayers[tower][bilayer] = 0;
+    }
+    
+    TIter tkrIter(tkrDigiCol);
+    TkrDigi *tkrDigi = 0;
+    while ( ( tkrDigi = (TkrDigi*)tkrIter.Next() ) ) { 
+      Int_t tower = tkrDigi->getTower().id();
+      Int_t bilayer = tkrDigi->getBilayer();
+      UInt_t numHits = tkrDigi->getNumHits();
+      if( numHits > 0 ){
+	int lmin = bilayer - 2;
+	if( lmin < 0 ) lmin = 0;
+	int lmax = bilayer + 3;
+	if( lmax > g_nTkrLayer ) lmax = g_nTkrLayer;
+	for(int bilayer=lmin; bilayer<lmax; bilayer++){
+	  nHitLayers[tower][bilayer]++;
+	  if( nHitLayers[tower][bilayer] >= 6 ) sixInARow[tower] = true;
+	}
+      }
+    }
+    int nSixInARow = 0;
+    for(UInt_t tower=0; tower<g_nTower; tower++)
+      if( sixInARow[tower] ) nSixInARow++;
+    UShort_t tkrVector = m_digiEvent->getGem().getTkrVector();
+    for(UInt_t tower=0;tower<g_nTower; tower++){
+      UShort_t tvector = (1<<tower);
+      if( sixInARow[tower] ){
+	if( nSixInARow > 1 ){
+	  m_sixInARow->Fill( tower );
+	  if( m_MIPfilter ) m_sixInARowMIP->Fill( tower );
+	  if( tkrVector & tvector ){
+	    m_sixInARowWithTrig->Fill( tower );
+	    if( m_MIPfilter ) m_sixInARowWithTrigMIP->Fill( tower );
+	  }
+	}
+	if( m_MIPfilter ){
+	  m_sixInARowAll->Fill( tower );
+	  if( tkrVector & tvector )
+	    m_sixInARowWithTrigAll->Fill( tower );
+	}
+      }
+      else if( m_MIPfilter && (tkrVector & tvector) ){
+	m_orphanTrig->Fill( tower );
+	if( m_MIPfilter ) m_orphanTrigMIP->Fill( tower );
+      }
+    }
+  }
+
   return m_MIPfilter;
 }
 

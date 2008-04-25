@@ -71,6 +71,7 @@ TkrNoiseOcc::initAnalysis(int nEvent, int evt_interval){
 	vTkrStripOcc[tower][bilayer][xyview]   = new float[m_nx];
 	vTkrLayerOcc[tower][bilayer][xyview]   = new float[m_nx];
 	vTkrHitMap[tower][bilayer][xyview]     = new float[g_nStripsPerLayer];
+	vTkrWHitMap[tower][bilayer][xyview]     = new float[g_nStripsPerLayer];
 	vTkrNoiseMul[tower][bilayer][xyview]   = new float[MUL_MAX];
 	vTkrNoiseTot0[tower][bilayer][xyview]  = new float[TOT_MAX];
 	vTkrNoiseTot1[tower][bilayer][xyview]  = new float[TOT_MAX];
@@ -79,6 +80,7 @@ TkrNoiseOcc::initAnalysis(int nEvent, int evt_interval){
 	for(ix=0; ix<m_nx; ix++)   vTkrStripOcc[tower][bilayer][xyview][ix]  =0.0;
 	for(ix=0; ix<m_nx; ix++)   vTkrLayerOcc[tower][bilayer][xyview][ix]  =0.0;
 	for(ix=0; ix<g_nStripsPerLayer; ix++) vTkrHitMap[tower][bilayer][xyview][ix] =0.0;
+	for(ix=0; ix<g_nStripsPerLayer; ix++) vTkrWHitMap[tower][bilayer][xyview][ix] =0.0;
 	for(ix=0; ix<150; ix++)  vTkrNoiseMul[tower][bilayer][xyview][ix]  =0.0;
 	for(ix=0; ix<300; ix++)  vTkrNoiseTot0[tower][bilayer][xyview][ix] =0.0;
 	for(ix=0; ix<300; ix++)  vTkrNoiseTot1[tower][bilayer][xyview][ix] =0.0;
@@ -254,6 +256,7 @@ TkrNoiseOcc::anaDigiEvt() {
 	// Fill HitMap
 	for(ihit=0; ihit<numHitLayer[tower][bilayer][xyview]; ihit++) {
 	  vTkrHitMap[tower][bilayer][xyview][buf_stripId[tower][bilayer][xyview][ihit]] +=1.0;
+	  vTkrWHitMap[tower][bilayer][xyview][buf_stripId[tower][bilayer][xyview][ihit]] +=1.0/numHitLayer[tower][bilayer][xyview];
 	}
 	//Fill Tot
 	val = tot0[tower][bilayer][xyview];
@@ -305,6 +308,7 @@ TkrNoiseOcc::clearAnalysis() {
 	delete[] vTkrStripOcc[tower][bilayer][xyview]; 
 	delete[] vTkrLayerOcc[tower][bilayer][xyview]; 
 	delete[] vTkrHitMap[tower][bilayer][xyview];   
+	delete[] vTkrWHitMap[tower][bilayer][xyview];   
 	delete[] vTkrNoiseMul[tower][bilayer][xyview]; 
 	delete[] vTkrNoiseTot0[tower][bilayer][xyview];
 	delete[] vTkrNoiseTot1[tower][bilayer][xyview];
@@ -313,6 +317,7 @@ TkrNoiseOcc::clearAnalysis() {
 	vTkrStripOcc[tower][bilayer][xyview]   = NULL;
 	vTkrLayerOcc[tower][bilayer][xyview]   = NULL;
 	vTkrHitMap[tower][bilayer][xyview]     = NULL;
+	vTkrWHitMap[tower][bilayer][xyview]     = NULL;
 	vTkrNoiseMul[tower][bilayer][xyview]   = NULL;
 	vTkrNoiseTot0[tower][bilayer][xyview]  = NULL;
 	vTkrNoiseTot1[tower][bilayer][xyview]  = NULL;
@@ -395,6 +400,7 @@ TkrNoiseOcc::writeAnaToHis(TDirectory* dirTkrNoise){
   TH1F *hTkrStripOcc[g_nTower][g_nTkrLayer][g_nView];
   TH1F *hTkrLayerOcc[g_nTower][g_nTkrLayer][g_nView];
   TH1F *hTkrHitMap[g_nTower][g_nTkrLayer][g_nView];
+  TH1F *hTkrWHitMap[g_nTower][g_nTkrLayer][g_nView];
   TH1F *hTkrNoiseMul[g_nTower][g_nTkrLayer][g_nView];
   TH1F *hTkrNoiseTot0[g_nTower][g_nTkrLayer][g_nView];
   TH1F *hTkrNoiseTot1[g_nTower][g_nTkrLayer][g_nView];
@@ -501,10 +507,18 @@ TkrNoiseOcc::writeAnaToHis(TDirectory* dirTkrNoise){
 	// Hitmap
 	dirHitmap->cd();
 	sprintf(hname, "hTkrHitMapT%d%s", tower, lname);
-	sprintf(htitle, "Tower%d-TKR Layer %s HitMap", tower, lname);
+	sprintf(htitle, "Tower%d-TKR Layer %s Hit Map", tower, lname);
 	hTkrHitMap[tower][bilayer][xyview]  = new TH1F(hname, htitle, g_nStripsPerLayer, -0.5, g_nStripsPerLayer-0.5);
 	for (ix=0; ix<g_nStripsPerLayer; ix++) hTkrHitMap[tower][bilayer][xyview]->SetBinContent(ix+1, vTkrHitMap[tower][bilayer][xyview][ix]);
 	hTkrHitMap[tower][bilayer][xyview]->Write("",TObject::kOverwrite);
+
+	// WeightedHitmap
+	dirHitmap->cd();
+	sprintf(hname, "hTkrWHitMapT%d%s", tower, lname);
+	sprintf(htitle, "Tower%d-TKR Layer %s Weighted Hit Map", tower, lname);
+	hTkrWHitMap[tower][bilayer][xyview]  = new TH1F(hname, htitle, g_nStripsPerLayer, -0.5, g_nStripsPerLayer-0.5);
+	for (ix=0; ix<g_nStripsPerLayer; ix++) hTkrWHitMap[tower][bilayer][xyview]->SetBinContent(ix+1, vTkrWHitMap[tower][bilayer][xyview][ix]);
+	hTkrWHitMap[tower][bilayer][xyview]->Write("",TObject::kOverwrite);
 
 	// Multiplicity
 	dirMulti->cd();
