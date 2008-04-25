@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Fri Apr 25 10:29:55 PDT 2008
+calibTkrUtil/calibTkrUtil
+
+Modified Files:
+	TkrHits.h TkrNoiseOcc.h 
+Log Message:
+add monitoring of trigger efficiency. add weighted strip occupancy plot.
+
+    *
+------------------------------------------------------------
 User: htajima  Fri Apr 25 10:26:50 PDT 2008
 calibTkrUtil/python
 
