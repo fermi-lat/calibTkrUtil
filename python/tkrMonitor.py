@@ -1,4 +1,4 @@
-import os, sys, array, time, string, math, datetime
+import os, sys, array, time, string, math, datetime, glob
 
 sys.path = [( os.path.join( os.environ.get( "ROOTSYS" ), "lib" ) )] + sys.path
 
@@ -66,6 +66,20 @@ class TkrMonitor:
       print "No TOT plot directory, %s. Create a new one." % self.totdir
       os.mkdir( self.totdir )
 
+    self.refRoot = []
+    try:
+      self.mondir = os.path.join( os.getenv("LATMonRoot"), "TKR", "TkrMonitor" )
+    except:
+      self.mondir = os.path.join( os.getenv( "CALIBTKRUTILROOT" ), "python" )
+
+    if not os.path.exists( self.mondir ):
+      print "TKR Monitor directory, %s, does not exist." % self.mondir
+      sys.exit()
+    path = os.path.join( self.mondir, "refRoot", "*ref*.root" )
+    refs = glob.glob( path )
+    for ref in refs:
+      self.refRoot.append( ROOT.TFile( ref ) )
+    
     #
     # initialize some parameters
     #
@@ -122,7 +136,27 @@ class TkrMonitor:
       
     self.readParamLimits()
 
-    
+  #
+  #*********************
+  # read parameter limits from xml file
+  #*********************
+  #
+  def readParamLimitsXml(self):
+    self.limits={}
+    xname = os.path.join( self.mondir, "paramLimitsDefault.xml"  )
+    dom = xml.dom.minidom.parse( xmlfile )
+    topElm = dom.getElementsByTagName("ParamLimits")[0]
+    tstuple = topElm.getAttribute("timestamp")
+    limits = topElm.getElementsByTagName("limit")
+    for limit in limits:
+      type = str( limit.getAttribute("type") )
+      level = str( limit.getAttribute("level") )
+      value = float( limit.getAttribute("value") )
+      if type not in alterType or name not in altertLevel:
+        print "Invalid alert type:%s or level:%s." % (type,level)
+      else: self.limits[name] = value
+    print self.limits
+
 
   #
   #*********************
@@ -131,8 +165,7 @@ class TkrMonitor:
   #
   def readParamLimits(self):
     self.limits={}
-    tname = os.path.join( os.environ.get( "CALIBTKRUTILROOT" ), \
-                          "python", "limits.txt"  )
+    tname = os.path.join( self.mondir, "limits.txt"  )
     input = open(tname, "r")
     for line in input:
       words = string.split(line)
