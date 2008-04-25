@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Fri Apr 25 10:23:47 PDT 2008
+calibTkrUtil/src/test
+
+Modified Files:
+	AnalyzerOption.dat RootTestAnalyzer.cxx tkrRootAanalysis.cxx 
+Log Message:
+show progress of analysis, add interface option to specify job option files
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: calibTkrUtil-02-00-01, operation: add
 Package: calibTkrUtil
