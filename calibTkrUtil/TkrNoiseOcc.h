@@ -74,6 +74,7 @@ class TkrNoiseOcc {
   float  *vTkrStripOcc[g_nTower][g_nTkrLayer][g_nView];
   float  *vTkrLayerOcc[g_nTower][g_nTkrLayer][g_nView];
   float  *vTkrHitMap[g_nTower][g_nTkrLayer][g_nView];
+  float  *vTkrWHitMap[g_nTower][g_nTkrLayer][g_nView];
   float  *vTkrNoiseMul[g_nTower][g_nTkrLayer][g_nView];
   float  *vTkrNoiseTot0[g_nTower][g_nTkrLayer][g_nView];
   float  *vTkrNoiseTot1[g_nTower][g_nTkrLayer][g_nView];
