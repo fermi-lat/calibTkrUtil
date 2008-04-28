@@ -309,10 +309,13 @@ void RootAnalyzer::analyzeData( int numEvents = 10000 )
     // show status
     //
     if( iEvent%dEvent == 0 ){
-      if( iEvent/dEvent >= 10 ) dEvent *= 10;
+      if( iEvent/dEvent >= 10 )
+        if( nEvent/dEvent > 100 ) dEvent *= 10;
+        else if( nEvent/dEvent > 50 ) dEvent *= 5;
+        else if( nEvent/dEvent > 20 ) dEvent *= 2;
       time( &cTime );
       float dt = cTime - startTime;
-      if( dt < 5 ) continue;
+      if( dt < 10 ) continue;
       std::cout << iEvent << " events processed in "
 		<< dt << " s, "
 		<< int(iEvent/dt) << " events/s, estimated time: "
