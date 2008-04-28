@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Mon Apr 28 11:38:10 PDT 2008
+calibTkrUtil/src/test
+
+Modified Files:
+	RootTestAnalyzer.cxx 
+Log Message:
+improved processing status report
+
+    *
+------------------------------------------------------------
 User: htajima  Fri Apr 25 10:29:55 PDT 2008
 calibTkrUtil/calibTkrUtil
 
