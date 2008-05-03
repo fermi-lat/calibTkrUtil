@@ -1,10 +1,15 @@
-import os, sys, array, time, string, math, datetime, glob
+# import python standard libraries
+import os, sys, array, time, string, math, datetime, glob, xml.dom.minidom
 
 sys.path = [( os.path.join( os.environ.get( "ROOTSYS" ), "lib" ) )] + sys.path
 
+# import thrid party libraries
 import ROOT
+
+# inpot private libraies
 import tkrUtils
 
+# ROOT initilization
 ROOT.gSystem.Load("tkrPyRoot")
 ROOT.gStyle.SetPalette(1)
 ROOT.gStyle.SetOptStat(0)
@@ -27,6 +32,7 @@ keys = [ ("TOT_Peak", "layer", "D"), ("TOT_LWidth", "layer", "D"), \
          ("TOT_FracLowTOT", "layer", "D" ),\
          ("layerEff", "layer", "D"), ("layerEff_err", "layer", "D"), \
          ("towerEff", "tower", "D"), ("towerEff_err", "tower", "D"), \
+         ("trigEff", "tower", "D"), ("trigEff_err", "tower", "D"), \
          ("layerdXY", "layer", "D"), ("layerdXY_err", "layer", "D"), \
          ("layerOcc", "layer", "D"), ("stripOcc", "layer", "D"), \
          ("fracSat", "layer", "D") ]
@@ -34,8 +40,8 @@ nelem = {}
 nelem["layer"] = tkrUtils.g_nTowers * tkrUtils.g_nUniPlanes
 nelem["tower"] = tkrUtils.g_nTowers
 typecode = { "C":"c", "B":"b", "b":"B", "S":"i", "s":"I", "F":"f", "D":"d" }
-alertTypes = [ "totPeak", "totFit", "layerEff", "layerOcc", "stripOcc", \
-               "fracSat" ]
+alertTypes = [ "totPeak", "totFit", "layerEff", "towerEff", "trigEff", \
+               "layerOcc", "stripOcc", "fracSat" ]
 alertLevels = [ "ERR", "WARN", "NOTE", "INFO" ]
 towerHistNames = ["layerEff", "layerOcc", "stripOcc", "fracSat", "layerdXY"]
 
@@ -51,9 +57,9 @@ class TkrMonitor:
     #
     # set up directories and files.
     #
+    print "open input root file: %s" % iname
     self.inputRoot = ROOT.TFile( iname )
-    print self.inputRoot.GetEndpointUrl()
-    self.outputRoot = ROOT.TFile( oname )
+    #self.outputRoot = ROOT.TFile( oname )
     self.alertFile = aname
     self.logName = logname
     self.htmldir = htmldir
@@ -76,8 +82,9 @@ class TkrMonitor:
       print "TKR Monitor directory, %s, does not exist." % self.mondir
       sys.exit()
     path = os.path.join( self.mondir, "refRoot", "*ref*.root" )
-    refs = glob.glob( path )
+    refs = glob.glob( path )[:2]
     for ref in refs:
+      print "open ref foot file: %s" % ref
       self.refRoot.append( ROOT.TFile( ref ) )
     
     #
@@ -125,7 +132,9 @@ class TkrMonitor:
     self.hists["fracSat"] = ROOT.TH2F("fracSat_map", \
                                       "frac. of saturated events map",\
                                       nTower,0,nTower, nPlane,0,nPlane)
-    self.hists["towerEff"] = ROOT.TH1F("towerEff", "tower Efficiency", \
+    self.hists["towerEff"] = ROOT.TH1F("towerEff", "tower Hit Efficiency", \
+                                       nTower,0,nTower)
+    self.hists["trigEff"] = ROOT.TH1F("trigEff", "tower Trigger Efficiency", \
                                        nTower,0,nTower)
     self.hists["towerdX"] = ROOT.TH1F("towerdX", "tower delta X", \
                                       nTower,0,nTower)
@@ -134,7 +143,7 @@ class TkrMonitor:
     self.hists["totPeak"] = ROOT.TH1F("totPeakDist",\
                                       "TOT peak distributioin",100,0,10)
       
-    self.readParamLimits()
+    self.readParamLimitsXml()
 
   #
   #*********************
@@ -144,17 +153,19 @@ class TkrMonitor:
   def readParamLimitsXml(self):
     self.limits={}
     xname = os.path.join( self.mondir, "paramLimitsDefault.xml"  )
-    dom = xml.dom.minidom.parse( xmlfile )
+    print "read xml: %s" % xname
+    dom = xml.dom.minidom.parse( xname )
     topElm = dom.getElementsByTagName("ParamLimits")[0]
-    tstuple = topElm.getAttribute("timestamp")
     limits = topElm.getElementsByTagName("limit")
     for limit in limits:
       type = str( limit.getAttribute("type") )
       level = str( limit.getAttribute("level") )
       value = float( limit.getAttribute("value") )
-      if type not in alterType or name not in altertLevel:
-        print "Invalid alert type:%s or level:%s." % (type,level)
-      else: self.limits[name] = value
+      print type, level, value
+      if type not in alertTypes or level not in alertLevels:
+        print "Invalid alert type: %s or level: %s." % (type,level)
+        self.limits[type] = value
+      else: self.limits[type] = value
     print self.limits
 
 
@@ -217,7 +228,8 @@ class TkrMonitor:
   def analyzeTKR(self):
     self.ffit = ROOT.defLangau( "langau", 0, 30 )
     self.ffit.SetParNames( "LWidth", "MP", "Area", "GSigma" )
-
+    
+    self.analyzeTrigEff()
     #
     # loop towers/layers ann fit TOT distributions
     #
@@ -230,6 +242,32 @@ class TkrMonitor:
         
     self.analyzeTotPeak()
     self.analyzeDisplacement()
+
+  #
+  #*********************
+  # analyze trigger efficiencies
+  #*********************
+  #
+  def analyzeTrigEff(self):
+    htrk = self.inputRoot.FindObjectAny( "sixInARowMIP" )
+    htrg = self.inputRoot.FindObjectAny( "sixInARowWithTrigMIP" )
+    for tower in range(tkrUtils.g_nTowers):
+      ntrk = htrk.GetBinContent( tower+1 )
+      ntrg = htrg.GetBinContent( tower+1 )
+      if ntrk > 0:
+        teff = ntrg/ntrk
+        terr = teff*(1-teff)/ntrk
+      else:
+        teff = 0.0
+        terr = 1.0E-5
+      if terr >0.0: terr = math.sqrt(terr)
+      else: terr = 1/ntrk
+      key = "trigEff"
+      self.values[key][tower] = teff
+      self.values[key+"_err"][tower] = terr
+      self.hists[key].SetBinContent(tower+1,teff)
+      self.hists[key].SetBinError(tower+1,terr)
+      
 
   #
   #*********************
