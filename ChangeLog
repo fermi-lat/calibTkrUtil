@@ -1,4 +1,16 @@
 ------------------------------------------------------------
+User: htajima  Fri May  2 17:08:14 PDT 2008
+calibTkrUtil/python
+
+Modified Files:
+	tkrMonitor.py 
+Added Files:
+	paramLimitsDefault.xml 
+Log Message:
+add capability to get trigger efficiencies, improve xml reader
+
+    *
+------------------------------------------------------------
 User: htajima  Mon Apr 28 11:38:10 PDT 2008
 calibTkrUtil/src/test
 
