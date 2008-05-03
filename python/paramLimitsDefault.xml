@@ -1,0 +1,13 @@
+<ParamLimits>
+<limit type="layerEff" level="WARN" value="0.90"/>
+<limit type="towerEff" level="WARN" value="0.98"/>
+<limit type="trigEff" level="WARN" value="0.90"/>
+<limit type="layerOcc" level="ERR" value="0.05"/>
+<limit type="stripOcc" level="NOTE" value="5.0E-5"/>
+<limit type="towerOcc" level="WARN" value="5.0E-5"/>
+<limit type="LatOcc" level="ERR" value="5.0E-5"/>
+<limit type="fracSat" level="NOTE" value="1.0E-5"/>
+<limit type="fracBadTot" level="NOTE" value="0.1"/>
+<limit type="layerdXYSigma" level="WARN" value="5.0"/>
+<limit type="totPeakSigma" level="WARN" value="5.0"/>
+</ParamLimits>
