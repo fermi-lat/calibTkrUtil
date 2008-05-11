@@ -265,7 +265,7 @@ void RootAnalyzer::analyzeData( int numEvents = 10000 )
   m_tkrHits->setEventPtrs(m_digiEvent, m_reconEvent);
   
   //TkrNoiseOcc::initAnalysis(int nEvent, int evt_interval, int coincidence_cut, int multi_ld, int multi_hd)
-  m_tkrNoiseOcc->initAnalysis(nEvent, 1000);
+  m_tkrNoiseOcc->initAnalysis();
   m_tkrNoiseOcc->setDigiEvtPtr(m_digiEvent);
 
   time_t startTime, endTime, cTime;
