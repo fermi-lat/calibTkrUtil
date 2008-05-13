@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Mon May 12 19:48:33 PDT 2008
+calibTkrUtil/cmt
+
+Modified Files:
+	requirements 
+Log Message:
+remove genTkrNoiseRep.cxx from application build since we no longer use it and also we have issues compiling on Windows.
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: calibTkrUtil-02-01-00, operation: add
 Package: calibTkrUtil
