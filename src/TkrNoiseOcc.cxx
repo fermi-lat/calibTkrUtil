@@ -632,8 +632,10 @@ TkrNoiseOcc::writeAnaToHis(TDirectory* dirTkrNoise){
   sprintf( leaf, "exposures[%d][%d]/D", g_nTower, g_nTkrLayer*g_nView);
   tree->Branch( "exposures", &exposure, leaf);
 
-  const UInt_t numRuns = vParamTimeDep.size();
-  UInt_t runid[numRuns], startTime[numRuns];
+  UInt_t numRuns = vParamTimeDep.size();
+  UInt_t *runid = new UInt_t[numRuns];
+  UInt_t *startTime = new UInt_t[numRuns];
+  //UInt_t runid[numRuns], startTime[numRuns];
   for( ix=0; ix<numRuns; ix++){
     runid[ix] = vParamTimeDep[ix].id();
     startTime[ix] = vParamTimeDep[ix].startTime();

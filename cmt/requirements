@@ -1,10 +1,10 @@
 package calibTkrUtil
-# $Header: /nfs/slac/g/glast/ground/cvs/calibTkrUtil/cmt/requirements,v 1.11 2008/04/18 06:57:03 htajima Exp $
+# $Header: /nfs/slac/g/glast/ground/cvs/calibTkrUtil/cmt/requirements,v 1.12 2008/05/13 02:48:33 htajima Exp $
 version v1r7p1
 author Johann Cohen-Tanugi <cohen@slac.stanford.edu>
 
 
-# $Header: /nfs/slac/g/glast/ground/cvs/calibTkrUtil/cmt/requirements,v 1.11 2008/04/18 06:57:03 htajima Exp $
+# $Header: /nfs/slac/g/glast/ground/cvs/calibTkrUtil/cmt/requirements,v 1.12 2008/05/13 02:48:33 htajima Exp $
 
 author Johann Cohen-Tanugi <cohen@slac.stanford.edu>
 
@@ -70,6 +70,10 @@ macro library_prefix ''
 apply_pattern my_root_library headers=$(headers) extra_source=$(extra) \
    includes="-I. -I.. -I$(CALIBTKRUTILROOT) " sourceDir="tkrPyRoot"
 
+#apply_pattern root_library headers="src/tkrPyRoot/tkrPyRoot.h"\ 
+#     includes="-I. -I.. -I$(CALIBTKRUTILROOT) "\
+#     libs=""\
+#     sourceDir="tkrPyRoot"
 
 ###PyRoot library  we assume all source files are in the src directory of the package
 # This is what I see in facilties - maybe Jim can explain why it's necessary to do the path_removes

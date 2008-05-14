@@ -10,7 +10,7 @@ int main(int argc, char** argv)
 {
   std::string optionFileName;
   int numEvents = 10000;
-  if(argc == 2 or argc==3) numEvents = atoi( argv[1] );
+  if(argc == 2 || argc==3) numEvents = atoi( argv[1] );
 
   RootAnalyzer analyzer;
   if(argc == 3)
