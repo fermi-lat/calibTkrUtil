@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Fri May 16 14:47:59 PDT 2008
+calibTkrUtil/python
+
+Modified Files:
+	tkrMonitor.py tkrUtils.py 
+Log Message:
+substially import reports for towers and layers. Add reference. Add trigger efficiency
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: calibTkrUtil-02-01-02, operation: add
 Package: calibTkrUtil
