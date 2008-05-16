@@ -1,4 +1,4 @@
-import os, glob, xml.dom.minidom, math, time, sys, cStringIO
+import os, glob, xml.dom.minidom, math, time, datetime, sys, cStringIO
 from xml.dom import xmlbuilder
 
 import numarray, ROOT, pyfits
