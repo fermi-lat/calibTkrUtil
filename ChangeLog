@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Fri May 16 23:26:21 PDT 2008
+calibTkrUtil/python
+
+Added Files:
+	mergeTkrRootFiles.py 
+Log Message:
+first release of general root file merging python script
+
+    *
+------------------------------------------------------------
 User: htajima  Fri May 16 14:47:59 PDT 2008
 calibTkrUtil/python
 
