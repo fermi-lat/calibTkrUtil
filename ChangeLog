@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Fri May 16 23:36:28 PDT 2008
+calibTkrUtil/src/test
+
+Modified Files:
+	AnalyzerOption.dat 
+Log Message:
+use newer files to avoid errors with recent GR
+
+    *
+------------------------------------------------------------
 User: htajima  Fri May 16 23:35:54 PDT 2008
 calibTkrUtil/src
 
