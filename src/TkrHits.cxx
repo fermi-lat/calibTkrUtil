@@ -510,7 +510,7 @@ TkrHits::TkrHits( bool initHistsFlag ):
   tag.assign( tag, 0, i ) ;
   m_tag = tag;
 
-  std::string version = "$Revision: 1.12 $";
+  std::string version = "$Revision: 1.13 $";
   i = version.find( " " );
   version.assign( version, i+1, version.size() );
   i = version.find( " " );
@@ -909,7 +909,8 @@ bool TkrHits::MIPfilter()
   if( m_startTime < 0 ) m_startTime = ts;
   if( ts > m_endTime ) m_endTime = ts;
 
-  UInt_t runId = m_digiEvent->getRunId();
+  RunInfo runInfo = m_digiEvent->getMetaEvent().run();
+  UInt_t runId = runInfo.id();
   if( m_firstRunId == 0 ){
     m_firstRunId = runId;
     m_lastRunId = runId;
