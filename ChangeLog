@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Mon May 19 10:19:27 PDT 2008
+calibTkrUtil/python
+
+Modified Files:
+	tkrMonitor.py 
+Log Message:
+bug fix to floating divided by zero. add script version and tag to the html report
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: calibTkrUtil-02-02-00, operation: add
 Package: calibTkrUtil
