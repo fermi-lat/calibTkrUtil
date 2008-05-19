@@ -9,6 +9,11 @@ import ROOT
 # inpot private libraies
 import tkrUtils
 
+# get tag and version numbers
+__tag__  = "$Name: v2r2 $"
+__version__  = "$Revision: 1.7 $"
+
+
 # ROOT initilization
 ROOT.gSystem.Load("tkrPyRoot")
 ROOT.gStyle.SetPalette(1)
@@ -41,8 +46,10 @@ nelem = {}
 nelem["layer"] = nTower * nPlane
 nelem["tower"] = nTower
 typecode = { "C":"c", "B":"b", "b":"B", "S":"i", "s":"I", "F":"f", "D":"d" }
-alertTypes = [ "totPeak", "totFit", "layerEff", "towerEff", "trigEff", \
-               "layerOcc", "stripOcc", "fracSat", "layerdXY" ]
+alertTypes = [ "totPeak", "totFit", "totPeakSigma", "fracBadTot", \
+               "layerEff", "towerEff", "stripEff", "trigEff", "towerEff",\
+               "LatOcc", "towerOcc", "layerOcc", "stripOcc", \
+               "fracSat", "layerdXY", "layerdXYSigma" ]
 alertLevels = [ "ERR", "WARN", "NOTE", "INFO" ]
 
 latHistNames = { "layerEff":("layer averaged hit inefficinecy [%]", "tower", "layer", "COLZ", ""),\
@@ -81,26 +88,18 @@ resScale = 1000
 #**************************************************************************
 #**************************************************************************
 class TkrMonitor:
-  def __init__(self, iname, oname, htmldir):
+  def __init__(self, iname, htmldir):
     #
     # set up directories and files.
     #
     print "open input root file: %s" % iname
     self.inputRoot = ROOT.TFile( iname )
     #print self.inputRoot.GetEndpointUrl()
-    self.outputRoot = ROOT.TFile( oname )
-    self.alertFile = aname
-    self.logName = logname
     self.htmldir = htmldir
     if not os.path.exists( self.htmldir ):
       print "html directory, %s, does not exist. Create a new one." % htmldir
       os.mkdir( self.htmldir )
   
-    self.totdir = os.path.join( self.htmldir, "totPlots" )
-    if not os.path.exists( self.totdir ):
-      print "No TOT plot directory, %s. Create a new one." % self.totdir
-      os.mkdir( self.totdir )
-
     self.refRoot = []
     try:
       self.mondir = os.path.join( os.getenv("LATMonRoot"), "TKR", "TkrMonitor" )
@@ -309,6 +308,7 @@ class TkrMonitor:
       if key == "layerEff":  
         lhit = hlhit.GetBinContent(unp+1)
         ltrk = hltrk.GetBinContent(unp+1)
+        if ltrk == 0.0: ltrk = 1.0
         eff = lhit / ltrk
         err = eff*(1-eff) / ltrk
         if err > 0.0: err = math.sqrt( err )
@@ -325,6 +325,7 @@ class TkrMonitor:
         lsat = hmul.Integral(nsat,128)
         socc = hmap.Integral()
         if lexp != None:
+          if lexp == 0.0: lexp = 1.0
           locc /= lexp
           socc /= (lexp*nStrip)
           lsat /= lexp
@@ -453,7 +454,7 @@ class TkrMonitor:
 
     binWidth = chargeHist.GetBinWidth( 2 )
     bin = int(mean*0.5/binWidth) + 1
-    fracBadTot = chargeHist.Integral(1,bin) / chargeHist.Integral()
+    fracBadTot = chargeHist.Integral(1,bin) / entries
     self.values["TOT_FracLowTOT"][ielm] = fracBadTot
 
     lowLim = mean - 1.4 * rms
@@ -538,6 +539,7 @@ class TkrMonitor:
       #efficiency
       lhit = hlhit.GetBinContent(unp+1)
       ltrk = hltrk.GetBinContent(unp+1)
+      if ltrk==0.0: ltrk == 1.0
       eff = lhit / ltrk
       err = eff*(1-eff) / ltrk
       if err > 0.0: err = math.sqrt( err )
@@ -567,6 +569,7 @@ class TkrMonitor:
         #if tocc > 1000 or strip%64 == 0:
         if (strip+1)%64 == 0:
           self.listbin.append(strip)
+          if tocc == 0.0: tocc = 1.0
           seff = eocc/tocc
           serr = seff*(1-seff)/tocc
           serr = math.sqrt(serr)
@@ -681,6 +684,7 @@ class TkrMonitor:
     self.sumlsat += lsat
     self.sumsocc += socc
     if (ielm+1)%36 == 0:
+      if self.sumlexp==0.0: self.sumlexp=1.0
       self.sumlocc /= self.sumlexp
       self.sumsocc /= (self.sumlexp*nStrip)
       self.sumlsat /= self.sumlexp
@@ -688,6 +692,7 @@ class TkrMonitor:
       self.towerave["stripOcc"][(ielm+1)/36-1] = self.sumsocc
       self.towerave["fracSat"][(ielm+1)/36-1] = self.sumlsat      
     if lexp != None:
+      if lexp==0.0: lexp==1.0
       locc /= lexp
       socc /= (lexp*nStrip)
       lsat /= lexp
@@ -1032,6 +1037,10 @@ class TkrMonitor:
                     % time.strftime( "%Y/%m/%d, %H:%M:%S", gmt ) )
     self.htmlLine( "<B>Duration</B>: %.0f seconds" \
                     % (self.endTime[0]-self.startTime[0]) )
+    self.htmlLine( "<B>Script version</B>: %s" \
+                    % __version__.split()[1] )
+    self.htmlLine( "<B>Script tag</B>: %s" \
+                    % __tag__.split()[1] )
     self.hout.write( "</ul>" )
 
     #
@@ -1162,7 +1171,7 @@ if __name__ == '__main__':
   if len(sys.argv) > 5: logname = sys.argv[5]
   else: logname = "tkrMonitor-%s.log" % timeStamp
 
-  tkrMonitor = TkrMonitor( iname, oname, htmldir )
+  tkrMonitor = TkrMonitor( iname, htmldir )
   tkrMonitor.getTimeStamps()
   tkrMonitor.analyzeTKR()
 
