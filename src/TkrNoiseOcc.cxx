@@ -149,12 +149,27 @@ TkrNoiseOcc::anaDigiEvt() {
   RunInfo runInfo = m_digiEvt->getMetaEvent().run();
 
   // check if new run
+  UInt_t runid = runInfo.id();
   if( vParamTimeDep.size() == 0 || 
-      runInfo.id() != vParamTimeDep[m_iP].id() ){
-    m_iP = vParamTimeDep.size();
-    vParamTimeDep.push_back( paramTimeDep( runInfo.id(), 
-					   runInfo.startTime(), 
-					   m_duration, m_nx ) );
+      runid != vParamTimeDep[m_iP].id() ){
+    // check if there is the same runid
+    bool newrun = true;
+    for(UInt_t ip=0; ip<vParamTimeDep.size(); ip++)
+      if( runid == vParamTimeDep[ip].id() ){
+	newrun = false;
+	m_iP = ip;
+	std::cout << "Old run: " << runid << ", event id: " << ievent
+		  << ", start time: " << runInfo.startTime() << std::endl;
+      }
+    // new run id
+    if( newrun ){
+      m_iP = vParamTimeDep.size();
+      vParamTimeDep.push_back( paramTimeDep( runid, 
+					     runInfo.startTime(), 
+					     m_duration, m_nx ) );
+      std::cout << "New run: " << runid << ", event id: " << ievent
+		<< ", start time: " << runInfo.startTime() << std::endl;
+    }
   }
 
 
@@ -503,6 +518,7 @@ TkrNoiseOcc::writeAnaToHis(TDirectory* dirTkrNoise){
   
   for(UInt_t ip=0; ip<vParamTimeDep.size(); ip++){
     sprintf(dirname, "Run%d", vParamTimeDep[ip].id());
+    std::cout << "New directory: " << dirname << std::endl;
     dirTimeDepRt = dirTkrNoise->mkdir(dirname);
     dirTowerOcc = dirTimeDepRt->mkdir("TowerOcc");
     for(tower=0;tower<g_nTower; tower++){
