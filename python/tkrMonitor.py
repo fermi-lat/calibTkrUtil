@@ -10,8 +10,8 @@ import ROOT
 import tkrUtils
 
 # get tag and version numbers
-__tag__  = "$Name: v2r2 $"
-__version__  = "$Revision: 1.7 $"
+__tag__  = "$Name:  $"
+__version__  = "$Revision: 1.8 $"
 
 
 # ROOT initilization
@@ -546,7 +546,7 @@ class TkrMonitor:
       else: err = 1.0 / ltrk
       if eff*100 < self.limits["layerEff"]:
         alert = "layer efficiency, %.1f%s < %.1f%s" \
-                % (eff*100, "%", self.limits["layerEff"], "%" )
+                % (eff*100, "%", self.limits["layerEff"]*100, "%" )
         self.logAlerts( tower, unp, alert, "layerEff" ,alertLevels[2] )
 
       key = "layerEff"
@@ -575,7 +575,8 @@ class TkrMonitor:
           serr = math.sqrt(serr)
           if seff*100 < self.limits["stripEff"]:
             alert = "strip efficiency, %.1f%s < %.1f%s" \
-                                    % (seff*100, "%", self.limits["stripEff"], "%" )
+                                    % (seff*100, "%", \
+                                       self.limits["stripEff"]*100, "%" )
             self.striplogs["stripEff"][tower][unp].append((alert, strip, "layerEff", alertLevels[1]))
           self.layerHists[tower][unp]["stripEff"].SetBinContent((strip+1)/64,seff*100)
           self.layerHists[tower][unp]["stripEff"].SetBinError((strip+1)/64,serr*100)          
@@ -814,7 +815,7 @@ class TkrMonitor:
                 last = strip
               elif strip == last+1: last = strip
             self.htmlLine1(txt)
-            self.htmlLine1("Number of affect strips: %d" % \
+            self.htmlLine1("Number of affected strips: %d" % \
                            len(self.striplogs[key][tower][unp]) )
           else:
             self.htmlLine1("WARN",2,"red")
@@ -993,6 +994,21 @@ class TkrMonitor:
   def saveReports(self, aname, logname):
     print "log file:", logname
     lfile = open( logname, 'w')
+    lfile.write( "runID: %s\n" % self.runID )
+    lfile.write( "intput file: %s\n" % self.inputRoot.GetName() )
+    lfile.write( "reference files:\n" )
+    for rfile in self.refRoot:
+      lfile.write( rfile.GetName() + "\n" )
+    gmt = tkrUtils.getGMT( self.startTime[0] )
+    lfile.write( "Start Time: %s\n" \
+                    % time.strftime( "%Y/%m/%d, %H:%M:%S", gmt ) )
+    lfile.write( "Duration: %.0f seconds\n" \
+                    % (self.endTime[0]-self.startTime[0]) )
+    lfile.write( "Script version: %s\n" \
+                    % __version__.split()[1] )
+    lfile.write( "Script tag: %s\n" \
+                    % __tag__.split()[1] )
+    lfile.write( "****** alerts *****\n" )
     for level in alertLevels:
       for type in alertTypes:
         for tower, unp, alert in self.logs[type][level]:
