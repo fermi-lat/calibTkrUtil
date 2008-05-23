@@ -642,27 +642,16 @@ TkrNoiseOcc::writeAnaToHis(TDirectory* dirTkrNoise){
   //
   // save TTree
   //
-  char leaf[] = "exposures[16][36]/D";
   TTree *tree = new TTree("tkrNoiseTree","tkrNoiseTree");
 
-  sprintf( leaf, "exposures[%d][%d]/D", g_nTower, g_nTkrLayer*g_nView);
-  tree->Branch( "exposures", &exposure, leaf);
-
-  UInt_t numRuns = vParamTimeDep.size();
-  UInt_t *runid = new UInt_t[numRuns];
-  UInt_t *startTime = new UInt_t[numRuns];
-  //UInt_t runid[numRuns], startTime[numRuns];
-  for( ix=0; ix<numRuns; ix++){
-    runid[ix] = vParamTimeDep[ix].id();
-    startTime[ix] = vParamTimeDep[ix].startTime();
+  UInt_t runid, startTime;
+  tree->Branch( "runid", &runid, "runid/i");
+  tree->Branch( "startTime", &startTime, "startTime/i");
+  for( ix=0; ix<vParamTimeDep.size(); ix++){
+    runid = vParamTimeDep[ix].id();
+    startTime = vParamTimeDep[ix].startTime();
+    tree->Fill();
   }
-  sprintf( leaf, "numRuns/i%s", "");
-  tree->Branch( "numRuns", &numRuns, leaf);
-  sprintf( leaf, "runid[%d]/i", numRuns);
-  tree->Branch( "runid", &runid, leaf);
-  sprintf( leaf, "startTime[%d]/i", numRuns);
-  tree->Branch( "startTime", &startTime, leaf);
-  tree->Fill();
   tree->Write();
   
   dirTkrNoise->Write("",TObject::kOverwrite);
