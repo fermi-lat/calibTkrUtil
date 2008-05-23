@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Fri May 23 10:05:35 PDT 2008
+calibTkrUtil/python
+
+Modified Files:
+	mergeTkrRootFiles.py 
+Log Message:
+avoid memory leak by cleaning up PyROOT objects after the use.
+
+    *
+------------------------------------------------------------
 User: htajima  Fri May 23 10:04:10 PDT 2008
 calibTkrUtil/src
 
