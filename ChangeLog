@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Fri May 23 10:04:10 PDT 2008
+calibTkrUtil/src
+
+Modified Files:
+	TkrNoiseOcc.cxx 
+Log Message:
+modify tree content to be simple collection of runid and time stamps, instead of variable length tree run by run.
+
+    *
+------------------------------------------------------------
 User: htajima  Wed May 21 15:01:46 PDT 2008
 calibTkrUtil/src
 
