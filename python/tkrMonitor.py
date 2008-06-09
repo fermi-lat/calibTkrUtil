@@ -11,7 +11,7 @@ import tkrUtils
 
 # get tag and version numbers
 __tag__  = "$Name:  $"
-__version__  = "$Revision: 1.8 $"
+__version__  = "$Revision: 1.9 $"
 
 
 # ROOT initilization
@@ -539,7 +539,7 @@ class TkrMonitor:
       #efficiency
       lhit = hlhit.GetBinContent(unp+1)
       ltrk = hltrk.GetBinContent(unp+1)
-      if ltrk==0.0: ltrk == 1.0
+      if ltrk==0.0: ltrk = 1.0
       eff = lhit / ltrk
       err = eff*(1-eff) / ltrk
       if err > 0.0: err = math.sqrt( err )
