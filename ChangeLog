@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Mon Jun  9 16:08:13 PDT 2008
+calibTkrUtil/python
+
+Modified Files:
+	tkrMonitor.py 
+Log Message:
+bug fix for divide by zero error
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: calibTkrUtil-02-02-02, operation: add
 Package: calibTkrUtil
