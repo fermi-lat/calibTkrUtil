@@ -257,7 +257,7 @@ void RootAnalyzer::analyzeData( int numEvents = 10000 )
     m_digiChain->SetBranchAddress("DigiEvent", &m_digiEvent);
   }
 
-  if( numEvents > 0 ) nEvent = numEvents;
+  if( numEvents>0 && numEvents<nEvent  ) nEvent = numEvents;
   cout << "# of events to be processed: " << nEvent << std::endl;
 
   m_tkrHits->setNevents(nEvent);
@@ -327,11 +327,16 @@ void RootAnalyzer::analyzeData( int numEvents = 10000 )
 
   }  
   time( &endTime );
-  std::cout << "total # of events: " << nEvent 
+  if( endTime=startTime )
+    std::cout << "total # of events: " << nEvent 
 		<< " in " << (endTime-startTime) << " s, "
-		<< nEvent/(endTime-startTime) << " events/s"
 		<< std::endl;
-
+  else
+    std::cout << "total # of events: " << nEvent 
+	      << " in " << (endTime-startTime) << " s, "
+	      << nEvent/(endTime-startTime) << " events/s"
+	      << std::endl;
+  
 }
 
 //****************************************************************
