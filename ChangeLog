@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Wed Jul  2 08:52:41 PDT 2008
+calibTkrUtil/src/test
+
+Modified Files:
+	RootTestAnalyzer.cxx 
+Log Message:
+bug fix for runs with small number of events
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: calibTkrUtil-02-02-03, operation: add
 Package: calibTkrUtil
