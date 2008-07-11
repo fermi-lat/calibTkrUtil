@@ -84,8 +84,8 @@ void RootAnalyzer::produceOutputFile()
 
 bool RootAnalyzer::isRootFile(const string& f)
 {
-  TFile rootF(f.c_str());
-  if(rootF.IsZombie()) {
+  TFile *rootF = TFile::Open( f.c_str() );
+  if(rootF->IsZombie()) {
     return false;
   }
   else {
@@ -98,7 +98,7 @@ void RootAnalyzer::makeTChain(const string& line, TChain* chain)
   std::istringstream stream(line);
   string f;
   while(stream >> f) {
-    if(isRootFile(f)) {
+    if(isRootFile(f)) { 
       chain->Add(f.c_str());
     }
     else {
