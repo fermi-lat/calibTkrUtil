@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Fri Jul 11 15:38:44 PDT 2008
+calibTkrUtil/calibTkrUtil
+
+Modified Files:
+	TkrHits.h 
+Log Message:
+improved MIP selections for efficiency and displacement monitoring and TOT calibrations. Add capability to get calibrated TOT distributions. pick up correct run id.
+
+    *
+------------------------------------------------------------
 User: htajima  Fri Jul 11 15:38:24 PDT 2008
 calibTkrUtil/src/test
 
