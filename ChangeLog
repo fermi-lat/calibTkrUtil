@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Fri Jul 11 15:38:24 PDT 2008
+calibTkrUtil/src/test
+
+Modified Files:
+	RootTestAnalyzer.cxx 
+Log Message:
+allows to use xrootd
+
+    *
+------------------------------------------------------------
 User: htajima  Fri Jul 11 15:36:54 PDT 2008
 calibTkrUtil/calibTkrUtil
 
