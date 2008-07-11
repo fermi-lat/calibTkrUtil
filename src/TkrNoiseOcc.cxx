@@ -149,7 +149,8 @@ TkrNoiseOcc::anaDigiEvt() {
   RunInfo runInfo = m_digiEvt->getMetaEvent().run();
 
   // check if new run
-  UInt_t runid = runInfo.id();
+  //UInt_t runid = runInfo.id();
+  UInt_t runid = m_digiEvt->getRunId(); 
   if( vParamTimeDep.size() == 0 || 
       runid != vParamTimeDep[m_iP].id() ){
     // check if there is the same runid

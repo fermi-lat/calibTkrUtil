@@ -55,7 +55,7 @@ class TkrNoiseOcc {
 
   //void initAnalysis(int nEvent, int evt_interval, int coincidence_cut,
   //		    int multi_ld, int multi_hd, int periodic_trig);
-  void initAnalysis(UInt_t duration=120, UInt_t nx=240);
+  void initAnalysis(UInt_t duration=120, UInt_t nx=60);
   void setCoincidenceCut(int coincidence_cut);
   void setMultiRange(int multi_ld, int multi_hd);
   void setPeriodicTrigCut(int periodic_trig);
