@@ -57,6 +57,9 @@ const float minFracErr = 0.005;
 
 const float maxTot = 20.0;
 
+static const int ncut = 20;
+
+
 //
 // ****** class layerId *****
 //
@@ -290,17 +293,20 @@ class TkrHits {
 			     std::vector<Double_t> &vx, 
 			     Double_t &y0, Double_t &dydx );
 
-  virtual float calcCharge( layerId lid, int iStrip, int tot){ return tot;};
-  
+  //virtual float calcCharge( layerId lid, int iStrip, int tot){ return tot;};
+  float calcCharge( layerId lid, int iStrip, int tot);
+  void addScaledHist( TH1F*, TH1F*, float );
   
   TH1F *m_nTrackDist, *m_maxHitDist, *m_numClsDist, *m_dirzDist, 
     *m_numHitGTRC, *m_rawTOT, *m_largeMulGTRC,
-    *m_trkRMS, *m_trkRMS1TWR, *m_trkRMS2TWR,
-    *m_armsDist, *m_brmsDist[g_nLayer/3];
+    *m_trkRMS, *m_trkRMS1TWR, *m_trkRMS2TWR, 
+    *m_nBadLayersTrig, *m_nBadLayersNonTrig, *m_totTrig, *m_totNonTrig,
+    *m_deltaWindOpenTime,
+    *m_armsDist, *m_brmsDist[g_nLayer/3], *m_res, *m_resSel;
   TProfile *m_rmsProf1TWR, *m_rmsProf2TWR, *m_tresProfX, *m_tresProfY;
   TProfile *m_sigDist, *m_sigRMS, *m_sigTrad;
   
-  bool m_MIPfilter;
+  bool m_MIPeff, m_MIPtot, m_cut[ncut];
   Double_t m_acdTotalEnergy, m_calEnergyRaw;
   UInt_t m_acdTileCount, m_numCalXtal;
   TH1F *m_hAcdTileCount, *m_hAcdTotalEnergy, *m_hCalEnergyRaw, *m_hNumCalXtal;
@@ -308,10 +314,12 @@ class TkrHits {
   TH1F *m_sixInARow, *m_sixInARowWithTrig, *m_orphanTrig;
   TH1F *m_sixInARowMIP, *m_sixInARowWithTrigMIP, *m_orphanTrigMIP;
   TH1F *m_sixInARowAll, *m_sixInARowWithTrigAll;
+  TH1F *m_sixInARowCut, *m_sixInARowWithTrigCut;
+  TH1F *m_hitCut, *m_trackCut;
 
   std::vector<TH1F*> m_chargeHist;
 
-  TH1F *m_fracErrDist, *m_chisqDist, *m_fracBatTot, *m_chist[5];
+  TH1F *m_fracErrDist, *m_chisqDist, *m_fracBatTot, *m_chist[7];
   TH1F *m_chargeScale, *m_entries, *m_langauWidth, *m_langauGSigma;
   TProfile *m_dirProfile;
 
