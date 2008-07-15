@@ -11,8 +11,8 @@ import tkrUtils
 
 # get tag and version numbers
 __tag__  = "$Name:  $"
-__version__  = "$Revision: 1.9 $"
-
+__version__  = "$Revision: 1.10 $"
+tagv = "%s:%s" % (__tag__.split()[1], __version__.split()[1])
 
 # ROOT initilization
 ROOT.gSystem.Load("tkrPyRoot")
@@ -27,6 +27,10 @@ canvas = ROOT.TCanvas( 'TKR', 'TKR monitor', 200, 10, 700, 500 )
 nTower = tkrUtils.g_nTowers
 nPlane = tkrUtils.g_nUniPlanes
 nStrip = tkrUtils.g_nStrips
+nGTFE = tkrUtils.g_nFE
+nChannel = tkrUtils.g_nChannels
+#nTower = 4
+#nPlane = 9
 
 nsat = 15 # GTRC hit limit + 1
 
@@ -49,34 +53,54 @@ typecode = { "C":"c", "B":"b", "b":"B", "S":"i", "s":"I", "F":"f", "D":"d" }
 alertTypes = [ "totPeak", "totFit", "totPeakSigma", "fracBadTot", \
                "layerEff", "towerEff", "stripEff", "trigEff", "towerEff",\
                "LatOcc", "towerOcc", "layerOcc", "stripOcc", \
-               "fracSat", "layerdXY", "layerdXYSigma" ]
+               "fracSat", "layerdXY", "layerdXYSigma", "fracNHstrip","deadGTFE" ]
 alertLevels = [ "ERR", "WARN", "NOTE", "INFO" ]
 
-latHistNames = { "layerEff":("layer averaged hit inefficinecy [%]", "tower", "layer", "COLZ", ""),\
-                 "layerOcc":("layer-OR occupancy", "tower", "layer", "COLZ", ""),\
-                 "stripOcc":("layer averaged Strip Occupancy", "tower", "layer", "COLZ", ""),\
+latHistNames = { "layerEff":("Layer averaged hit inefficinecy ", "tower", "layer", "COLZ", "[%]"),\
+                 "layerOcc":("Layer-OR occupancy", "tower", "layer", "COLZ", ""),\
+                 "stripOcc":("Layer averaged Strip Occupancy", "tower", "layer", "COLZ", ""),\
                  "fracSat":("Fraction of Saturated Events", "tower", "layer", "COLZ", ""),\
-                 "totPeak":("layer averaged TOT peak distribution", "TOT peak [fC]", "Number of layers", "H", ""),\
-                 "towerEff":("Tower averaged hit efficiency", "tower", "hit efficinency", " ", " [%]"),\
-                 "trigEff":("Tower averaged trriger efficiency", "tower", "trigger efficiency", " ", " [%]"),\
-                 "layerdXY":("Layer displacement from reference [micron]", "tower", "layer", "COLZ", ""),\
+                 "totPeak":("Layer averaged TOT peak distribution", "TOT peak [fC]", \
+                            "Number of layers", "H", ""),\
+                 "towerEff":("Tower averaged hit efficiency", "tower", \
+                             "hit efficinency", " ", " [%]"),\
+                 "trigEff":("Tower averaged trigger efficiency", "tower", \
+                            "trigger efficiency", " ", " [%]"),\
+                 "layerdXY":("Layer displacement from reference [micron]", \
+                             "tower", "layer", "COLZ", ""),\
+                 "fracNHstrip":("Fraction of no-hit strips", "tower", \
+                                  "fraction of no-hit strips [%]", "", ""),\
+                 "deadGTFE":("Number of Dead GTFE", "tower", \
+                                  "number of dead GTFE", "", ""),\
                  }
 
 towerHistNames = {"layerEff":("Layer Averaged Hit Efficiency", "layer", "hit efficiency", " [%]"),\
                   "layerOcc":("Layer-OR Occupancy","layer", "layer-OR occupancy", ""),\
                   "stripOcc":("Layer Averaged Strip Occupancy", "layer", "strip occupancy", ""),\
-                  "fracSat":("Fraction of Saturated Events", "layer", "fraction of saturated events", ""),\
-                  "layerdXY":("Layer Displacement from reference", "Layer", "layer displacement", " [micron]"),\
+                  "fracSat":("Fraction of Saturated Events", "layer", \
+                             "fraction of saturated events", ""),\
+                  "layerdXY":("Layer Displacement from reference", "Layer", \
+                              "layer displacement", " [micron]"),\
                   "totPeak":("TOT Peak distribution", "Layer", "TOT peak", " [fC]"),\
-                  #"layerOccT":("Layer-OR Occupancy Time fluctuation","time", "layer-OR occupancy", ""),\
-                  #"stripOccT":("Layer-OR Occupancy Time fluctuation","time", "layer-OR occupancy", ""),\
+                  "stripOccT":("Tower averaged Strip Occupancy, Time-Variation","time[min]", \
+                               "Tower averaged strip occupancy", ""),\
+                  "fracNHstrip":("Fraction of no-hit strips", "layer", \
+                                   "Fraction of no-hit strips", "[%]"),\
                   }
 
 layerHistNames = {"chargeHist":("TOT Charge-deposit distribution", "charge [fC]", "Entries/bin"),\
                   "stripOcc":("Strip Occupancy", "strip", "strip Occupancy"),\
-                  "stripEff":("Strip Efficiency /64strips", "strip", "strip efficiency [%]"),\
+                  "stripEff":("GTFE averaged Strip Efficiency", "strip", \
+                              "GTFE averaged strip efficiency [%]"),\
+                  "layerOccT":("Layer-OR Occupancy Time-Variation","time[min]", \
+                               "layer-OR occupancy", ""),\
+                  "stripOccT":("Layer averaged Strip Occupancy, Time-Variation","time[min]", \
+                               "layer averaged strip occupancy", ""),\
                   }
 resScale = 1000
+timebin = 120
+red = "red"
+yellow = "#e08000"
 
 
 
@@ -103,8 +127,10 @@ class TkrMonitor:
     self.refRoot = []
     try:
       self.mondir = os.path.join( os.getenv("LATMonRoot"), "TKR", "TkrMonitor" )
+      self.xmldir = os.path.join( os.getenv("LATMonRoot"), "TKR", "xml" )
     except:
-      self.mondir = os.path.join( os.getenv( "CALIBTKRUTILROOT" ), "python" )      
+      self.mondir = os.path.join( os.getenv( "CALIBTKRUTILROOT" ), "python" )
+      self.xmldir = os.path.join( os.getenv( "CALIBTKRUTILROOT" ), "python" )
     if not os.path.exists( self.mondir ):
       print "TKR Monitor directory, %s, does not exist." % self.mondir
       sys.exit()
@@ -121,28 +147,34 @@ class TkrMonitor:
     for (key, type, vtype) in keys:
       self.values[key] = array.array( typecode[vtype], [-1]*nelem[type] )
 
+    self.latave = {}
+    for key in ("trigEff", "towerEff", "fracNHstrip"):
+      self.latave[key] = -1 
+
     self.towerave = {}
-    for key in ("layerEff" ,"layerOcc", "stripOcc", "fracSat", "totPeak", "layerdXY"):
+    for key in ("layerEff" ,"layerOcc", "stripOcc", "fracSat", "totPeak", "layerdXY", "fracNHstrip"):
       self.towerave[key] = {}
       for tower in range(nTower):
         self.towerave[key][tower] = -1
-
+    
     self.logs = {}
     for type in alertTypes:
       self.logs[type] = {}
       for level in alertLevels:
         self.logs[type][level] = []
 
-    self.striplogs = {}
-    for type in ("stripOcc","stripEff"):
-      self.striplogs[type] = {}
-      for tower in range(nTower):
-        self.striplogs[type][tower] = {}
-        for unp in range(nPlane):
-          self.striplogs[type][tower][unp] = []
+    self.striplogs = {}   
+    self.badStrips = {}
+    for tower in range(nTower):
+      self.striplogs[tower] = {}
+      self.badStrips[tower] = {}
+      for unp in range(nPlane):
+        self.striplogs[tower][unp] = {}
+        self.badStrips[tower][unp] = []
+        for type in ("stripOcc","stripEff"):
+          self.striplogs[tower][unp][type] = []
+    
         
-      
-    self.listbin = []
     self.towtemp = []   
     self.laytemp = []   
     self.hists = {}
@@ -155,12 +187,15 @@ class TkrMonitor:
       self.towerHists.append( {} )
       self.towerHistsRef.append( {} )
       for name in towerHistNames:
+        if name[-1] == "T":
+          (bin, nbin) = (timebin, timebin*2)   
+        else : (bin, nbin) = (nPlane, nPlane)
         hname = "%s_T%d" % (name, tower)
         title = "%s in tower %d -%s" % (name, tower, timeStamp)
-        self.towerHists[-1][name] = ROOT.TH1F(hname,title,nPlane,0,nPlane)
+        self.towerHists[-1][name] = ROOT.TH1F(hname,title,nbin,0,bin)
         hname = "%s_T%dRef" % (name, tower)
         title = "%s in tower %d -%s (ref)" % (name, tower, timeStamp)
-        self.towerHistsRef[-1][name] = ROOT.TH1F(hname,title,nPlane,0,nPlane)
+        self.towerHistsRef[-1][name] = ROOT.TH1F(hname,title,nbin,0,bin)
         
                         
       self.alerts.append( [] )
@@ -170,19 +205,26 @@ class TkrMonitor:
         self.alerts[-1].append( [] )
         self.layerHists[-1].append( {} )
         self.savedPictures[-1].append( {} )
-        name = "stripOcc" 
+        name = "stripOcc"
         hname = "%s_T%d_L%d" % (name, tower, unp)
         title = "%s in tower %d Layer %d -%s" % (name, tower, unp, timeStamp)
         self.layerHists[-1][-1][name] = ROOT.TH1F(hname,title,nStrip,0,nStrip)
+
         name = "stripEff"
         hname = "%s_T%d_L%d" % (name, tower, unp)
         title = "%s in tower %d Layer %d -%s" % (name, tower, unp, timeStamp)
-        self.layerHists[-1][-1][name] = ROOT.TH1F(hname,title,24,0,1536)
-        #self.layerHists[-1][-1][name] = ROOT.TH1F(hname,title, \
-        #                                          len(self.listbin)-1, self.listbin)
+        self.layerHists[-1][-1][name] = ROOT.TH1F(hname,title,nGTFE,0,nStrip)
+
+        for name in ("layerOccT","stripOccT"): 
+          (bin, nbin) = (timebin, timebin*2)
+          hname = "%s_T%d_L%d" % (name, tower, unp)
+          title = "%s in tower %d Layer %d -%s" % (name, tower, unp, timeStamp)
+          self.layerHists[-1][-1][name] = ROOT.TH1F(hname,title,nbin,0,bin)
+
+        
                                 
     self.hists["layerEff"] = ROOT.TH2F("layerEff_map", \
-                                       "Layer efficiency map",\
+                                       "Layer inefficiency map",\
                                        nTower,0,nTower, nPlane,0,nPlane)
     self.hists["stripOcc"] = ROOT.TH2F("stripOcc_map", \
                                        "Average strip occupancy map",\
@@ -202,12 +244,17 @@ class TkrMonitor:
     self.hists["towerdY"] = ROOT.TH1F("towerdY", "tower delta Y", \
                                       nTower,0,nTower)
     self.hists["totPeak"] = ROOT.TH1F("totPeakDist",\
-                                      "TOT peak distributioin",100,2,7)
+                                      "TOT peak distributioin",25,2,7)
     self.hists["layerdXY"] = ROOT.TH2F("layerdXY_map", \
                                        "Layer displacement map",\
                                        nTower,0,nTower, nPlane,0,nPlane)
-    
+    self.hists["fracNHstrip"] = ROOT.TH1F("fracNHstrip", "Fraction of Dead strips", \
+                                       nTower,0,nTower)
+    self.hists["deadGTFE"] = ROOT.TH1F("deadGTFE", "number of dead GTFE", \
+                                       nTower,0,nTower)
+
     self.readParamLimitsXml()
+    
 
   #
   #*********************
@@ -217,6 +264,7 @@ class TkrMonitor:
   def readParamLimitsXml(self):
     self.limits={}
     xname = os.path.join( self.mondir, "paramLimitsDefault.xml"  )
+    ### xname = os.path.join( self.mondir, "paramLimitsTest.xml"  )
     print "read xml: %s" % xname
     dom = xml.dom.minidom.parse( xname )
     topElm = dom.getElementsByTagName("ParamLimits")[0]
@@ -230,7 +278,8 @@ class TkrMonitor:
         print "Invalid alert type: %s or level: %s." % (type,level)
         self.limits[type] = value
       else: self.limits[type] = value
-    #print self.limits
+      print "mondir=",self.mondir
+    
 
     
   #
@@ -240,15 +289,6 @@ class TkrMonitor:
   #
   def getTimeStamps(self):
     tree = self.inputRoot.FindObjectAny( "timeStamps" )
-    startTime = array.array( 'd', [0] )
-    endTime = array.array( 'd', [0] )
-    firstRunId = array.array( 'L', [0] )
-    lastRunId = array.array( 'L', [0] )
-    
-    tree.SetBranchAddress( "startTime", startTime )
-    tree.SetBranchAddress( "endTime", endTime )
-    tree.SetBranchAddress( "firstRunId", firstRunId )
-    tree.SetBranchAddress( "lastRunId", lastRunId )
     
     self.startTime = array.array( 'd', [-1] )
     self.endTime = array.array( 'd', [1] )
@@ -257,40 +297,73 @@ class TkrMonitor:
     
     for i in range(tree.GetEntries()):
       tree.GetEntry( i )
-      if self.startTime[0] < 0 or startTime[0] < self.startTime[0]:
-        self.startTime[0] = startTime[0]
-      if endTime[0] > self.endTime[0]: self.endTime[0] = endTime[0]
-      if self.firstRunId[0] < 1 or firstRunId[0] < self.firstRunId[0]:
-        self.firstRunId[0] = firstRunId[0]
-      if lastRunId[0] > self.lastRunId[0]: self.lastRunId[0] = lastRunId[0]
+      if self.startTime[0] < 0 or tree.startTime < self.startTime[0]:
+        self.startTime[0] = tree.startTime
+      if tree.endTime > self.endTime[0]: self.endTime[0] = tree.endTime
+      if self.firstRunId[0] < 1 or tree.firstRunId < self.firstRunId[0]:
+        self.firstRunId[0] = tree.firstRunId
+      if tree.lastRunId > self.lastRunId[0]: self.lastRunId[0] = tree.lastRunId
       
-    if firstRunId[0] == lastRunId[0]: self.runID = "%d" % firstRunId[0]
-    else: self.runID = "%d-%d" % ( firstRunId[0], lastRunId[0] )
+    if tree.firstRunId == tree.lastRunId: self.srunID = "%d" % tree.firstRunId
+    else: self.srunID = "%d-%d" % ( tree.firstRunId, tree.lastRunId )
 
-    print self.startTime, self.endTime, self.runID
+    tree = self.inputRoot.FindObjectAny( "tkrNoiseTree" )
+    startTime = -1
+    for i in range(tree.GetEntries()):
+      tree.GetEntry(0)
+      if startTime<0 or tree.startTime<startTime:
+        startTime = tree.startTime
+    self.runID = "%d" % startTime
+
+    #Temporary
+    if abs(self.firstRunId[0] - int(self.runID)) > 10000:
+      self.runID = "%d" % self.firstRunId[0]
+
+    print self.startTime, self.endTime, self.runID, self.srunID
 
   #
   #*********************
-  # pefoerm analysis
+  # perform analysis
   #*********************
   #
   def analyzeTKR(self):
     self.ffit = ROOT.defLangau( "langau", 0, 30 )
     self.ffit.SetParNames( "LWidth", "MP", "Area", "GSigma" )
-
+    
     self.analyzeTrigEff()
     #
     # loop towers/layers ann fit TOT distributions
     #
     for tower in range(nTower):
-      self.analyzeEfficiency( tower )
+      self.analyzeLayerEfficiency( tower )
+      self.analyzeStripEfficiency( tower )
+      self.analyzeTimedep(tower)
       for unp in range(nPlane):
         self.fitTOT( tower, unp )
         self.analyzeOccupancy( tower, unp )
-        
+
     self.analyzeTotPeak()
     self.analyzeDisplacement()
 
+    saveHotStrips = False
+    for tower in range(nTower):
+      for unp in range(nPlane):
+        if len(self.badStrips[tower][unp]) > 0: saveHotStrips = True
+
+    if saveHotStrips:
+      year, month, day, hour, minute = tkrUtils.getDateTime( str(int(self.startTime[0])) )
+      tss = "%d/%d 20%02d, %d:%02d" % (month, day, year, hour, minute)
+      year, month, day, hour, minute = tkrUtils.getDateTime( str(int(self.endTime[0])) )
+      tse = "%d/%d 20%02d, %d:%02d" % (month, day, year, hour, minute)
+      times = ( tss, tse )
+      tkrUtils.writeTFEXml( self.badStrips, self.runID, self.xmldir, times,\
+                            self.runID, tagv)
+      tkrUtils.writeHotXml( self.badStrips, self.runID, self.xmldir, times,\
+                            self.runID, tagv)
+      # tkrUtils.writeHotXml(self.badStrips,self.runID,"/afs/slac.stanford.edu/u/ki/nishino")
+        
+
+  
   #
   #***********************
   # analyze reference data
@@ -330,9 +403,9 @@ class TkrMonitor:
           socc /= (lexp*nStrip)
           lsat /= lexp
         else:
-          locc = 0
-          socc = 0
-          lsat = 0
+          locc = 0.0
+          socc = 0.0
+          lsat = 0.0
         self.towerHistsRef[tower]["layerOcc"].SetBinContent(unp+1,locc)
         self.towerHistsRef[tower]["stripOcc"].SetBinContent(unp+1,socc)
         self.towerHistsRef[tower]["fracSat"].SetBinContent(unp+1,lsat)
@@ -353,8 +426,8 @@ class TkrMonitor:
       self.towerHists[tower]["layerdXY"].SetMaximum( ymax*1.5 )
       self.towerHists[tower]["layerdXY"].SetMinimum( -ymax*1.5 )
 
-    if id == 0: self.towerHistsRef[tower][key].SetLineColor(3)
-    else: self.towerHistsRef[tower][key].SetLineColor(4)
+    if id == 0: self.towerHistsRef[tower][key].SetLineColor(4)
+    else: self.towerHistsRef[tower][key].SetLineColor(5)
     self.towerHistsRef[tower][key].SetLineWidth(2)
     return self.towerHistsRef[tower][key] 
 
@@ -383,6 +456,13 @@ class TkrMonitor:
       self.values[key+"_err"][tower] = terr
       self.hists[key].SetBinContent(tower+1,teff*100)
       self.hists[key].SetBinError(tower+1,terr*100)
+
+      if teff < self.limits["trigEff"]:
+        alert = "trigger efficiency, %.1f%s < %.1f%s" % (teff*100, "%", self.limits["trigEff"]*100, "%" )
+        self.logAlerts( tower, 0, alert, "trigEff" ,alertLevels[1] )   # 0 is dummy
+
+      
+    self.latave["trigEff"] = (100*htrg.Integral()/htrk.Integral(), "trigger efficiency")
       
   #
   #*********************
@@ -409,6 +489,8 @@ class TkrMonitor:
     xmin = hist.GetBinLowEdge(1)
     xmax = hist.GetBinLowEdge( hist.GetNbinsX()+1 )
     if key[-3:] == "Eff":
+      limit = self.limits[key] * 100
+    elif key == "fracNHstrip":
       limit = self.limits[key] * 100
     else: limit = self.limits[key]
     tl = ROOT.TLine( xmin, limit, xmax, limit )
@@ -486,7 +568,7 @@ class TkrMonitor:
     self.values["TOT_PeakError"][ielm] = error[1]
     self.values["TOT_GSigmaError"][ielm] = error[3]
     self.values["TOT_FitProb"][ielm] = self.ffit.GetProb()
-    self.hists["totPeak"].Fill( par[1] )
+    if par[1] > 0: self.hists["totPeak"].Fill( par[1] )
     self.towerHists[tower]["totPeak"].SetBinContent(unp+1,par[1])
     self.towerHists[tower]["totPeak"].SetBinError(unp+1,error[1])
         
@@ -498,15 +580,20 @@ class TkrMonitor:
   #
   def analyzeTotPeak(self):
     totPeakDist = self.hists["totPeak"]
-    fgaus = ROOT.TF1("fgaus", "gaus(0)")
-    fgaus.SetParameters( totPeakDist.Integral(), \
-                         totPeakDist.GetMean(), totPeakDist.GetRMS() )
+    fgaus = ROOT.TF1("fgaus", "gaus", 3.0,5.5)
+    fgaus.SetParameters(0,totPeakDist.Integral())
+    fgaus.SetParameters(1,totPeakDist.GetMean())
+    fgaus.SetParameters(2,totPeakDist.GetRMS())
+    #fgaus.SetParLimits( 2, 0.10, 0.3 )
+
     fgaus.SetLineColor(2)
     fgaus.SetLineWidth(2)
     totPeakDist.Fit("fgaus")
 
     mean = fgaus.GetParameter(1)
     rms = fgaus.GetParameter(2)
+    chi2 = fgaus.GetChisquare()
+
     limit = rms * self.limits["totPeakSigma"]
 
     self.totPeakAlerts = []
@@ -528,7 +615,7 @@ class TkrMonitor:
   # analyze layer effciencies
   #*********************
   #
-  def analyzeEfficiency(self, tower):
+  def analyzeLayerEfficiency(self, tower):
     hlhit = self.inputRoot.FindObjectAny("lhitT"+str(tower))
     hltrk = self.inputRoot.FindObjectAny("ltrkT"+str(tower))
     
@@ -544,7 +631,7 @@ class TkrMonitor:
       err = eff*(1-eff) / ltrk
       if err > 0.0: err = math.sqrt( err )
       else: err = 1.0 / ltrk
-      if eff*100 < self.limits["layerEff"]:
+      if eff < self.limits["layerEff"]:
         alert = "layer efficiency, %.1f%s < %.1f%s" \
                 % (eff*100, "%", self.limits["layerEff"]*100, "%" )
         self.logAlerts( tower, unp, alert, "layerEff" ,alertLevels[2] )
@@ -554,42 +641,16 @@ class TkrMonitor:
       self.values[key+"_err"][ielm] = err
       self.towerHists[tower][key].SetBinContent(unp+1,eff*100)
       self.towerHists[tower][key].SetBinError(unp+1,err*100)
-      self.hists[key].SetBinContent(tower+1,unp+1,1-eff)
+      self.hists[key].SetBinContent(tower+1,unp+1,(1-eff)*100)
 
-      #strip efficiency 
-      heocc = self.inputRoot.FindObjectAny("eoccT"+str(tower)+lname)
-      htocc = self.inputRoot.FindObjectAny("toccT"+str(tower)+lname)
-      eocc = 0
-      tocc = 0
-      self.listbin = []
-      self.listbin.append(0)
-      for strip in range(nStrip):
-        eocc += heocc.GetBinContent(strip+1)
-        tocc += htocc.GetBinContent(strip+1)
-        #if tocc > 1000 or strip%64 == 0:
-        if (strip+1)%64 == 0:
-          self.listbin.append(strip)
-          if tocc == 0.0: tocc = 1.0
-          seff = eocc/tocc
-          serr = seff*(1-seff)/tocc
-          serr = math.sqrt(serr)
-          if seff*100 < self.limits["stripEff"]:
-            alert = "strip efficiency, %.1f%s < %.1f%s" \
-                                    % (seff*100, "%", \
-                                       self.limits["stripEff"]*100, "%" )
-            self.striplogs["stripEff"][tower][unp].append((alert, strip, "layerEff", alertLevels[1]))
-          self.layerHists[tower][unp]["stripEff"].SetBinContent((strip+1)/64,seff*100)
-          self.layerHists[tower][unp]["stripEff"].SetBinError((strip+1)/64,serr*100)          
-          eocc = 0
-          tocc = 0
-          
-    #nbin = len()
-    #name = "stripEff"
-    #hname = "%s_T%d_L%d" % (name, tower, unp)
-    #title = "%s in tower %d Layer %d -%s" % (name, tower, unp, timeStamp)
-    #self.layerHists[tower][unp]["stripEff"] = ROOT.TH1F(hname,title,nbin,)    
-      
-          
+    if tower == 0:
+      self.sumttrk = 0.0
+      self.sumthit = 0.0
+    self.sumttrk += hltrk.Integral()
+    self.sumthit += hlhit.Integral()
+    if tower == nTower-1 :
+      self.latave["towerEff"] = (100*self.sumthit/self.sumttrk, "hit efficiency")
+
     sumltrk = hltrk.Integral()
     if sumltrk > 0:
       teff = hlhit.Integral()/sumltrk
@@ -604,12 +665,75 @@ class TkrMonitor:
     self.values[key+"_err"][tower] = terr
     self.hists[key].SetBinContent(tower+1,teff*100)
     self.hists[key].SetBinError(tower+1,terr*100)
+    if teff < self.limits["towerEff"]:
+        alert = "tower efficiency, %.1f%s < %.1f%s" % (teff*100, "%", self.limits["towerEff"]*100, "%" )
+        self.logAlerts( tower, 0, alert, "towerEff" ,alertLevels[1] )   # 0 is dummy
 
     self.towerave["layerEff"][tower] = teff*100
+
+  #
+  #*******************************
+  # analyze strip effciencies, no-hit strips, Dead GTFE 
+  #*******************************
+  #
+  def analyzeStripEfficiency(self, tower):
+    nt,nl = 0.0,0.0
+    for unp in range(nPlane):
+      ielm = unp + tower*nPlane
+      lname = tkrUtils.g_layerNames[unp]
+      
+      heocc = self.inputRoot.FindObjectAny("eoccT"+str(tower)+lname)
+      htocc = self.inputRoot.FindObjectAny("toccT"+str(tower)+lname)
+      eocc,tocc = 0.0,0.0
+      nl = 0.0
+      for strip in range(nStrip):
+        eocc += heocc.GetBinContent(strip+1)
+        tocc += htocc.GetBinContent(strip+1)
+        if heocc.GetBinContent(strip+1) == 0: # count no-hit strip
+          nt += 1
+          nl += 1 
+        if (strip+1)%nChannel == 0:
+          if eocc == 0.0:
+            hmap = self.inputRoot.FindObjectAny( "hTkrHitMapT%d%s" %(tower,lname) )
+            #print tower, lname, hmap.Integral(strip-nChannel-1, strip)
+            if hmap.Integral(strip-nChannel-1, strip) == 0:            
+              self.hists["deadGTFE"].Fill(tower)
+              alert = "Dead GTFE(No.%d)" % int((strip+1)/nChannel - 1)
+              self.logAlerts( tower, unp, alert, "deadGTFE" ,alertLevels[0] )
+          if tocc == 0.0: tocc = 1.0
+          seff = eocc/tocc
+          serr = seff*(1-seff)/tocc
+          serr = math.sqrt(serr)
+          if seff < self.limits["stripEff"]:
+            alert = "GTFE(No.%d) averaged strip efficiency, %.1f%s < %.1f%s" \
+                    % ((strip+1)/nChannel - 1, seff*100, "%", self.limits["stripEff"]*100, "%" )
+            self.striplogs[tower][unp]["stripEff"].append((alert, (strip+1)/nChannel - 1, \
+                                                           "layerEff", alertLevels[1]))
+          self.layerHists[tower][unp]["stripEff"].SetBinContent((strip+1)/nChannel,seff*100)
+          self.layerHists[tower][unp]["stripEff"].SetBinError((strip+1)/nChannel,serr*100)          
+          eocc,tocc = 0.0,0.0
+      self.towerHists[tower]["fracNHstrip"].SetBinContent(unp+1,100*nl/nStrip)
+      if nl/nStrip > self.limits["fracNHstrip"]:
+        alert = "fraction of no-hit strip, %.1f%s > %.1f%s" \
+                % (100*nl/nStrip, "%", self.limits["fracNHstrip"]*100, "%" )
+        self.logAlerts( tower, unp, alert, "fracNHstrip" ,alertLevels[1] )
+          
+    self.hists["fracNHstrip"].SetBinContent(tower+1,100*nt/nPlane/nStrip)
+
+    sumdead = self.towerHists[tower]["fracNHstrip"].Integral()
+    self.towerave["fracNHstrip"][tower] = sumdead/nPlane 
+
+    if tower == nTower-1 :
+      self.latave["fracNHstrip"] = (self.hists["fracNHstrip"].Integral()/nTower, "fraction of no-hit strips")
+
+
+
+
+    
     
   #
   #*********************
-  # analyze layer displaceBments
+  # analyze layer displacements
   #*********************
   #
   def analyzeDisplacement(self):
@@ -667,7 +791,7 @@ class TkrMonitor:
   #
   def analyzeOccupancy(self, tower, unp):
     ielm = unp + tower*nPlane
-    if ielm%36 == 0:
+    if ielm%nPlane == 0:
       self.sumlexp = 0
       self.sumlocc = 0
       self.sumlsat = 0
@@ -675,32 +799,32 @@ class TkrMonitor:
     lname = tkrUtils.g_layerNames[unp]
     hmul = self.inputRoot.FindObjectAny( "hTkrNoiseMulT%d%s" %(tower,lname) )
     hmap = self.inputRoot.FindObjectAny( "hTkrHitMapT%d%s" %(tower,lname) )
-    hexp = self.inputRoot.FindObjectAny( "hTkrExposT%d%s" %(tower,lname) )
+    #hexp = self.inputRoot.FindObjectAny( "hTkrExposT%d%s" %(tower,lname) )
     lexp = hmul.Integral()
     locc = hmul.Integral(2,128)
     lsat = hmul.Integral(nsat,128)
     socc = hmap.Integral()
+
     self.sumlexp += lexp
     self.sumlocc += locc
     self.sumlsat += lsat
     self.sumsocc += socc
-    if (ielm+1)%36 == 0:
+    if (ielm+1)%nPlane == 0:
       if self.sumlexp==0.0: self.sumlexp=1.0
       self.sumlocc /= self.sumlexp
       self.sumsocc /= (self.sumlexp*nStrip)
       self.sumlsat /= self.sumlexp
-      self.towerave["layerOcc"][(ielm+1)/36-1] = self.sumlocc
-      self.towerave["stripOcc"][(ielm+1)/36-1] = self.sumsocc
-      self.towerave["fracSat"][(ielm+1)/36-1] = self.sumlsat      
+      self.towerave["layerOcc"][(ielm+1)/nPlane-1] = self.sumlocc
+      self.towerave["stripOcc"][(ielm+1)/nPlane-1] = self.sumsocc
+      self.towerave["fracSat"][(ielm+1)/nPlane-1] = self.sumlsat      
     if lexp != None:
       if lexp==0.0: lexp==1.0
       locc /= lexp
       socc /= (lexp*nStrip)
       lsat /= lexp
     else:
-      locc = 0
-      socc = 0
-      lsat = 0
+      locc,socc,lsat = 0,0,0
+    self.maskHotstrip(tower, unp)
     if locc > self.limits["layerOcc"]:
       alert = "layer Occucpancy, %.1e > %.1e" \
               % (locc,self.limits["layerOcc"])
@@ -735,12 +859,77 @@ class TkrMonitor:
       if stocc > self.limits["stripOcc"]: 
         alert = "strip occupancy, %.1e > %.1e" \
                               % (stocc,self.limits["stripOcc"]) 
-        self.striplogs["stripOcc"][tower][unp].append((alert, strip, "stripOcc", alertLevels[1]))
+        self.striplogs[tower][unp]["stripOcc"].append((alert, strip, "stripOcc", alertLevels[1]))
 
-    
+
   #
   #*********************
-  # create html report for the given tower/layer
+  # time-dependence of Noise Occupancy
+  #*********************
+  #
+  def analyzeTimedep(self, tower):
+    httexp = self.inputRoot.FindObjectAny( "hTkrTowerSumExpTwr%d-R%s" % (tower,self.runID) )
+    httocc = self.inputRoot.FindObjectAny( "hTkrTowerOccTwr%d-R%s" % (tower,self.runID) )
+
+
+    for k in range(httexp.GetNbinsX()+1):
+        ttexp = httexp.GetBinContent(k+1)
+        ttocc = httocc.GetBinContent(k+1)
+        if ttexp != 0:
+          self.towerHists[tower]["stripOccT"].SetBinContent(k+1, ttocc/ttexp)
+        else:
+          self.towerHists[tower]["stripOccT"].SetBinContent(k+1, 0)
+          
+    for unp in range(nPlane):
+      ielm = unp + tower*nPlane
+      lname = tkrUtils.g_layerNames[unp]
+      htexp = self.inputRoot.FindObjectAny( "hTkrExposT%d%s-R%s" %(tower,lname,self.runID) )
+      htlocc = self.inputRoot.FindObjectAny( "hTkrLayerOccT%d%s-R%s" %(tower,lname,self.runID) )
+      htsocc = self.inputRoot.FindObjectAny( "hTkrStripOccT%d%s-R%s" %(tower,lname,self.runID) )
+      for k in range(htexp.GetNbinsX()+1):
+        texp = htexp.GetBinContent(k+1)
+        tlocc = htlocc.GetBinContent(k+1)
+        tsocc = htsocc.GetBinContent(k+1)
+        if texp != 0:
+          self.layerHists[tower][unp]["layerOccT"].SetBinContent(k+1, tlocc/texp)
+          self.layerHists[tower][unp]["stripOccT"].SetBinContent(k+1, tsocc/texp)
+        else:
+          self.layerHists[tower][unp]["layerOccT"].SetBinContent(k+1, 0)
+          self.layerHists[tower][unp]["stripOccT"].SetBinContent(k+1, 0)
+
+  #
+  #***********************
+  # create Hot strip
+  #***********************
+  #
+  def maskHotstrip(self, tower, unp):
+    lname = tkrUtils.g_layerNames[unp]
+    hWmap = self.inputRoot.FindObjectAny( "hTkrWHitMapT%d%s" %(tower,lname) )
+    hmul = self.inputRoot.FindObjectAny( "hTkrNoiseMulT%d%s" %(tower,lname) )
+    lexp = hmul.Integral()
+    locc = hWmap.Integral()/lexp
+    lsat = hmul.Integral(nsat,128)/lexp
+    if lsat < self.limits["fracSat"]:
+      while locc > self.limits["layerOcc"]:
+        vmax,smax = -1,-1
+        for strip in range(nStrip):     
+          socc = hWmap.GetBinContent(strip+1)
+          if socc > vmax:
+            if strip not in self.badStrips[tower][unp]:
+              vmax = socc
+              smax = strip
+        self.badStrips[tower][unp].append(smax)
+        print "mask strip: T%d L%d %d, %.1e" % (tower, unp, smax, vmax/lexp)
+        locc = (locc*lexp-vmax)/lexp
+      for strip in range(nStrip):     
+        socc = hWmap.GetBinContent(strip+1) / lexp
+        if socc > self.limits["stripOcc"] \
+               and strip not in self.badStrips[tower][unp]:
+          self.badStrips[tower][unp].append(strip)
+          print "mask strip: T%d L%d %d, %.1e" % (tower, unp, strip, socc)
+  #
+  #*********************
+  # create html report for the given layer
   #*********************
   #
   def htmlLayerReport(self, tower, unp, alert):
@@ -758,11 +947,11 @@ class TkrMonitor:
       self.hout1.write( '<html>\n' )
       self.hout1.write( '<head><title> Tower%d-%s summary </title></head><BR>\n' %(tower, lname))
       self.hout1.write( '<body>\n' )
-      self.htmlLine1( '<B> Tower%d-%s summary </B>\n' % (tower, lname))
+      self.htmlLine( self.hout1,'<B> Tower%d-%s summary </B>\n' % (tower, lname))
       layerLink = self.htmlLink( "Back to Top Page", "../../index.html")
-      self.htmlLine1("%s" % layerLink)
+      self.htmlLine(self.hout1, "%s" % layerLink)
       layerLink = self.htmlLink( "Back to Tower%d" %tower, "../tower%d.html" %tower)
-      self.htmlLine1("%s" % layerLink)      
+      self.htmlLine(self.hout1, "%s" % layerLink)      
       self.hout1.write( '<table style="text-align: left; width: 100%;" ' \
                         + 'border="0" cellpadding="2" cellspacing="2">\n' )
       self.hout1.write( '<tbody>\n' )
@@ -773,7 +962,7 @@ class TkrMonitor:
       path = os.path.join( path, pname )
       hist = self.layerHists[tower][unp][key]
       self.setHistLabel(hist, key, "layer")
-      if key == "stripOcc" : ROOT.gPad.SetLogy( 1 )
+      if key == "stripOcc" or key[-4:] == "OccT": ROOT.gPad.SetLogy( 1 )
       hist.Draw()
       if key == "stripOcc" or key == "stripEff":
           tl = self.setHistLimits(key, self.layerHists[tower][unp][key])
@@ -782,28 +971,31 @@ class TkrMonitor:
       ROOT.gPad.SetLogy( 0 )
       self.savedPictures[tower][unp][key] = pname
       self.hout1.write( '<tr><td>' )
-      self.htmlLine1(layerHistNames[key][0])
-      self.htmlImage1(pname)
+      self.htmlLine(self.hout1, layerHistNames[key][0])
+      self.htmlImage( self.hout1, pname)
       self.hout1.write( '</td>\n<td>\n' )
+
       if key == "chargeHist":
         if "TOT" in alert:
-          color = "red"
-          self.htmlLine1("ERR",2,color)
+          color = yellow
+          self.htmlLine(self.hout1, "WARN",2,color)
         else:
           color = "NONE"
-          self.htmlLine1("INFO",2,color)
-        self.htmlLine1("TOT_LWidth: %.2f " % self.values["TOT_LWidth"][ielm])
-        self.htmlLine1("TOT_Peak: %.1f" % self.values["TOT_Peak"][ielm],2,color)
-        self.htmlLine1("TOT_GSigma: %.1f " % self.values["TOT_GSigma"][ielm])
-        self.htmlLine1("TOT_FitProb: %.1e " % self.values["TOT_FitProb"][ielm])
-      elif key == "stripOcc" or "stripEff":
-        if len(self.striplogs[key][tower][unp]) > 0:
-          if key == "stripOcc" and len(self.striplogs[key][tower][unp]) > 10:
-            self.htmlLine1("WARN: Noise flare in following strips",2,"red")
+          self.htmlLine(self.hout1, "INFO",2,color)
+        self.htmlLine(self.hout1, "TOT_LWidth: %.2f " % self.values["TOT_LWidth"][ielm])
+        self.htmlLine(self.hout1, "TOT_Peak: %.1f" % self.values["TOT_Peak"][ielm],2,color)
+        self.htmlLine(self.hout1, "TOT_GSigma: %.1f " % self.values["TOT_GSigma"][ielm])
+        self.htmlLine(self.hout1, "TOT_FitProb: %.1e " % self.values["TOT_FitProb"][ielm])
+
+
+      elif key == "stripOcc":
+        if len(self.striplogs[tower][unp][key]) > 0:
+          if len(self.striplogs[tower][unp][key]) > 10:
+            self.htmlLine(self.hout1, "WARN: Noise flare in following strips",2,yellow)
             first = -100
             last = -100
             txt = ""
-            for alert, strip, type, level in self.striplogs[key][tower][unp]:
+            for alert, strip, type, level in self.striplogs[tower][unp][key]:
               if first < 0:
                 first = strip
                 last = strip
@@ -814,15 +1006,30 @@ class TkrMonitor:
                 first = strip
                 last = strip
               elif strip == last+1: last = strip
-            self.htmlLine1(txt)
-            self.htmlLine1("Number of affected strips: %d" % \
-                           len(self.striplogs[key][tower][unp]) )
+            self.htmlLine(self.hout1, txt)
+            self.htmlLine(self.hout1, "Number of affected strips: %d" % \
+                          len(self.striplogs[tower][unp][key]) ) 
           else:
-            self.htmlLine1("WARN",2,"red")
-            for alert, strip, type, level in self.striplogs[key][tower][unp]:
-              if type == "stripEff": txt = "strips %d-%d:" % (s-64, s-1)
-              else: txt = " strip %d:" % strip
-              self.htmlLine1("%s %s" %(txt,alert) )
+            self.htmlLine(self.hout1, "WARN",2,yellow)
+            for alert, strip, type, level in self.striplogs[tower][unp][key]:
+              if alert in "0.0%":
+                self.htmlLine(self.hout1, alert, 2, red)
+              else:
+                self.htmlLine(self.hout1,"strip%d:%s" %(strip,alert))
+            if len(self.badStrips[tower][unp]) > 0:
+              for s in self.badStrips[tower][unp]:
+                self.htmlLine(self.hout1,"Hot strip%d: Need to be Masked" %(s),2,red)
+                
+      else :
+        if self.striplogs[tower][unp].has_key( key ):
+          if len(self.striplogs[tower][unp][key]) > 0:
+            self.htmlLine(self.hout1, "WARN",2,yellow)
+            for alert, strip, type, level in self.striplogs[tower][unp][key]:
+              if alert in "0.0%":
+                self.htmlLine(self.hout1, alert, 2, red)
+              else:
+                self.htmlLine(self.hout1,"%s" %(alert))
+                
       self.hout1.write( '</td></tr>\n' )
       
     if ielm not in self.laytemp:
@@ -839,12 +1046,8 @@ class TkrMonitor:
   #*********************
   #
   
-  def htmlTowerReport(self, tower, unp, alert):
-    ielm = unp + tower*nPlane
-    lname = tkrUtils.g_layerNames[unp]
+  def htmlTowerReport(self, tower, unp):
     tdir = "Tower%d" % tower
-    ldir = "T%d%s" % (tower, lname)
-    
     path = os.path.join( htmldir, tdir )
     if not os.path.exists( path ):
       print "html sub directory, %s, does not exist. Creat a new one." % path
@@ -855,9 +1058,9 @@ class TkrMonitor:
       self.hout1.write( '<html>\n' )
       self.hout1.write( '<head><title> Tower%d summary </title></head><BR>\n' % tower )
       self.hout1.write( '<body>\n' )
-      self.htmlLine1( '<B> Tower%d summary </B>\n' % tower)
+      self.htmlLine( self.hout1, '<B> Tower%d summary </B>\n' % tower)
       layerLink = self.htmlLink( "Back to Top Page", "../index.html")
-      self.htmlLine1("%s" % layerLink)
+      self.htmlLine( self.hout1, "%s" % layerLink)
       self.hout1.write( '<table style="text-align: left; width: 100%;" ' \
                         + 'border="0" cellpadding="2" cellspacing="2">\n' )
       self.hout1.write( '<tbody>\n' )
@@ -865,8 +1068,7 @@ class TkrMonitor:
     for key in self.towerHists[tower].keys():
       pname = "%s_T%d-%s.png" % (key, tower, self.runID )
       path = os.path.join( htmldir, tdir )
-      path = os.path.join( path, pname )
-      
+      path = os.path.join( path, pname )     
       hist = self.towerHists[tower][key]
       self.setHistLabel(hist, key, "tower")
       hist.Draw()
@@ -875,34 +1077,47 @@ class TkrMonitor:
       if self.limits.has_key( key ):
         tl = self.setHistLimits(key, hist)
         tl.Draw("SAME")
-      if key[-3:] == "Occ" or key[:4] == "frac" : ROOT.gPad.SetLogy( 1 )  
+      if key[-3:] == "Occ" or key[:5] == "fracS" or key[-4:] == "OccT": ROOT.gPad.SetLogy( 1 )  
       canvas.SaveAs( path )
       ROOT.gPad.SetLogy( 0 )
       self.hout1.write( '<tr><td>' )
-      self.htmlLine1(towerHistNames[key][0])
-      self.htmlImage1(pname)
+      self.htmlLine(self.hout1, towerHistNames[key][0])
+      self.htmlImage( self.hout1, pname )
       self.hout1.write( '</td>\n<td>\n' )
-      label = towerHistNames[key][2]
       
-      for level in alertLevels:
-        if len(self.logs[key][level])>0:
-          if level == alertLevels[0]: color = "red"
-          elif level == alertLevels[1]: color = "#e08000"
-          else: color = None
-        for t, u, a in self.logs[key][level]:
-          if t == tower:
-            if u == unp: self.htmlLine1( level, 2, color )
-            lname = tkrUtils.g_layerNames[u]
-            if key == "layerdXY": self.htmlLine1("T%d%s %s" %(t, lname, a), 2, "None" )
-            else:
-              layerLink = self.htmlLink( "Layer T%d%s" %(t,lname),\
-                                         "T%d%s/T%d%s.html" %(t, lname, t, lname))
-              self.htmlLine1("T%d%s %s %s" %(t, lname, a, layerLink), 2, "None" )
-      if key == "layerEff": txt = "Tower averaged %s: %.1f%s" % (label, self.towerave[key][tower], "%")
-      elif key == "totPeak": txt = "Tower averaged %s: %.2f [fC]" % (label, self.towerave[key][tower]) 
-      elif key == "layerdXY": txt = "Tower averaged %s: %.1f [micron]" % (label, self.towerave[key][tower]) 
-      else: txt = "Tower averaged %s: %.1e" % (label, self.towerave[key][tower]) 
-      self.htmlLine1(txt, 2, "green")
+      label = towerHistNames[key][2]
+      if key == "fracNHstrip" and self.latave["fracNHstrip"] > 50.0:
+        self.htmlLine( self.hout1, "Poor statistics, No displayed", 2, "blue")
+      if self.logs.has_key(key):        
+        for level in alertLevels:
+          if len(self.logs[key][level])>0:
+            if level == alertLevels[0]: color = red
+            elif level == alertLevels[1]: color = yellow
+            else: color = None
+            if self.logs[key][level][0][0] == tower:
+              self.htmlLine( self.hout1, level, 2, color )           
+            for t, u, a in self.logs[key][level]:
+              if t == tower:
+                lname = tkrUtils.g_layerNames[u]
+                if key == "fracNHstrip":
+                  if self.latave["fracNHstrip"] < 50.0:
+                    layerLink = self.htmlLink( "Layer T%d%s" %(t,lname),\
+                                               "T%d%s/T%d%s.html" %(t, lname, t, lname))
+                    self.htmlLine( self.hout1, "T%d%s %s %s" %(t, lname, a, layerLink), 2, "None" )  
+                elif key == "layerdXY":
+                  self.htmlLine( self.hout1, "T%d%s %s" %(t, lname, a), 2, "None" )
+                else:
+                  layerLink = self.htmlLink( "Layer T%d%s" %(t,lname),\
+                                             "T%d%s/T%d%s.html" %(t, lname, t, lname))
+                  self.htmlLine( self.hout1, "T%d%s %s %s" %(t, lname, a, layerLink), 2, "None" )
+      if self.towerave.has_key(key): 
+         if key == "layerEff" or key == "fracNHstrip":
+           txt = "Tower averaged %s: %.1f%s" % (label, self.towerave[key][tower], "%")
+         elif key == "totPeak": txt = "Tower averaged %s: %.2f [fC]" % (label, self.towerave[key][tower]) 
+         elif key == "layerdXY": txt = "Tower averaged %s: %.1f [micron]" \
+              % (label, self.towerave[key][tower]) 
+         else: txt = "Tower averaged %s: %.1e" % (label, self.towerave[key][tower]) 
+         self.htmlLine( self.hout1, txt, 2, "green")
       self.hout1.write( '</td></tr>\n' )        
     if tower not in self.towtemp:
       self.hout1.write( '</tbody>\n</table>\n' )
@@ -981,7 +1196,8 @@ class TkrMonitor:
       sys.exit()
       
     lname = tkrUtils.g_layerNames[unp]
-    print "%s-%s: %s, T%d %s" % (level, type, alert, tower, lname)
+    if unp == -1:print "%s-%s: %s, T%d" % (level, type, alert, tower)
+    else:print "%s-%s: %s, T%d %s" % (level, type, alert, tower, lname)
     self.logs[type][level].append( (tower, unp, alert) )
     if level=="WARN" or level=="ERR":
       self.alerts[tower][unp].append( (alert, type, level) )
@@ -1013,8 +1229,12 @@ class TkrMonitor:
       for type in alertTypes:
         for tower, unp, alert in self.logs[type][level]:
           lname = tkrUtils.g_layerNames[unp]
-          log = "%s %s: %s, T%d %s\n" \
-                % ("%"+level+"%", type, alert, tower, lname)
+          if "trigger efficiency" in alert or "tower efficiency" in alert:
+            log = "%s %s: %s, T%d \n" \
+                  % ("%"+level+"%", type, alert, tower)
+          else:
+            log = "%s %s: %s, T%d %s\n" \
+                  % ("%"+level+"%", type, alert, tower, lname)
           lfile.write( log )
           if level != "INFO":
             pass # use this for alert in the future
@@ -1037,25 +1257,25 @@ class TkrMonitor:
     self.hout.write( "<html>\n" )
     self.hout.write( "<head><title>LAT-TKR Monitor Report</title><head>\n" )
     self.hout.write( "<body>\n" )
-    self.htmlLine( "<B>LAT-TKR Monitor Report</B>", 3, "blue" )
+    self.htmlLine( self.hout, "<B>LAT-TKR Monitor Report</B>", 3, "blue" )
 
     #
     # run info
     #
     self.hout.write( "<ul>" )
-    self.htmlLine( "<B>runID</B>: %s" % self.runID )
-    self.htmlLine( "<B>intput file</B>: %s" % self.inputRoot.GetName() )
-    self.htmlLine( "<B>reference files</B>:" )
+    self.htmlLine( self.hout, "<B>runID</B>: %s" % self.runID )
+    self.htmlLine( self.hout, "<B>intput file</B>: %s" % self.inputRoot.GetName() )
+    self.htmlLine( self.hout, "<B>reference files</B>:" )
     for rfile in self.refRoot:
-      self.htmlLine( rfile.GetName() )
+      self.htmlLine( self.hout, rfile.GetName() )
     gmt = tkrUtils.getGMT( self.startTime[0] )
-    self.htmlLine( "<B>Start Time</B>: %s" \
+    self.htmlLine( self.hout, "<B>Start Time</B>: %s" \
                     % time.strftime( "%Y/%m/%d, %H:%M:%S", gmt ) )
-    self.htmlLine( "<B>Duration</B>: %.0f seconds" \
+    self.htmlLine( self.hout, "<B>Duration</B>: %.0f seconds" \
                     % (self.endTime[0]-self.startTime[0]) )
-    self.htmlLine( "<B>Script version</B>: %s" \
+    self.htmlLine( self.hout, "<B>Script version</B>: %s" \
                     % __version__.split()[1] )
-    self.htmlLine( "<B>Script tag</B>: %s" \
+    self.htmlLine( self.hout, "<B>Script tag</B>: %s" \
                     % __tag__.split()[1] )
     self.hout.write( "</ul>" )
 
@@ -1069,7 +1289,7 @@ class TkrMonitor:
       title = latHistNames[key][0]
       dopt = latHistNames[key][3]
       self.hout.write( '<tr><td>' )
-      self.htmlLine( title )
+      self.htmlLine( self.hout, title )
       hist = self.hists[key]
       self.setHistLabel(hist, key, "lat")
       hist.Draw( dopt )
@@ -1079,10 +1299,11 @@ class TkrMonitor:
       pname = "%s-%s.png" % (hist.GetName(), self.runID )
       path = os.path.join( htmldir, pname )
       canvas.SaveAs( path )
-      self.htmlImage( pname )
+      self.htmlImage( self.hout, pname )
       self.hout.write( "</td>\n" )
-      if key != "towerEff":
-        self.htmlAlerts( key )
+      #if key != "towerEff":
+      self.htmlAlerts( key )
+
       self.hout.write( "</tr>\n" )
     #
     # close out
@@ -1095,40 +1316,25 @@ class TkrMonitor:
   #*********************
   # misc. html functions
   #*********************
-  def htmlImage( self, imageName, table=False ):
+
+  def htmlImage( self, hout, imageName, table=False ):
     txt = '<a href="%s"><img src="%s" width="300"></a>' \
           % (imageName, imageName)
     if table: txt = '<td>%s</td>' % txt
-    self.hout.write( txt+"\n" )
-
-  def htmlLine(self, line, fsize=2, color=None):
-    #if id == "lat": hout = hout
-    #if id == "tower": hout = hout1
-    #if id == "layer": hout = hout1
+    hout.write( txt+"\n" )
+                                                                                
+  def htmlLine(self, hout, line, fsize=2, color=None):
     if color == None:
-      self.hout.write( "<FONT SIZE=\"+%d\">%s</FONT><BR>\n" % (fsize, line) )
+      hout.write( "<FONT SIZE=\"+%d\">%s</FONT><BR>\n" % (fsize, line) )
     else:
-      self.hout.write( '<FONT SIZE="+%d" color="%s">%s</FONT><BR>\n' \
+      hout.write( '<FONT SIZE="+%d" color="%s">%s</FONT><BR>\n' \
                        % (fsize, color, line) )
-
+                                                                                
   def htmlLink(self, word, href, color=None):
     txt = '<a href="%s">%s</a>' % (href, word)
     if color == None: return txt
     else: return '<font color="%s">%s</font>' % (color, txt)
-    
-  def htmlImage1( self, imageName, table=False ):
-    txt = '<a href="%s"><img src="%s" width="300"></a>' \
-          % (imageName, imageName)
-    if table: txt = '<td>%s</td>' % txt
-    self.hout1.write( txt+"\n" )
 
-  def htmlLine1(self, line, fsize=2, color=None ):
-    if color == None:
-      self.hout1.write( "<FONT SIZE=\"+%d\">%s</FONT><BR>\n" % (fsize, line) )
-    else:
-      self.hout1.write( '<FONT SIZE="+%d" color="%s">%s</FONT><BR>\n' \
-                        % (fsize, color, line) )
-      
   #
   #*********************
   # close files
@@ -1137,18 +1343,27 @@ class TkrMonitor:
   def htmlAlerts(self, key ):
     self.hout.write( "<td>\n" )
     for level in alertLevels:
-      if len(self.logs[key][level])>0:
-        if level == alertLevels[0]: color = "red"
-        elif level == alertLevels[1]: color = "#e08000"
-        else: color = None
-        self.htmlLine( level, 2, color)
-        for tower, unp, alert in self.logs[key][level]:         
-          lname = tkrUtils.g_layerNames[unp]
-          towerRef = self.htmlTowerReport( tower, unp ,alert)
-          towerLink = self.htmlLink( "Tower %d"%tower, towerRef )
-          layerRef = self.htmlLayerReport( tower, unp, alert )
-          layerLink = self.htmlLink( "Layer %s"%lname, layerRef )
-          self.htmlLine( "%s: %s %s" % (alert, towerLink, layerLink) )
+      if self.logs.has_key(key):
+        if len(self.logs[key][level])>0:
+          if level == alertLevels[0]: color = red
+          elif level == alertLevels[1]: color = yellow
+          else: color = None
+          self.htmlLine( self.hout, level, 2, color)
+          for tower, unp, alert in self.logs[key][level]:         
+            if key == "fracNHstrip" and self.latave["fracNHstrip"] > 50.0:
+              self.htmlLine( self.hout, "Poor statistics, No displayed", 2, "blue")
+              break
+            lname = tkrUtils.g_layerNames[unp]
+            towerRef = self.htmlTowerReport( tower, unp )
+            towerLink = self.htmlLink( "Tower %d"%tower, towerRef )
+            layerRef = self.htmlLayerReport( tower, unp, alert )
+            layerLink = self.htmlLink( "Layer %s"%lname, layerRef )
+            if key == "towerEff" or key == "trigEff":
+              self.htmlLine( self.hout, "%s: %s" % (alert, towerLink) )
+            else:self.htmlLine( self.hout, "%s: %s %s" % (alert, towerLink, layerLink) )
+    if self.latave.has_key(key): 
+         txt = "Lat averaged %s: %.1f%s" % (self.latave[key][1], self.latave[key][0], "%") 
+         self.htmlLine( self.hout, txt, 2, "green")
     self.hout.write( "</td>\n" )
   
   #
@@ -1177,7 +1392,7 @@ if __name__ == '__main__':
   timeStamp = time.strftime("%y%m%d-%H%M", time.gmtime() )
   timeStamp = time.strftime("%y%m%d", time.gmtime() ) # this temporary
   if len(sys.argv) > 1: iname = sys.argv[1]
-  else: iname = "/nfs/slac/g/ki/ki16/htajima/GLAST/rootFiles/TKR-14364.root"
+  else: iname = "/nfs/slac/g/ki/ki16/htajima/GLAST/rootFiles/TKR.root"
   if len(sys.argv) > 2: oname = sys.argv[2]
   else: oname = "tkrMonitor-%s.root" % timeStamp
   if len(sys.argv) > 3: htmldir = sys.argv[3]
@@ -1190,7 +1405,7 @@ if __name__ == '__main__':
   tkrMonitor = TkrMonitor( iname, htmldir )
   tkrMonitor.getTimeStamps()
   tkrMonitor.analyzeTKR()
-
+  
   tkrMonitor.saveRoot( oname ) # save root before report.
   tkrMonitor.saveReports( aname, logname ) # this should be after saving ROOT
 
