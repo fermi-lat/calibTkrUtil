@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Tue Jul 15 02:01:10 PDT 2008
+calibTkrUtil/python
+
+Modified Files:
+	tkrMonitor.py tkrUtils.py 
+Log Message:
+many plots are added. create hotstrip xml file when hot strips are found.
+
+    *
+------------------------------------------------------------
 User: htajima  Tue Jul 15 01:59:44 PDT 2008
 calibTkrUtil/src
 
