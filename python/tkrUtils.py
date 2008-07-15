@@ -529,6 +529,22 @@ def modThrDacFromXml( infile, outfile, daclist ):
   return
 
 
+def getDateTime( time ):
+  times = time.split( " " )
+  if len(times) > 1: # convert from string
+    month = times[0].split( "/" )[0]
+    day = times[0].split( "/" )[1]
+    year = times[1].split( "," )[0][-2:]
+    hour = times[2].split(":")[0]
+    minute = times[2].split(":")[1]
+    return (year, month, day, hour, minute)
+  else: # convert from MET
+    MET = int( time )
+    delta = datetime.timedelta( seconds=MET )
+    date = datetime.datetime( 2001, 1, 1 ) + delta
+    return (date.year-2000, date.month, date.day, date.hour, date.minute)
+  
+
 def readChargeScaleFromXml( xmlfile ):
 
   # read charge scale xml file
@@ -932,18 +948,21 @@ class XmlHandler:
   """
 
   def __init__(self, fileName, type):
-    dtd_dir = "./"
     if type is 'tot' or type is 'threshold':
       dtd = 'tkrCalibration.dtd'
     else:
       dtd = 'badStrips.dtd'
-    #dtdfile = os.path.join(os.getenv('TKR_ROOT'), 'tkr_lib', dtd)
-    dtdfile = os.path.join(dtd_dir, dtd)
+    try:
+      dtdfile = os.path.join(os.getenv('CALIBTKRUTILROOT'), 'src', dtd)
+      if not os.path.exists(dtdfile):
+        dtdfile = os.path.join(os.getenv("LATMonRoot"),"TKR","TkrMonitor",dtd)
+    except:
+      dtdfile = os.path.join(os.getenv("LATMonRoot"), "TKR", "TkrMonitor", dtd)
     if not os.path.exists(dtdfile):
       print 'FATAL: Did not find the DTD file ' + dtdfile
-      self.doc = None
-      return
+      sys.exit()
     
+    print "DTD:", dtdfile
     self.fileName = fileName
     
     #check if it is a new doc creation that is requested
@@ -1289,17 +1308,18 @@ class XmlHandler:
     return self.doc
 
 
-def initHotXml( file, badType, runId, times, inst="LAT" ):
+def initHotXml( file, badType, runId, times, inst="LAT", tagv="1.1", \
+                source="LPA", trigger="Nominal" ):
   print "initializing", file
   handler = XmlHandler(file, badType)
   doc_elem = handler.getDoc().documentElement
   elem = handler.createGenericElement(inst,\
                                       time.strftime("%y%m%d%H%M%S", time.gmtime()),\
                                       runId, "HotStrips", \
-                                      sys.argv[0], "1.1" )
+                                      sys.argv[0], tagv )
   elem.appendChild( handler.createInSampleElement( \
       times[0], times[1], \
-      "SolicitedTrigger", "NA", "EmptyData" ) )
+      trigger, "NA", source ) )
   doc_elem.appendChild(elem)
 
   return handler
@@ -1318,7 +1338,8 @@ def addHotStrips( handler, tower, badStripMap ):
   
 
 
-def writeHotXml( badStripMap, runId, topDir=None, times=None, timeStamp=None ):
+def writeHotXml( badStripMap, runId, topDir=None, times=None, timeStamp=None, \
+                 tagv="1.1", source="LPA", trigger="Nominal" ):
   badType = 'hot'
   if times == None:
     times = (time.strftime("%a %m/%d %Y, %H:%M GMT", time.gmtime()), \
@@ -1334,7 +1355,7 @@ def writeHotXml( badStripMap, runId, topDir=None, times=None, timeStamp=None ):
 
   fileName = timeStamp +'_HotStrips_TKR.xml'
   file = os.path.join( topDir, fileName )
-  handler = initHotXml( file, badType, runId, times, "LAT" )
+  handler = initHotXml( file, badType, runId, times, "LAT", tagv, source, trigger )
   
   for tower in range(g_nTowers):
     hwserial = g_Serials[tower]
@@ -1342,7 +1363,7 @@ def writeHotXml( badStripMap, runId, topDir=None, times=None, timeStamp=None ):
     fpath = os.path.join(topDir, hwserial)
     if not os.path.exists(fpath): os.mkdir( fpath )
     file = os.path.join( fpath, fileName )
-    thandler = initHotXml( file, badType, runId, times, "TWR" )
+    thandler = initHotXml( file, badType, runId, times, "TWR", tagv, source, trigger )
     addHotStrips( thandler, tower, badStripMap )
     addHotStrips( handler, tower, badStripMap )
     thandler.saveAndClose()
@@ -1353,7 +1374,7 @@ def writeHotXml( badStripMap, runId, topDir=None, times=None, timeStamp=None ):
 #***********************************
 # write to LATC TFE file
 #***********************************
-def writeTFEXml( badStripMap, runId, topDir=None, times=None, timeStamp=None ):
+def writeTFEXml( badStripMap, runId, topDir=None, times=None, timeStamp=None, tagv="1.1" ):
   badType = 'hot'
   if times == None:
     times = (time.strftime("%a %m/%d %Y, %H:%M GMT", time.gmtime()), \
@@ -1379,7 +1400,7 @@ def writeTFEXml( badStripMap, runId, topDir=None, times=None, timeStamp=None ):
   doc_elem.setAttribute( "convertUser", os.getenv('USER') )
   doc_elem.setAttribute( "convertPC", os.getenv('HOSTNAME') )
   doc_elem.setAttribute( "latteInputType", "Hot Strip xml File" )
-  doc_elem.setAttribute( "latteCfgVersion", "" )
+  doc_elem.setAttribute( "latteCfgVersion", tagv )
     
   for tower in range(g_nTowers):
     tower_elem = handler.goToTower( (tower, "TEM") )
