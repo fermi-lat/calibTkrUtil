@@ -250,11 +250,19 @@ void RootAnalyzer::analyzeData( int numEvents = 10000 )
   if(nRecon != 0) {
     m_reconEvent = 0;
     m_reconChain->SetBranchAddress("ReconEvent", &m_reconEvent);
+    //m_reconChain->SetBranchStatus("m_acd",0);
   }
 
   if(nDigi != 0) {
     m_digiEvent = 0;
     m_digiChain->SetBranchAddress("DigiEvent", &m_digiEvent);
+    m_digiChain->SetBranchStatus("*",0);
+    m_digiChain->SetBranchStatus("m_eventId", 1);
+    m_digiChain->SetBranchStatus("m_runId", 1);
+    m_digiChain->SetBranchStatus("m_timeStamp", 1);
+    m_digiChain->SetBranchStatus("m_metaEvent", 1);
+    m_digiChain->SetBranchStatus("m_tkrDigiCol", 1);
+    m_digiChain->SetBranchStatus("m_gem", 1);
   }
 
   if( numEvents>0 && numEvents<nEvent  ) nEvent = numEvents;
