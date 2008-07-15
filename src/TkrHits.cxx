@@ -518,7 +518,7 @@ TkrHits::TkrHits( bool initHistsFlag ):
   tag.assign( tag, 0, i ) ;
   m_tag = tag;
 
-  std::string version = "$Revision: 1.14 $";
+  std::string version = "$Revision: 1.15 $";
   i = version.find( " " );
   version.assign( version, i+1, version.size() );
   i = version.find( " " );
@@ -830,14 +830,16 @@ void TkrHits::saveAllHist( bool saveWaferOcc, bool runFitTot )
   char name[] = "leffT00";
   TH1F* hist;
   TH1F* thits = new TH1F("thits", "thits", g_nTower, 0, g_nTower);
-  TH1F* teff = new TH1F("teff", "teff", g_nTower, 0, g_nTower);
-  float bins[18] = {0.0001,0.08,0.12,0.17,0.25,0.35,0.5,0.7,1.0,1.4,2.0,2.8,4.0,5.6,8.0,12.0,16.0,24.0};
-  TH1F* ineffDist = new TH1F("ineffDist", "ineffDist", 17, bins);
+  TH1F* ttrks = new TH1F("ttrks", "ttrks", g_nTower, 0, g_nTower);
+  TH1F* theff = new TH1F("theff", "Tower Hit Efficinecies", g_nTower, 0, g_nTower);
+  TH1F* tteff = new TH1F("tteff", "Tower Trigger Efficiencies", g_nTower, 0, g_nTower);
+  float bins[24] = {0.0001,0.01,0.014,0.02,0.028,0.04,0.056,0.08,0.12,0.17,0.25,0.35,0.5,0.7,1.0,1.4,2.0,2.8,4.0,5.6,8.0,12.0,16.0,24.0};
+  TH1F* ineffDist = new TH1F("ineffDist", "ineffDist", 23, bins);
   for( UInt_t tw = 0; tw != m_towerVar.size(); ++tw){
     m_towerVar[tw].saveHists( saveWaferOcc );
     for( int unp = 0; unp != g_nUniPlane; unp++){
-      thits->Fill( m_towerVar[tw].towerId, m_towerVar[tw].bsVar[unp].tLayer );
-      teff->Fill( m_towerVar[tw].towerId, m_towerVar[tw].bsVar[unp].hLayer );
+      ttrks->Fill( m_towerVar[tw].towerId, m_towerVar[tw].bsVar[unp].tLayer );
+      thits->Fill( m_towerVar[tw].towerId, m_towerVar[tw].bsVar[unp].hLayer );
     }
     //
     // check for outliers
@@ -889,9 +891,9 @@ void TkrHits::saveAllHist( bool saveWaferOcc, bool runFitTot )
     }
   }
 
-  entry = thits->Integral();
+  entry = ttrks->Integral();
   if( entry > 0 ){
-    eff = teff->Integral() / entry;
+    eff = thits->Integral() / entry;
     error = eff*(1-eff)/entry;
     if( error > 0.0 ) error = sqrt( error );
     else error = 1.0E-5;
@@ -912,19 +914,21 @@ void TkrHits::saveAllHist( bool saveWaferOcc, bool runFitTot )
 	      << std::endl;
   }
   
-  teff->Divide( thits );
+  tteff->Add( m_sixInARowWithTrigMIP );
+  tteff->Divide( m_sixInARowMIP );
   for( UInt_t tw = 0; tw != m_towerVar.size(); ++tw){
     int twr = m_towerVar[tw].towerId;
     // calculate binomial error
-    eff = teff->GetBinContent( twr+1 );
-    entry = thits->GetBinContent( twr+1 );
+    entry = ttrks->GetBinContent( twr+1 );
+    eff = thits->GetBinContent( twr+1 ) / entry;
     error = 1.0E-5;
     if( entry > 0 ){
       error = eff*(1-eff)/entry;
       if( error > 0.0 ) error = sqrt( error );
       else error = 1.0E-5;
     }
-    teff->SetBinError( twr+1, error );
+    theff->SetBinContent( twr+1, eff );
+    theff->SetBinError( twr+1, error );
     if( m_log.is_open() ){
       std::cout.setf( std::ios::fixed );
       std::cout.precision( 5 );
@@ -937,9 +941,17 @@ void TkrHits::saveAllHist( bool saveWaferOcc, bool runFitTot )
 	    << " tower efficiency: " << eff << " +- " << error 
 	    << std::endl;
     }
+    eff = tteff->GetBinContent( twr+1 );
+    entry = m_sixInARowMIP->GetBinContent( twr+1 );
+    error = eff*(1-eff)/entry;
+    if( error > 0.0 ) error = sqrt( error );
+    else error = 1.0E-5;
+    tteff->SetBinError( twr+1, error );
   }
   thits->Write(0, TObject::kOverwrite);
-  teff->Write(0, TObject::kOverwrite);
+  ttrks->Write(0, TObject::kOverwrite);
+  theff->Write(0, TObject::kOverwrite);
+  tteff->Write(0, TObject::kOverwrite);
   ineffDist->Write(0, TObject::kOverwrite);
 
   //
@@ -2518,18 +2530,21 @@ void TkrHits::fillOccupancy( int tDiv )
 	  if( numActive == g_nView ){
 	    for( int vw=0; vw!=g_nView; vw++){
 	      layerId lid( lyr, vw );
-	      m_towerVar[vtw].bsVar[lid.uniPlane].tHits[strips[vw]]++;
+	      if( m_MIPeff ) 
+		m_towerVar[vtw].bsVar[lid.uniPlane].tHits[strips[vw]]++;
 	      if( numVG == g_nView ){
-		m_towerVar[vtw].bsVar[lid.uniPlane].tLayer++;
+		if( m_MIPeff ) m_towerVar[vtw].bsVar[lid.uniPlane].tLayer++;
 		for(int icut=0; icut<ncut; icut++)
 		  if( m_cut[icut] ) m_trackCut->Fill( icut+0.5 );
 	      }
 	      m_ltrk->Fill( lid.uniPlane );
 	      // layer with associated hits
 	      if( hitPlanes[layer][vw]>0 ){
-		m_towerVar[vtw].bsVar[lid.uniPlane].eHits[strips[vw]]++;
+		if( m_MIPeff ) 
+		  m_towerVar[vtw].bsVar[lid.uniPlane].eHits[strips[vw]]++;
 		if( numVG == g_nView ){
-		  m_towerVar[vtw].bsVar[lid.uniPlane].hLayer++;
+		  if( m_MIPeff ) 
+		    m_towerVar[vtw].bsVar[lid.uniPlane].hLayer++;
 		  for(int icut=0; icut<ncut; icut++)
 		    if( m_cut[icut] ) m_hitCut->Fill( icut+0.5 );
 		}
