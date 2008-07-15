@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Tue Jul 15 01:58:12 PDT 2008
+calibTkrUtil/src
+
+Modified Files:
+	TkrHits.cxx 
+Log Message:
+add histograms for tower trigger and hit efficiencies
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: calibTkrUtil-02-03-00, operation: add
 Package: calibTkrUtil
