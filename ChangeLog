@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Tue Jul 15 01:59:07 PDT 2008
+calibTkrUtil/src/test
+
+Modified Files:
+	RootTestAnalyzer.cxx 
+Log Message:
+do not load unnecessary stuff for digiEvent
+
+    *
+------------------------------------------------------------
 User: htajima  Tue Jul 15 01:58:12 PDT 2008
 calibTkrUtil/src
 
