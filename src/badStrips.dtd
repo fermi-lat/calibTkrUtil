@@ -1,0 +1,132 @@
+<!--
+   $Header: /nfs/slac/g/glast/ground/cvs/calibGenTKR/src/badStripsCalib/badStrips.dtd,v 1.1 2005/03/02 20:31:17 htajima Exp $
+
+   /**  @file       badStrips.dtd
+        @authors    J. Bogart
+
+        dtd for bad strips data file
+
+    */
+
+    Would be good to switch to schema so that common header elements
+    could be included easily in schema for different calibration types.
+ -->
+       
+<!-- Container for all the header/metadata type information to be
+     included here.  Complete metadata will be found in the calibration
+     MySQL database. 
+
+     Description of attributes:
+
+            instrument    - one of "flight", "EM", etc.  Could also
+                            be implemented as enumeration rather than
+                            NMTOKEN
+            timestamp     - when the file was written (date and time)
+            calType       - one of "TKRBadStrips", "CALLightAttenuation",
+                            etc.
+            formatVersion - sufficient versioning information so that
+                            software attempting to read the file can
+                            determine if it supports this version. 
+                            [Might get rid of this here and just keep
+                            it in the MySQL metadata table]
+ -->
+
+<!ELEMENT badStrips (generic, cuts?, tower*) >
+<!ATTLIST badStrips badType (hot | dead) #REQUIRED >
+
+<!ELEMENT  generic  (inputSample) >
+<!ATTLIST generic  
+   instrument  (LAT | BFEM | BTEM | EM | CU | TWR) #REQUIRED
+   timestamp   NMTOKEN #REQUIRED
+   runId       NMTOKEN #IMPLIED
+   calType     NMTOKEN #IMPLIED
+   DTDVersion  NMTOKEN "v3r1"
+   fmtVersion  NMTOKEN #IMPLIED
+   creatorName NMTOKEN #IMPLIED
+   creatorVersion NMTOKEN #IMPLIED
+ >
+
+<!-- Description of events used as input to the procedure 
+     Start- and stop-times should be timestamps of earliest and
+     latest events included in sample
+-->
+<!ELEMENT inputSample (#PCDATA) >
+<!ATTLIST inputSample  startTime CDATA #REQUIRED
+                       stopTime  CDATA #REQUIRED
+                       triggers  NMTOKENS #REQUIRED 
+                       source    NMTOKENS #REQUIRED
+                       mode      NMTOKEN  #REQUIRED>
+
+<!-- "tight", "loose" and "expected" are all expressed as percentage
+     of events for which a strip is hit, and all are affected by the
+     kind of event sample.
+
+     "expected" is the percentage expected for a healthy channel.
+     "tight" will be somewhat more than "expected" if we're looking
+     for hot channels, less than "expected" if we're looking for
+     dead.
+     "loose" will be further from "expected" than "tight", but in the
+     same direction.    
+ -->
+<!ELEMENT cuts EMPTY>
+<!ATTLIST cuts  tight       NMTOKEN #REQUIRED
+                loose       NMTOKEN #REQUIRED
+                expected    NMTOKEN #REQUIRED >
+
+<!-- Towers are identified by row and column (least subject
+     to misinterpretation for different instruments 
+     Only include towers for which there is at least one
+     tray with bad strips
+
+     To mark all strips in a tower as bad in the same way, set
+     one or more of the attributes nOnbdCalib, nOnbdTrig, nOnbdData 
+     to "true".  These are meant to correspond to similarly named
+     bits in the hardware.
+
+     See also <uniplane>, which has the same collection of attributes
+
+     Meanings are:
+           nOnbdCalib   - not usable for charge injection calibration
+           nOnbdTrig     - not usable by trigger
+           nOnbdData     - not usable for recon, data analysis 
+-->
+
+<!ELEMENT tower (uniplane*) >
+<!ATTLIST tower row NMTOKEN #REQUIRED 
+                col NMTOKEN #REQUIRED 
+                hwserial NMTOKEN "-1"
+                maxStripId NMTOKEN "1535"
+                nOnbdCalib  (true | false) "false"
+                nOnbdTrig    (true | false) "false"
+                nOnbdData    (true | false) "false"  >
+
+<!-- Each uniplane is identified by a tray # (zero based, back-most tray
+      is tray 0, according to Steve Ritz convention) and top/bottom
+      field.   A uniplane is either all bad or specifies which strips
+      are bad.  Within a givin tower, there should be at most one
+      instance of a particular uniplane whose strips are a particular
+      "badness", but dtd can't enforce this constraint.
+  -->
+<!--  
+    Don't be so fussy
+<!ELEMENT uniplane (stripList?, stripSpan*) >
+ -->
+<!ELEMENT uniplane (stripList?, stripSpan?)* >
+<!ATTLIST uniplane tray      NMTOKEN #REQUIRED
+                   which       (top | bot) #REQUIRED
+                   nOnbdCalib  (true | false) "false"
+                   nOnbdTrig   (true | false) "false"
+                   nOnbdData   (true | false) "false"  
+                   allBad      (true | false) "false" >
+
+<!-- For each plane containing bad strips of a particular badness,
+     include a list or span(s)  of affected strips, or mark it
+     as all bad.
+ -->
+
+<!ELEMENT stripList EMPTY >
+<!ATTLIST stripList strips NMTOKENS #REQUIRED >
+<!ELEMENT stripSpan EMPTY >
+<!ATTLIST stripSpan first NMTOKEN #REQUIRED
+                    last  NMTOKEN #REQUIRED >
+
