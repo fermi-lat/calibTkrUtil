@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Tue Jul 15 20:35:01 PDT 2008
+calibTkrUtil/python
+
+Modified Files:
+	tkrMonitor.py 
+Log Message:
+modify the directory to put hot xml file to be same as html
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: calibTkrUtil-02-04-00, operation: add
 Package: calibTkrUtil
