@@ -11,7 +11,7 @@ import tkrUtils
 
 # get tag and version numbers
 __tag__  = "$Name:  $"
-__version__  = "$Revision: 1.10 $"
+__version__  = "$Revision: 1.11 $"
 tagv = "%s:%s" % (__tag__.split()[1], __version__.split()[1])
 
 # ROOT initilization
@@ -124,13 +124,12 @@ class TkrMonitor:
       print "html directory, %s, does not exist. Create a new one." % htmldir
       os.mkdir( self.htmldir )
   
+    self.xmldir = self.htmldir
     self.refRoot = []
     try:
       self.mondir = os.path.join( os.getenv("LATMonRoot"), "TKR", "TkrMonitor" )
-      self.xmldir = os.path.join( os.getenv("LATMonRoot"), "TKR", "xml" )
     except:
       self.mondir = os.path.join( os.getenv( "CALIBTKRUTILROOT" ), "python" )
-      self.xmldir = os.path.join( os.getenv( "CALIBTKRUTILROOT" ), "python" )
     if not os.path.exists( self.mondir ):
       print "TKR Monitor directory, %s, does not exist." % self.mondir
       sys.exit()
