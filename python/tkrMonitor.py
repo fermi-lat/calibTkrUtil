@@ -11,7 +11,7 @@ import tkrUtils
 
 # get tag and version numbers
 __tag__  = "$Name:  $"
-__version__  = "$Revision: 1.11 $"
+__version__  = "$Revision: 1.12 $"
 tagv = "%s:%s" % (__tag__.split()[1], __version__.split()[1])
 
 # ROOT initilization
@@ -641,6 +641,9 @@ class TkrMonitor:
       self.towerHists[tower][key].SetBinContent(unp+1,eff*100)
       self.towerHists[tower][key].SetBinError(unp+1,err*100)
       self.hists[key].SetBinContent(tower+1,unp+1,(1-eff)*100)
+      self.towerHists[tower][key].SetMaximum( 100.5 )
+      self.hists[key].SetMaximum( 100.5 )
+
 
     if tower == 0:
       self.sumttrk = 0.0
@@ -708,8 +711,10 @@ class TkrMonitor:
                     % ((strip+1)/nChannel - 1, seff*100, "%", self.limits["stripEff"]*100, "%" )
             self.striplogs[tower][unp]["stripEff"].append((alert, (strip+1)/nChannel - 1, \
                                                            "layerEff", alertLevels[1]))
+            #self.logAlerts( tower, unp, alert, "layerEff" ,alertLevels[2] )
           self.layerHists[tower][unp]["stripEff"].SetBinContent((strip+1)/nChannel,seff*100)
           self.layerHists[tower][unp]["stripEff"].SetBinError((strip+1)/nChannel,serr*100)          
+          self.layerHists[tower][unp]["stripEff"].SetMaximum( 100.5 )
           eocc,tocc = 0.0,0.0
       self.towerHists[tower]["fracNHstrip"].SetBinContent(unp+1,100*nl/nStrip)
       if nl/nStrip > self.limits["fracNHstrip"]:
@@ -829,7 +834,7 @@ class TkrMonitor:
               % (locc,self.limits["layerOcc"])
       self.logAlerts( tower, unp, alert, "layerOcc", alertLevels[0] )
     if socc > self.limits["stripOcc"]:
-      alert = "strip Occucpancy, %.1e > %.1e" \
+      alert = "layer averaged strip Occucpancy, %.1e > %.1e" \
               % (socc,self.limits["stripOcc"])
       self.logAlerts( tower, unp, alert, "stripOcc", alertLevels[1] )
     if lsat > self.limits["fracSat"]:
@@ -856,8 +861,9 @@ class TkrMonitor:
         stocc = 0
       self.layerHists[tower][unp]["stripOcc"].SetBinContent(strip+1,stocc)
       if stocc > self.limits["stripOcc"]: 
-        alert = "strip occupancy, %.1e > %.1e" \
-                              % (stocc,self.limits["stripOcc"]) 
+        alert = "strip:%d occupancy, %.1e > %.1e" \
+                              % (strip, stocc,self.limits["stripOcc"])
+        self.logAlerts( tower, unp, alert, "stripOcc", alertLevels[1] )
         self.striplogs[tower][unp]["stripOcc"].append((alert, strip, "stripOcc", alertLevels[1]))
 
 
@@ -867,8 +873,8 @@ class TkrMonitor:
   #*********************
   #
   def analyzeTimedep(self, tower):
-    httexp = self.inputRoot.FindObjectAny( "hTkrTowerSumExpTwr%d-R%s" % (tower,self.runID) )
-    httocc = self.inputRoot.FindObjectAny( "hTkrTowerOccTwr%d-R%s" % (tower,self.runID) )
+    httexp = self.inputRoot.FindObjectAny( "hTkrTowerSumExpTwr%d-R%s" % (tower,self.srunID) )
+    httocc = self.inputRoot.FindObjectAny( "hTkrTowerOccTwr%d-R%s" % (tower,self.srunID) )
 
 
     for k in range(httexp.GetNbinsX()+1):
@@ -882,9 +888,9 @@ class TkrMonitor:
     for unp in range(nPlane):
       ielm = unp + tower*nPlane
       lname = tkrUtils.g_layerNames[unp]
-      htexp = self.inputRoot.FindObjectAny( "hTkrExposT%d%s-R%s" %(tower,lname,self.runID) )
-      htlocc = self.inputRoot.FindObjectAny( "hTkrLayerOccT%d%s-R%s" %(tower,lname,self.runID) )
-      htsocc = self.inputRoot.FindObjectAny( "hTkrStripOccT%d%s-R%s" %(tower,lname,self.runID) )
+      htexp = self.inputRoot.FindObjectAny( "hTkrExposT%d%s-R%s" %(tower,lname,self.srunID) )
+      htlocc = self.inputRoot.FindObjectAny( "hTkrLayerOccT%d%s-R%s" %(tower,lname,self.srunID) )
+      htsocc = self.inputRoot.FindObjectAny( "hTkrStripOccT%d%s-R%s" %(tower,lname,self.srunID) )
       for k in range(htexp.GetNbinsX()+1):
         texp = htexp.GetBinContent(k+1)
         tlocc = htlocc.GetBinContent(k+1)
@@ -911,7 +917,7 @@ class TkrMonitor:
     if lsat < self.limits["fracSat"]:
       while locc > self.limits["layerOcc"]:
         vmax,smax = -1,-1
-        for strip in range(nStrip):     
+        for strip in range(nStrip):
           socc = hWmap.GetBinContent(strip+1)
           if socc > vmax:
             if strip not in self.badStrips[tower][unp]:
@@ -920,12 +926,14 @@ class TkrMonitor:
         self.badStrips[tower][unp].append(smax)
         print "mask strip: T%d L%d %d, %.1e" % (tower, unp, smax, vmax/lexp)
         locc = (locc*lexp-vmax)/lexp
-      for strip in range(nStrip):     
+      for strip in range(nStrip):
         socc = hWmap.GetBinContent(strip+1) / lexp
         if socc > self.limits["stripOcc"] \
                and strip not in self.badStrips[tower][unp]:
           self.badStrips[tower][unp].append(strip)
           print "mask strip: T%d L%d %d, %.1e" % (tower, unp, strip, socc)
+                  
+
   #
   #*********************
   # create html report for the given layer
@@ -936,12 +944,12 @@ class TkrMonitor:
     lname = tkrUtils.g_layerNames[unp]
     tdir = "Tower%d" % tower
     ldir = "T%d%s" % (tower, lname)
-    path = os.path.join( htmldir, tdir, ldir )
+    path = os.path.join( self.htmldir, tdir, ldir )
     if not os.path.exists( path ):
       print "html sub directory, %s, does not exist. Creat a new one." % path
       os.mkdir( path )
     if ielm not in self.laytemp:
-      path = os.path.join(htmldir, tdir, ldir, "T%d%s.html" % (tower, lname))
+      path = os.path.join(self.htmldir, tdir, ldir, "T%d%s.html" % (tower, lname))
       self.hout1 = open(path, "w")
       self.hout1.write( '<html>\n' )
       self.hout1.write( '<head><title> Tower%d-%s summary </title></head><BR>\n' %(tower, lname))
@@ -957,7 +965,7 @@ class TkrMonitor:
                                           
     for key in self.layerHists[tower][unp].keys():
       pname = "%s_T%d%s-%s.png" % (key, tower, lname, self.runID )
-      path = os.path.join( htmldir, tdir, ldir )
+      path = os.path.join( self.htmldir, tdir, ldir )
       path = os.path.join( path, pname )
       hist = self.layerHists[tower][unp][key]
       self.setHistLabel(hist, key, "layer")
@@ -1047,12 +1055,12 @@ class TkrMonitor:
   
   def htmlTowerReport(self, tower, unp):
     tdir = "Tower%d" % tower
-    path = os.path.join( htmldir, tdir )
+    path = os.path.join( self.htmldir, tdir )
     if not os.path.exists( path ):
       print "html sub directory, %s, does not exist. Creat a new one." % path
       os.mkdir( path )     
     if tower not in self.towtemp:
-      path = os.path.join(htmldir,tdir, "tower%d.html" % tower)
+      path = os.path.join(self.htmldir,tdir, "tower%d.html" % tower)
       self.hout1 = open(path, "w")
       self.hout1.write( '<html>\n' )
       self.hout1.write( '<head><title> Tower%d summary </title></head><BR>\n' % tower )
@@ -1066,7 +1074,7 @@ class TkrMonitor:
       
     for key in self.towerHists[tower].keys():
       pname = "%s_T%d-%s.png" % (key, tower, self.runID )
-      path = os.path.join( htmldir, tdir )
+      path = os.path.join( self.htmldir, tdir )
       path = os.path.join( path, pname )     
       hist = self.towerHists[tower][key]
       self.setHistLabel(hist, key, "tower")
@@ -1250,7 +1258,7 @@ class TkrMonitor:
   def saveHtmlReport(self):
 
     #### main page
-    path = os.path.join( htmldir, "index.html" )
+    path = os.path.join( self.htmldir, "index.html" )
     self.hout = open( path,"w")
 
     self.hout.write( "<html>\n" )
@@ -1296,7 +1304,7 @@ class TkrMonitor:
         tl = self.setHistLimits(key, hist)
         tl.Draw("SAME")
       pname = "%s-%s.png" % (hist.GetName(), self.runID )
-      path = os.path.join( htmldir, pname )
+      path = os.path.join( self.htmldir, pname )
       canvas.SaveAs( path )
       self.htmlImage( self.hout, pname )
       self.hout.write( "</td>\n" )
