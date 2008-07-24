@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Wed Jul 23 21:35:48 PDT 2008
+calibTkrUtil/python
+
+Added Files:
+	runSummary.py 
+Log Message:
+first version of run by run trending of TKR performance parameters.
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: calibTkrUtil-02-04-01, operation: add
 Package: calibTkrUtil
