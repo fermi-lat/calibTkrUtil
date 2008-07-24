@@ -335,7 +335,7 @@ void RootAnalyzer::analyzeData( int numEvents = 10000 )
 
   }  
   time( &endTime );
-  if( endTime=startTime )
+  if( endTime==startTime )
     std::cout << "total # of events: " << nEvent 
 		<< " in " << (endTime-startTime) << " s, "
 		<< std::endl;
