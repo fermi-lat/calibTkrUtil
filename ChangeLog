@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Wed Jul 23 21:40:06 PDT 2008
+calibTkrUtil/src/test
+
+Modified Files:
+	RootTestAnalyzer.cxx 
+Log Message:
+bug fix for display of end of event information.
+
+    *
+------------------------------------------------------------
 User: htajima  Wed Jul 23 21:39:41 PDT 2008
 calibTkrUtil/src
 
