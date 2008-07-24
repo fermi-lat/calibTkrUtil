@@ -518,12 +518,13 @@ TkrHits::TkrHits( bool initHistsFlag ):
   tag.assign( tag, 0, i ) ;
   m_tag = tag;
 
-  std::string version = "$Revision: 1.15 $";
+  std::string version = "$Revision: 1.16 $";
   i = version.find( " " );
   version.assign( version, i+1, version.size() );
   i = version.find( " " );
   version.assign( version, 0, i ) ;
   m_version = version;
+  m_revision = atof( m_version.c_str() );
   std::cout << "TkrHits, Tag: " << m_tag 
 	    << ", version: " << m_version << std::endl;
 
@@ -548,6 +549,7 @@ void TkrHits::initCommonHists(){
   m_maxHitDist = new TH1F("maxHit", "maxHit", g_nUniPlane, 0, g_nUniPlane);
   m_trkRMS = new TH1F("trkRMS", "trkRMS", 100, 0, 2.0);
   m_numHitGTRC = new TH1F("numHitGTRC", "numHitGTRC", 65, 0, 65);
+  m_numHitGTRCHE = new TH1F("numHitGTRCHE", "numHitGTRC (E>10GeV)", 65, 0, 65);
   m_largeMulGTRC = new TH1F("largeMulGTRC", "largeMulGTRC", g_nUniPlane, 0, g_nUniPlane);
   m_rawTOT = new TH1F("rawTOT", "rawTOT", 128, 0, 256);
   m_trkRMS1TWR = new TH1F("trkRMS1TWR", "trkRMS1TWR", 100, 0, 2.0);
@@ -573,9 +575,13 @@ void TkrHits::initCommonHists(){
   //
   // MIP filter hists
   //
+  Float_t bins[21];
+  for( int i=0; i<21; i++) bins[i] = 20.0*pow(10,0.2*i);
   m_hAcdTileCount = new TH1F("acdTileCount", "AcdTileCount", 10, 0 , 10 );
   m_hAcdTotalEnergy = new TH1F("acdTotalEnergy", "AcdTotalEnergy", 100, 0 , 10 );
   m_hCalEnergyRaw = new TH1F("calEnergyRaw", "calEnergyRaw", 100, 0, 1000 );
+  m_hCalTotalEnergyRaw = new TH1F("calTotalEnergyRaw", "calTotalEnergyRaw", \
+				  20, bins );
   m_hNumCalXtal = new TH1F("numCalXtal", "# of Cal Xtal with energy>0 per layer", 10, 0, 10 );
   m_HAcdTileCount = new TH1F("acdTileCountC", "AcdTileCount after track cut", 10, 0 , 10 );
   m_HAcdTotalEnergy = new TH1F("acdTotalEnergyC", "AcdTotalEnergy after track cut", 100, 0 , 10 );
@@ -683,6 +689,7 @@ void TkrHits::saveAllHist( bool saveWaferOcc, bool runFitTot )
   m_nTrackDist->Write(0, TObject::kOverwrite);
   m_maxHitDist->Write(0, TObject::kOverwrite);
   m_numHitGTRC->Write(0, TObject::kOverwrite);
+  m_numHitGTRCHE->Write(0, TObject::kOverwrite);
   m_largeMulGTRC->Write(0, TObject::kOverwrite);
   m_rawTOT->Write(0, TObject::kOverwrite);
   m_trkRMS->Write(0, TObject::kOverwrite);
@@ -719,6 +726,7 @@ void TkrHits::saveAllHist( bool saveWaferOcc, bool runFitTot )
   m_hAcdTileCount->Write(0, TObject::kOverwrite);
   m_hAcdTotalEnergy->Write(0, TObject::kOverwrite);
   m_hCalEnergyRaw->Write(0, TObject::kOverwrite);
+  m_hCalTotalEnergyRaw->Write(0, TObject::kOverwrite);
   m_hNumCalXtal->Write(0, TObject::kOverwrite);
   m_HAcdTileCount->Write(0, TObject::kOverwrite);
   m_HAcdTotalEnergy->Write(0, TObject::kOverwrite);
@@ -748,12 +756,14 @@ void TkrHits::saveAllHist( bool saveWaferOcc, bool runFitTot )
   // save timestamp TTree
   //
   TTree *tree = new TTree("timeStamps","time stamps");
+  tree->Branch("revision",&m_revision,"revision/D");
   tree->Branch("startTime",&m_startTime,"startTime/D");
   tree->Branch("endTime",&m_endTime,"endTime/D");
   tree->Branch("firstRunId",&m_firstRunId,"firstRunId/i"); // unsigned int
   tree->Branch("lastRunId",&m_lastRunId,"lastRunId/i"); // unsigned int
   tree->Fill();
   tree->Write();
+  
 
   if( runFitTot ) fitTot();
   m_fracBatTot->Write(0, TObject::kOverwrite);
@@ -772,7 +782,7 @@ void TkrHits::saveAllHist( bool saveWaferOcc, bool runFitTot )
   else {
     gDirectory->mkdir( "ChargeDist" );
     gDirectory->cd( "ChargeDist" );
-    int nhist = m_chargeHist.size() / g_nTower;
+    UInt_t nhist = m_chargeHist.size() / g_nTower;
     char rdir[]= "T16";
     for( unsigned int tw=0; tw<m_towerVar.size(); tw++ ){
       int tower = m_towerVar[ tw ].towerId;
@@ -785,6 +795,19 @@ void TkrHits::saveAllHist( bool saveWaferOcc, bool runFitTot )
     }
   }
   gDirectory->cd( ".." );
+  //
+  // save tot TTree
+  //
+  UInt_t rawTOT, icharge;
+  tree = new TTree("totInfo","TOT information");
+  tree->Branch("rawTOT",&rawTOT,"rawTOT/i"); // unsigned int
+  tree->Branch("charge",&icharge,"charge/i"); // unsigned int
+  for( UInt_t itot=0; itot<m_totInfo.size(); itot++){
+    rawTOT = m_totInfo[itot].rawTOT;
+    icharge = m_totInfo[itot].charge;
+    tree->Fill();
+  }
+  tree->Write();
 
   //
   // calculate trigger and hit efficiencies
@@ -1004,8 +1027,8 @@ void TkrHits::saveOccHists(){
 void TkrHits::analyzeEvent()
 {
     if( ! m_towerInfoDefined ) setTowerInfo();
-    //if( ! MIPfilter() ) return;
-    MIPfilter(); // result of MIP is used in passCut()
+    if( ! MIPfilter() ) return;
+    //MIPfilter(); // result of MIP is used in passCut()
     monitorTKR();
 
     if(! passCut()) return;
@@ -1046,6 +1069,7 @@ bool TkrHits::MIPfilter()
   //
   m_MIPtot = true;
   m_MIPeff = true;
+  m_HighEnergy = false;
   for( int icut=0; icut<ncut; icut++) m_cut[icut] = true;
   TkrRecon* tkrRecon = m_reconEvent->getTkrRecon();
   assert(tkrRecon != 0);
@@ -1057,10 +1081,12 @@ bool TkrHits::MIPfilter()
     if( track->getKalEnergy() < 700 ) m_cut[2] = false;
   if( (m_digiEvent->getGem().getConditionSummary()&0x3) != 3 ) 
     m_cut[3] = false;
-  if( (m_digiEvent->getGem().getConditionSummary()&0x7) != 7 ) 
+  //if( (m_digiEvent->getGem().getConditionSummary()&0x7) != 7 ) 
+  if( m_digiEvent->getGem().getCnoVector() != 0 ) 
     m_cut[11] = false;
   if( m_digiEvent->getGem().getDeltaWindowOpenTime() < 150 )
     m_cut[4] = false;
+
   //
   // check ACD variables
   //
@@ -1087,6 +1113,10 @@ bool TkrHits::MIPfilter()
       m_calEnergyRaw += calCluster->getParams().getEnergy();
       num++;
     }
+  }
+  if( m_digiEvent->getGem().getCnoVector()==0 ){
+    m_hCalTotalEnergyRaw->Fill( m_calEnergyRaw );
+    if( m_calEnergyRaw >1E4 ) m_HighEnergy = true;
   }
   if( num>0 ) m_calEnergyRaw /= num;
   m_hCalEnergyRaw->Fill( m_calEnergyRaw );
@@ -1210,14 +1240,15 @@ bool TkrHits::MIPfilter()
 
     // combine cuts
     m_cut[12] = m_cut[1] && m_cut[5];
-    m_cut[13] = m_cut[12] && m_cut[3];
-    m_cut[14] = m_cut[13] && m_cut[6];
-    m_cut[15] = m_cut[14] && m_cut[4] && m_cut[2];
-    m_cut[16] = m_cut[15] && m_cut[7];
-    m_cut[17] = m_cut[16] && m_cut[8];
-    m_cut[18] = m_cut[17] && m_cut[9] && m_cut[10];
-    m_MIPtot = m_cut[15];
-    m_MIPeff = m_cut[18];
+    m_cut[13] = m_cut[12] && m_cut[11];
+    m_cut[14] = m_cut[13] && m_cut[3];
+    m_cut[15] = m_cut[14] && m_cut[6];
+    m_cut[16] = m_cut[15] && m_cut[4] && m_cut[2];
+    m_cut[17] = m_cut[16] && m_cut[7];
+    m_cut[18] = m_cut[17] && m_cut[8];
+    m_cut[19] = m_cut[18] && m_cut[9] && m_cut[10];
+    m_MIPtot = m_cut[16];
+    m_MIPeff = m_cut[19];
 
     for(UInt_t tower=0;tower<g_nTower; tower++){
       if( sixInARow[tower] ){
@@ -1251,7 +1282,7 @@ bool TkrHits::MIPfilter()
     }
   }
 
-  return m_MIPtot;
+  return m_cut[11]; // veto CNO
 }
 
 
@@ -1302,7 +1333,8 @@ void TkrHits::fillTot()
     if( m_correctedTot ) charge = cluster->getCorrectedTot();
     else charge  = calcCharge( lid, iStrip, tot);
     if( charge < 0.0 ) continue;
-    charge /= ( 1 + m_totAngleCF * (1+m_dir.z()) ); // emprial correction factor
+    // empirical correction factor
+    charge /= ( 1 + m_totAngleCF * (1+m_dir.z()) ); 
     m_chist[5]->Fill( charge );
     if( m_cut[17] ) m_chist[4]->Fill( charge );
     int idirz = int( 20 + m_dir.z()*20 );
@@ -1318,6 +1350,18 @@ void TkrHits::fillTot()
     if( ibin < nTotHistBin && ibin >=0 )
       m_towerVar[tw].tcVar[unp].chargeDist[iDiv][ibin]++;
 
+    // save raw and corrected TOT inforation for later processing.
+    totInfo totinfo;
+    totinfo.rawTOT = tot + maxRawTOT*iStrip + maxRawTOT*g_nStrip*unp 
+      + maxRawTOT*g_nStrip*g_nUniPlane*tower;
+    UInt_t cfac = int( 1000 /  ( 1 + m_totAngleCF * (1+m_dir.z()) ) );
+    if( cfac > 1000 ) cfac = 1000;
+    if( cfac < 0 ) cfac = 0;
+    UInt_t icharge = int( 1000 * charge );
+    if( icharge > 100000 ) icharge = 100000;
+    if( icharge < 0 ) icharge = 0;
+    totinfo.charge = cfac*100000 + icharge;
+    m_totInfo.push_back( totinfo );
   }
   
 #ifdef PRINT_DEBUG
@@ -1331,6 +1375,8 @@ void TkrHits::fitTot()
   // define Gaussian convolved Laudau function.
   TF1 *ffit = new TF1( "langau2", langau2fun, 0, 30, 6 );
   ffit->SetParNames( "Width", "MP", "Area", "GSigma", "RSigma", "GFrac" );
+  ffit->SetLineWidth( 2 );
+  ffit->SetLineColor( 2 );
   std::cout << "Start fit." << std::endl;
   m_chargeHist.clear();
   
@@ -1366,6 +1412,7 @@ void TkrHits::fitTot()
 	else
 	  sprintf(name,"chargeT%d%s", tower, lname.c_str());
 	TH1F* chargeHist = new TH1F(name, name, nTotHistBin, 0, maxTot);
+	chargeHist->SetLineWidth( 2 );
 	float binWidth = maxTot / nTotHistBin;
 	for( int ibin=0; ibin!=nTotHistBin; ibin++){
 	  if( m_towerVar[tw].tcVar[unp].chargeDist[iDiv][ibin] < 0 ){
@@ -1538,6 +1585,7 @@ void TkrHits::fitTot()
       ffit->FixParameter( 5, GFrac );
     }
     m_chist[i]->Fit( "langau2", "RBQ" );
+    m_chist[i]->SetLineWidth( 2 );
     if( i == 5 ){
       GSigma = ffit->GetParameter( 3 );
       RSigma = ffit->GetParameter( 4 );
@@ -1551,6 +1599,7 @@ void TkrHits::addScaledHist( TH1F* hist1, TH1F* hist2, float xscale ){
 
   for( int ibin=0; ibin<hist1->GetNbinsX(); ibin++){ 
     float count = hist1->GetBinContent( ibin+1 );
+    if( count == 0.0 ) continue;
     Double_t low = hist1->GetBinLowEdge( ibin+1 ) * xscale;
     Double_t size = hist1->GetBinWidth( ibin+1 ) * xscale;
     Double_t high = low + size;
@@ -1577,7 +1626,7 @@ void TkrHits::addScaledHist( TH1F* hist1, TH1F* hist2, float xscale ){
       sum += cvalue;
       ibin2++;
     }
-    if( sum != count )
+    if( fabs(sum/count-1) > 1.0E-4 )
       std::cout << "invalid sum: " << sum << " " << count << std::endl;
   }
 
@@ -1687,10 +1736,12 @@ void TkrHits::monitorTKR(){
     }
     if( numl > 0 ){
       m_numHitGTRC->Fill( numl );
+      if( m_HighEnergy )m_numHitGTRCHE->Fill( numl );
       m_towerVar[tw].numHitGTRC->Fill( numl );
     }
     if( numh > 0 ){
       m_numHitGTRC->Fill( numh );
+      if( m_HighEnergy )m_numHitGTRCHE->Fill( numh );
       m_towerVar[tw].numHitGTRC->Fill( numh );
     }
     if( numl > maxHitGTRC || numh > maxHitGTRC ){
@@ -1710,7 +1761,7 @@ void TkrHits::monitorTKR(){
       GlastAxis::axis viewId = tkrDigi->getView();
       int view = (viewId == GlastAxis::X) ? 0 : 1;
       char vw[] = "XY";
-      std::cout << m_towerVar[tw].hwserial << " T" << tower
+      std::cout << m_towerVar[tw].hwserial << "" << tower
 		<< vw[view] << layer << " invalid GTRC multiplicity: " 
 		<< numh << " " << numl << std::endl;
       m_log << m_towerVar[tw].hwserial << " T" << tower
