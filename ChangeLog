@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Wed Jul 23 21:40:39 PDT 2008
+calibTkrUtil/calibTkrUtil
+
+Modified Files:
+	TkrHits.h TkrNoiseOcc.h 
+Log Message:
+add tree for tot information for easy trneding and calibration of tot.
+
+    *
+------------------------------------------------------------
 User: htajima  Wed Jul 23 21:40:06 PDT 2008
 calibTkrUtil/src/test
 
