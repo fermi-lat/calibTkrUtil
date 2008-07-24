@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Wed Jul 23 21:39:41 PDT 2008
+calibTkrUtil/src
+
+Modified Files:
+	TkrHits.cxx TkrNoiseOcc.cxx 
+Log Message:
+add tot tree for easy tot trending and calibration. save version number in tree. add CNO rejection in MIP filter.
+
+    *
+------------------------------------------------------------
 User: htajima  Wed Jul 23 21:35:48 PDT 2008
 calibTkrUtil/python
 
