@@ -641,11 +641,21 @@ TkrNoiseOcc::writeAnaToHis(TDirectory* dirTkrNoise){
   hLayerOccMap->Write("",TObject::kOverwrite);
   
   //
+  // set revision #
+  //
+  std::string version = "$Revision: 1.16 $";
+  int i = version.find( " " );
+  version.assign( version, i+1, version.size() );
+  i = version.find( " " );
+  version.assign( version, 0, i ) ;
+  Double_t revision = atof( version.c_str() );
+  //
   // save TTree
   //
   TTree *tree = new TTree("tkrNoiseTree","tkrNoiseTree");
 
   UInt_t runid, startTime;
+  tree->Branch( "revision", &revision, "runid/D");
   tree->Branch( "runid", &runid, "runid/i");
   tree->Branch( "startTime", &startTime, "startTime/i");
   for( ix=0; ix<vParamTimeDep.size(); ix++){
