@@ -77,7 +77,7 @@ class TkrNoiseOcc {
  private:
 
   DigiEvent *m_digiEvt;
-  
+
   /// output ROOT file
   TFile *m_histFile;
   

@@ -56,9 +56,17 @@ const float maxFracErr = 0.015;
 const float minFracErr = 0.005;
 
 const float maxTot = 20.0;
+const int maxRawTOT = 256;
 
 static const int ncut = 20;
 
+//
+// ****** TOT infor struct *****
+//
+struct totInfo{
+  UInt_t rawTOT;
+  UInt_t charge;
+};
 
 //
 // ****** class layerId *****
@@ -298,7 +306,7 @@ class TkrHits {
   void addScaledHist( TH1F*, TH1F*, float );
   
   TH1F *m_nTrackDist, *m_maxHitDist, *m_numClsDist, *m_dirzDist, 
-    *m_numHitGTRC, *m_rawTOT, *m_largeMulGTRC,
+    *m_numHitGTRC, *m_numHitGTRCHE, *m_rawTOT, *m_largeMulGTRC,
     *m_trkRMS, *m_trkRMS1TWR, *m_trkRMS2TWR, 
     *m_nBadLayersTrig, *m_nBadLayersNonTrig, *m_totTrig, *m_totNonTrig,
     *m_deltaWindOpenTime,
@@ -306,7 +314,7 @@ class TkrHits {
   TProfile *m_rmsProf1TWR, *m_rmsProf2TWR, *m_tresProfX, *m_tresProfY;
   TProfile *m_sigDist, *m_sigRMS, *m_sigTrad;
   
-  bool m_MIPeff, m_MIPtot, m_cut[ncut];
+  bool m_MIPeff, m_MIPtot, m_cut[ncut], m_HighEnergy;
   Double_t m_acdTotalEnergy, m_calEnergyRaw;
   UInt_t m_acdTileCount, m_numCalXtal;
   TH1F *m_hAcdTileCount, *m_hAcdTotalEnergy, *m_hCalEnergyRaw, *m_hNumCalXtal;
@@ -315,9 +323,10 @@ class TkrHits {
   TH1F *m_sixInARowMIP, *m_sixInARowWithTrigMIP, *m_orphanTrigMIP;
   TH1F *m_sixInARowAll, *m_sixInARowWithTrigAll;
   TH1F *m_sixInARowCut, *m_sixInARowWithTrigCut;
-  TH1F *m_hitCut, *m_trackCut;
+  TH1F *m_hitCut, *m_trackCut, *m_hCalTotalEnergyRaw;
 
   std::vector<TH1F*> m_chargeHist;
+  std::vector<totInfo> m_totInfo;
 
   TH1F *m_fracErrDist, *m_chisqDist, *m_fracBatTot, *m_chist[7];
   TH1F *m_chargeScale, *m_entries, *m_langauWidth, *m_langauGSigma;
@@ -351,6 +360,7 @@ class TkrHits {
   
   //xml related parameters  
   std::string m_version, m_tag;
+  Double_t m_revision;
 
   // bad strips analysis related stuff
   void fillOccupancy( int );
