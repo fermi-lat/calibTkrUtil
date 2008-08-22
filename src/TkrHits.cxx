@@ -518,7 +518,7 @@ TkrHits::TkrHits( bool initHistsFlag ):
   tag.assign( tag, 0, i ) ;
   m_tag = tag;
 
-  std::string version = "$Revision: 1.16 $";
+  std::string version = "$Revision: 1.17 $";
   i = version.find( " " );
   version.assign( version, i+1, version.size() );
   i = version.find( " " );
@@ -552,6 +552,10 @@ void TkrHits::initCommonHists(){
   m_numHitGTRCHE = new TH1F("numHitGTRCHE", "numHitGTRC (E>10GeV)", 65, 0, 65);
   m_largeMulGTRC = new TH1F("largeMulGTRC", "largeMulGTRC", g_nUniPlane, 0, g_nUniPlane);
   m_rawTOT = new TH1F("rawTOT", "rawTOT", 128, 0, 256);
+  m_totT0X7L = new TH1F("totT0X7L", "totT0X7L", 128, 0, 256);
+  m_totT0X7H = new TH1F("totT0X7H", "totT0X7H", 128, 0, 256);
+  m_totT0X7TL = new TH1F("totT0X7TL", "totT0X7TL", 128, 0, 256);
+  m_totT0X7TH = new TH1F("totT0X7TH", "totT0X7TH", 128, 0, 256);
   m_trkRMS1TWR = new TH1F("trkRMS1TWR", "trkRMS1TWR", 100, 0, 2.0);
   m_trkRMS2TWR = new TH1F("trkRMS2TWR", "trkRMS2TWR", 100, 0, 2.0);
   m_rmsProf1TWR = new TProfile("rmsProf1TWR","rmsProf1TWR",g_nTower,0,g_nTower);
@@ -692,6 +696,10 @@ void TkrHits::saveAllHist( bool saveWaferOcc, bool runFitTot )
   m_numHitGTRCHE->Write(0, TObject::kOverwrite);
   m_largeMulGTRC->Write(0, TObject::kOverwrite);
   m_rawTOT->Write(0, TObject::kOverwrite);
+  m_totT0X7L->Write(0, TObject::kOverwrite);
+  m_totT0X7H->Write(0, TObject::kOverwrite);
+  m_totT0X7TL->Write(0, TObject::kOverwrite);
+  m_totT0X7TH->Write(0, TObject::kOverwrite);
   m_trkRMS->Write(0, TObject::kOverwrite);
   m_trkRMS1TWR->Write(0, TObject::kOverwrite);
   m_trkRMS2TWR->Write(0, TObject::kOverwrite);
@@ -1714,6 +1722,7 @@ void TkrHits::monitorTKR(){
     Int_t numl=0, numh=0;
     for (ihit = 0; ihit < numHits; ihit++) {
       // Retrieve the strip number
+      if( abs(tkrDigi->getStrip(ihit)-819) < 12 ) continue;
       if( tkrDigi->getStrip(ihit) > lastRC0Strip ) numh++;
       else numl++;
     }
@@ -1734,6 +1743,9 @@ void TkrHits::monitorTKR(){
       m_numErrors++;
       continue;
     }
+    Int_t layer = tkrDigi->getBilayer(); 
+    GlastAxis::axis viewId = tkrDigi->getView(); 
+    int view = (viewId == GlastAxis::X) ? 0 : 1; 
     if( numl > 0 ){
       m_numHitGTRC->Fill( numl );
       if( m_HighEnergy )m_numHitGTRCHE->Fill( numl );
@@ -1745,21 +1757,15 @@ void TkrHits::monitorTKR(){
       m_towerVar[tw].numHitGTRC->Fill( numh );
     }
     if( numl > maxHitGTRC || numh > maxHitGTRC ){
-      Int_t layer = tkrDigi->getBilayer();
-      GlastAxis::axis viewId = tkrDigi->getView();
-      int view = (viewId == GlastAxis::X) ? 0 : 1;
       if( layer < 0 || layer >= g_nLayer || view < 0 || view >= g_nView ){
 	m_numErrors++;
 	continue;
-      }      
+      }
       layerId lid( layer, view );
       if( numl > maxHitGTRC ) m_largeMulGTRC->Fill( lid.uniPlane );	
       if( numh > maxHitGTRC ) m_largeMulGTRC->Fill( lid.uniPlane );
     }
     if( m_log.is_open() && (numh>bufferSizeGTRC||numl>bufferSizeGTRC) ){
-      Int_t layer = tkrDigi->getBilayer();
-      GlastAxis::axis viewId = tkrDigi->getView();
-      int view = (viewId == GlastAxis::X) ? 0 : 1;
       char vw[] = "XY";
       std::cout << m_towerVar[tw].hwserial << "" << tower
 		<< vw[view] << layer << " invalid GTRC multiplicity: " 
@@ -1948,6 +1954,11 @@ void TkrHits::selectGoodClusters(){
       int numCls = 0;
       for( UInt_t i=0; i!= m_towerVar[twr].digiClusters[unp].size(); i++){
 	cluster = &( m_towerVar[twr].digiClusters[unp].at(i) );
+
+	if( tower == 0 && layer == 7 && view == 0 )
+	  if( cluster->getFirstStrip() > 768 )
+	    m_totT0X7H->Fill( cluster->getRawToT() );
+	  else m_totT0X7L->Fill( cluster->getRawToT() );
 	
 	// calculate position
 	float pos = ( cluster->getLastStrip() + cluster->getFirstStrip() )/2;
@@ -2031,6 +2042,10 @@ void TkrHits::selectGoodClusters(){
 	  m_towerVar[twr].rHits[unp][iStrip]++;
 	  m_lcls->Fill( unp );
 	}
+	if( tower == 0 && layer == 7 && view == 0 )
+	  if( cluster->getFirstStrip() > 768 )
+	    m_totT0X7TH->Fill( cluster->getRawToT() );
+	  else m_totT0X7TL->Fill( cluster->getRawToT() );
       }
       m_numClsDist->Fill( numCls );
       //std::cout << tower << " " << uniPlane << std::endl;
@@ -2636,7 +2651,7 @@ void TkrHits::fillOccupancy( int tDiv )
     //if( layer==4 && view==0 ) m_brmsDist[layer/3]->Fill( delta );
     
     // select good clusters
-    if( fabs(delta) > 3.0  ) continue;
+    if( fabs(delta) > 3.0 or !m_MIPtot ) continue;
     
     if( view == 0 ){
       aview = 1;
