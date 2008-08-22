@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Thu Aug 21 23:14:57 PDT 2008
+calibTkrUtil/python
+
+Modified Files:
+	mergeTkrRootFiles.py 
+Log Message:
+fix a problem with merging tree when tree sizes are different.
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: calibTkrUtil-02-05-00, operation: add
 Package: calibTkrUtil
