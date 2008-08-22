@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Thu Aug 21 23:17:38 PDT 2008
+calibTkrUtil/calibTkrUtil
+
+Modified Files:
+	TkrHits.h 
+Log Message:
+add some histograms to monitor TOT distribution of a certain GTRC
+
+    *
+------------------------------------------------------------
 User: htajima  Thu Aug 21 23:14:57 PDT 2008
 calibTkrUtil/python
 
