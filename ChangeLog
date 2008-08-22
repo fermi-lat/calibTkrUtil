@@ -1,4 +1,40 @@
 ------------------------------------------------------------
+TAG
+Tag name: v2r6, operation: add
+Package: calibTkrUtil
+User: htajima  Thu Aug 21 23:18:45 2008
+Files:
+  calibTkrUtil/.cvsignore  1.1.1.1
+  calibTkrUtil/ChangeLog  1.150
+  calibTkrUtil/calibTkrUtil/TkrNoiseOcc.h  1.9
+  calibTkrUtil/calibTkrUtil/TkrHits.h  1.10
+  calibTkrUtil/cmt/.cvsignore  1.1.1.1
+  calibTkrUtil/cmt/requirements  1.14
+  calibTkrUtil/doc/release.notes  1.5
+  calibTkrUtil/python/mergeTkrRootFiles.py  1.3
+  calibTkrUtil/python/tkrUtils.py  1.4
+  calibTkrUtil/python/limits.txt  1.1
+  calibTkrUtil/python/runSummary.py  1.1
+  calibTkrUtil/python/paramLimitsDefault.xml  1.1
+  calibTkrUtil/python/tkrMonitor.py  1.13
+  calibTkrUtil/src/tkrPyRoot.in  1.2
+  calibTkrUtil/src/TkrHits.cxx  1.18
+  calibTkrUtil/src/badStrips.dtd  1.1
+  calibTkrUtil/src/TkrNoiseOcc.cxx  1.16
+  calibTkrUtil/src/TkrRep/TkrNoiseRep.cxx  1.6
+  calibTkrUtil/src/TkrRep/genTkrNoiseRep.cxx  1.1
+  calibTkrUtil/src/TkrRep/TkrNoiseRep.h  1.5
+  calibTkrUtil/src/test/RootTestAnalyzer.h  1.2
+  calibTkrUtil/src/test/tkrRootAanalysis.cxx  1.3
+  calibTkrUtil/src/test/RootTestAnalyzer.cxx  1.13
+  calibTkrUtil/src/test/GeoConstants.h  1.1
+  calibTkrUtil/src/test/AnalyzerOption.dat  1.6
+  calibTkrUtil/src/tkrPyRoot/tkrPyRoot.h  1.1
+  calibTkrUtil/src/tkrPyRoot/tkrPyRoot.cxx  1.1
+  calibTkrUtil/src/tkrPyRoot/LinkDef.h  1.1
+
+    *
+------------------------------------------------------------
 User: htajima  Thu Aug 21 23:17:58 PDT 2008
 calibTkrUtil/src
 
