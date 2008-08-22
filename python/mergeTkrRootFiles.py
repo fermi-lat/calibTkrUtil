@@ -1,5 +1,5 @@
 # import python standard libraries
-import sys, os, math, time
+import sys, os, math, time, array
 
 sys.path = [( os.path.join( os.environ.get( "ROOTSYS" ), "lib" ) )] + sys.path
 
@@ -12,7 +12,7 @@ classNames = ["TH1F", "TH2F", "TProfile", "TTree"]
 #**********************************
 # find obejects in the directory
 #**********************************
-def findObjects( dir, (dirMap, objMap) ):
+def findObjects( dir, (dirMap, objMap), treeList ):
   tlist = dir.GetListOfKeys()
   obj = tlist.First()
   while obj:
@@ -23,10 +23,11 @@ def findObjects( dir, (dirMap, objMap) ):
       if not dirMap.has_key( name ):
         dirMap[name] = ( {}, {} )
       ROOT.gDirectory.cd( name )
-      findObjects( ROOT.gDirectory, dirMap[name] )
+      findObjects( ROOT.gDirectory, dirMap[name], treeList )
       ROOT.gDirectory.cd( ".." )
     elif cname in classNames:
       if not objMap.has_key(name): objMap[name] = cname
+      if cname == "TTree": treeList[name] = None
     else: print "unknown object: %s, %s" % (name, cname)
     obj = tlist.After( obj )
   tlist.Delete()
@@ -42,8 +43,11 @@ def mergeObjects( objMap, dir, inFiles ):
   for name in objMap.keys():
     cname = objMap[name]
     #print dir.GetName(), name, cname
-    if cname == "TTree":
+    if name == "totInfo": continue
+    elif cname == "TTree":
+      continue
       print "merge", name
+      dir.cd()
       tlist = ROOT.TList()
       for inFile in inFiles:
         tree = inFile.FindObjectAny( name )
@@ -53,7 +57,7 @@ def mergeObjects( objMap, dir, inFiles ):
         tree = ROOT.TTree.MergeTrees( tlist )
         tree.Write()
         tlist.Delete()
-        print name, "saved."
+        print name, "saved. size:", tree.GetEntries()
       except:
         print "merge erorr:", name
     else:
@@ -136,10 +140,11 @@ if __name__ == '__main__':
   #
   # analyze directory structure and find all objects in all files
   #
+  treeList = {}
   (dirMap, objMap) = ( {}, {} )
   for iname in fnames:
     inFile = ROOT.TFile( iname )
-    findObjects( inFile, (dirMap, objMap) )
+    findObjects( inFile, (dirMap, objMap), treeList )
     inFile.Close()
 
   #
@@ -172,11 +177,27 @@ if __name__ == '__main__':
   #
   # produce final output
   #
+  for key in treeList.keys():
+    treeList[key] = ROOT.TList()
   for fname in fnames:
     inFiles.append( ROOT.TFile( fname )  )
-
+    # trees need to be picked up here to work properly
+    for key in treeList.keys():
+      tree = inFiles[-1].FindObjectAny( key )
+      if tree:
+        treeList[key].Add( tree )
+        print key, tree.GetEntries()
+      
   print "# of files to merge", len(inFiles)
   outRoot = ROOT.TFile( oname, "RECREATE" )
+  for key in treeList.keys():
+    try:
+      tree = ROOT.TTree.MergeTrees( treeList[key] )
+      tree.Write()
+      treeList[key].Delete()
+      print key, "saved. size:", tree.GetEntries()
+    except:
+      print "merge erorr:", key
   mergeObjects( objMap, outRoot, inFiles )
   mergeDirectories( dirMap, outRoot, inFiles, "OUT" )
 
