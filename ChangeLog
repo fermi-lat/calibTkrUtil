@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Thu Aug 21 23:17:58 PDT 2008
+calibTkrUtil/src
+
+Modified Files:
+	TkrHits.cxx 
+Log Message:
+add some histograms to monitor TOT distribution of a certain GTRC. plot rawTOT for good events
+
+    *
+------------------------------------------------------------
 User: htajima  Thu Aug 21 23:17:38 PDT 2008
 calibTkrUtil/calibTkrUtil
 
