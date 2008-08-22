@@ -308,6 +308,7 @@ class TkrHits {
   TH1F *m_nTrackDist, *m_maxHitDist, *m_numClsDist, *m_dirzDist, 
     *m_numHitGTRC, *m_numHitGTRCHE, *m_rawTOT, *m_largeMulGTRC,
     *m_trkRMS, *m_trkRMS1TWR, *m_trkRMS2TWR, 
+    *m_totT0X7L, *m_totT0X7H, *m_totT0X7TL, *m_totT0X7TH,
     *m_nBadLayersTrig, *m_nBadLayersNonTrig, *m_totTrig, *m_totNonTrig,
     *m_deltaWindOpenTime,
     *m_armsDist, *m_brmsDist[g_nLayer/3], *m_res, *m_resSel;
