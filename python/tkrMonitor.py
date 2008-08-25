@@ -11,7 +11,7 @@ import tkrUtils
 
 # get tag and version numbers
 __tag__  = "$Name:  $"
-__version__  = "$Revision: 1.13 $"
+__version__  = "$Revision: 1.14 $"
 tagv = "%s:%s" % (__tag__.split()[1], __version__.split()[1])
 
 # ROOT initilization
@@ -655,9 +655,9 @@ class TkrMonitor:
     self.sumthit += hlhit.Integral()
     if tower == nTower-1 :
       if self.sumttrk > 0:
-      self.latave["towerEff"] = (100*self.sumthit/self.sumttrk, "hit efficiency")
-    else:
-      self.latave["towerEff"] = (100.0, "hit efficiency")      
+        self.latave["towerEff"] = (100*self.sumthit/self.sumttrk, "hit efficiency")
+      else:
+        self.latave["towerEff"] = (100.0, "hit efficiency")      
 
     sumltrk = hltrk.Integral()
     if sumltrk > 0:
