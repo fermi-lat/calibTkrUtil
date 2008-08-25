@@ -1,24 +1,4 @@
 ------------------------------------------------------------
-User: htajima  Mon Aug 25 13:22:43 PDT 2008
-calibTkrUtil/python
-
-Modified Files:
-	tkrMonitor.py 
-Log Message:
-add trigger efficiency check with T0X7.
-
-    *
-------------------------------------------------------------
-User: htajima  Mon Aug 25 13:22:35 PDT 2008
-calibTkrUtil/calibTkrUtil
-
-Modified Files:
-	TkrHits.h 
-Log Message:
-add trigger efficiency check with T0X7
-
-    *
-------------------------------------------------------------
 TAG
 Tag name: calibTkrUtil-02-06-01, operation: add
 Package: calibTkrUtil
