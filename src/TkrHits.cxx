@@ -518,7 +518,7 @@ TkrHits::TkrHits( bool initHistsFlag ):
   tag.assign( tag, 0, i ) ;
   m_tag = tag;
 
-  std::string version = "$Revision: 1.17 $";
+  std::string version = "$Revision: 1.18 $";
   i = version.find( " " );
   version.assign( version, i+1, version.size() );
   i = version.find( " " );
@@ -605,8 +605,20 @@ void TkrHits::initCommonHists(){
   m_sixInARowMIP = new TH1F( "sixInARowMIP", 
 			     "# of 6-in-a-row per Tower (MIP)", 
 			     g_nTower, 0, g_nTower );
+  m_sixInARowT0X7 = new TH1F( "sixInARowT0X7", 
+			     "# of 6-in-a-row per Tower (T0X7)", 
+			     g_nTower, 0, g_nTower );
+  m_sixInARowT3X7 = new TH1F( "sixInARowT3X7", 
+			     "# of 6-in-a-row per Tower (T3X7)", 
+			     g_nTower, 0, g_nTower );
   m_sixInARowWithTrigMIP = new TH1F( "sixInARowWithTrigMIP",
 				     "# of 6-in-a-row with trigger (MIP)", 
+				     g_nTower, 0, g_nTower );
+  m_sixInARowWithTrigT0X7 = new TH1F( "sixInARowWithTrigT0X7",
+				     "# of 6-in-a-row with trigger (T0X7)", 
+				     g_nTower, 0, g_nTower );
+  m_sixInARowWithTrigT3X7 = new TH1F( "sixInARowWithTrigT3X7",
+				     "# of 6-in-a-row with trigger (T3X7)", 
 				     g_nTower, 0, g_nTower );
   m_orphanTrigMIP = new TH1F( "orphanTrigMIP", 
 			      "# of triggers without 6-in-a-row (MIP)", 
@@ -626,6 +638,8 @@ void TkrHits::initCommonHists(){
   m_hitCut = new TH1F( "hitCut", "# of hits with cut", ncut, 0, ncut );
   m_trackCut = new TH1F( "trackCut", "# of tracks with cut", ncut, 0, ncut );
 
+  m_trigComb = new TH1F("trigComb", "trigger combination", \
+			g_nTkrLayer, 0, g_nTkrLayer );
   m_totTrig = new TH1F("totTrig", "totTrig", 256, 0, 256);
   m_totNonTrig = new TH1F("totNonTrig", "totNonTrig", 256, 0, 256);
   m_nBadLayersNonTrig = new TH1F("nBadLayersNonTrig", "nBadLayersNonTrig", 10, 0, 10);
@@ -753,6 +767,7 @@ void TkrHits::saveAllHist( bool saveWaferOcc, bool runFitTot )
   m_sixInARowWithTrigAll->Write(0, TObject::kOverwrite);
   m_sixInARowCut->Write(0, TObject::kOverwrite);
   m_sixInARowWithTrigCut->Write(0, TObject::kOverwrite);
+  m_trigComb->Write(0, TObject::kOverwrite);
   m_totTrig->Write(0, TObject::kOverwrite);
   m_totNonTrig->Write(0, TObject::kOverwrite);
   m_nBadLayersNonTrig->Write(0, TObject::kOverwrite);
@@ -984,6 +999,50 @@ void TkrHits::saveAllHist( bool saveWaferOcc, bool runFitTot )
   theff->Write(0, TObject::kOverwrite);
   tteff->Write(0, TObject::kOverwrite);
   ineffDist->Write(0, TObject::kOverwrite);
+  //
+  //
+  //
+  TH1F* tteffT0X7 = new TH1F("tteffT0X7", "Tower Trigger Efficiencies", g_nTower, 0, g_nTower);
+  tteffT0X7->Add( m_sixInARowWithTrigT0X7 );
+  tteffT0X7->Divide( m_sixInARowT0X7 );
+  for( UInt_t tw = 0; tw != m_towerVar.size(); ++tw){
+    int twr = m_towerVar[tw].towerId;
+    eff = tteffT0X7->GetBinContent( twr+1 );
+    entry = m_sixInARowMIP->GetBinContent( twr+1 );
+    error = eff*(1-eff)/entry;
+    if( error > 0.0 ) error = sqrt( error );
+    else error = 1.0E-5;
+    tteffT0X7->SetBinError( twr+1, error );
+    std::cout.setf( std::ios::fixed );
+    std::cout.precision( 5 );
+    std::cout << m_towerVar[tw].hwserial << " T" << twr
+	      << " T0X7 trigger efficiency: " << eff << " +- " << error 
+	      << std::endl;
+  }
+  tteffT0X7->Write(0, TObject::kOverwrite);
+  m_sixInARowT0X7->Write(0, TObject::kOverwrite);
+  m_sixInARowWithTrigT0X7->Write(0, TObject::kOverwrite);
+  //
+  TH1F* tteffT3X7 = new TH1F("tteffT3X7", "Tower Trigger Efficiencies", g_nTower, 0, g_nTower);
+  tteffT3X7->Add( m_sixInARowWithTrigT3X7 );
+  tteffT3X7->Divide( m_sixInARowT3X7 );
+  for( UInt_t tw = 0; tw != m_towerVar.size(); ++tw){
+    int twr = m_towerVar[tw].towerId;
+    eff = tteffT3X7->GetBinContent( twr+1 );
+    entry = m_sixInARowT3X7->GetBinContent( twr+1 );
+    error = eff*(1-eff)/entry;
+    if( error > 0.0 ) error = sqrt( error );
+    else error = 1.0E-5;
+    tteffT3X7->SetBinError( twr+1, error );
+    std::cout.setf( std::ios::fixed );
+    std::cout.precision( 5 );
+    std::cout << m_towerVar[tw].hwserial << " T" << twr
+	      << " T3X7 trigger efficiency: " << eff << " +- " << error 
+	      << std::endl;
+  }
+  m_sixInARowT3X7->Write(0, TObject::kOverwrite);
+  m_sixInARowWithTrigT3X7->Write(0, TObject::kOverwrite);
+  tteffT3X7->Write(0, TObject::kOverwrite);
 
   //
   // print out tower offset
@@ -1163,8 +1222,8 @@ bool TkrHits::MIPfilter()
   const TObjArray* tkrDigiCol = m_digiEvent->getTkrDigiCol();
   if (tkrDigiCol){
     bool sixInARow[g_nTower], triggered[g_nTower], badTower[g_nTower];
-    int nHitLayers[g_nTower][g_nTkrLayer],
-      nBadLayers[g_nTower][g_nTkrLayer];
+    int nHitTC[g_nTower][g_nTkrLayer],
+      nBadTC[g_nTower][g_nTkrLayer];
     UShort_t tkrVector = m_digiEvent->getGem().getTkrVector();
     for(UInt_t tower=0; tower<g_nTower; tower++){
       UShort_t tvector = (1<<tower);
@@ -1173,13 +1232,14 @@ bool TkrHits::MIPfilter()
       sixInARow[tower] = false;
       m_goodTrackTowerFlag[ tower ] = triggered[tower];
       for (UInt_t bilayer=0; bilayer<g_nTkrLayer; bilayer++){
-	nHitLayers[tower][bilayer] = 0;
-	nBadLayers[tower][bilayer] = 0;
+	nHitTC[tower][bilayer] = 0;
+	nBadTC[tower][bilayer] = 0;
       }
     }
     
     TIter tkrIter(tkrDigiCol);
     TkrDigi *tkrDigi = 0;
+    Int_t numT0X7=0, numNonT0X7=0, numT3X7=0, numNonT3X7=0;
     while ( ( tkrDigi = (TkrDigi*)tkrIter.Next() ) ) { 
       Int_t tower = tkrDigi->getTower().id();
       Int_t bilayer = tkrDigi->getBilayer();
@@ -1190,14 +1250,22 @@ bool TkrHits::MIPfilter()
 	if( toth > tot ) tot = toth;
 	//if( tot<5 || tot>252 ) m_cut[5] = true;
 	if( tot<1 || tot>252 ) m_cut[5] = true;
-	int lmin = bilayer - 2;
-	if( lmin < 0 ) lmin = 0;
-	int lmax = bilayer + 3;
-	if( lmax > g_nTkrLayer ) lmax = g_nTkrLayer;
-	for(int layer=lmin; layer<lmax; layer++){
-	  nHitLayers[tower][layer]++;
-	  if( tot<10 || tot>252 ) nBadLayers[tower][layer]++;
-	  if( nHitLayers[tower][layer] >= 6 ) sixInARow[tower] = true;
+	int cmin = bilayer - 2;
+	if( cmin < 0 ) cmin = 0;
+	int cmax = bilayer+1;
+	if( cmax > g_nTkrLayer ) cmax = g_nTkrLayer;
+	for(int tc=cmin; tc<cmax; tc++){ // loop trigger combinations
+	  nHitTC[tower][tc]++;
+	  if( tot<10 || tot>252 ) nBadTC[tower][tc]++;
+	  if( nHitTC[tower][tc] >= 6 ){
+	    sixInARow[tower] = true;
+	    m_trigComb->Fill( tc );
+	    if( abs(tc-6) < 2 ) // trigger combination invovling X7
+	      if( tower == 0 ) numT0X7++;
+	      else if( tower == 3 ) numT3X7++;
+	    else if( tower == 0 ) numNonT0X7++;
+	    else if( tower == 3 ) numNonT3X7++;
+	  }
 	}
       }
     }
@@ -1219,9 +1287,9 @@ bool TkrHits::MIPfilter()
       if( sixInARow[tower] )
 	for (UInt_t bilayer=0; bilayer<g_nTkrLayer; bilayer++){
 	  if( triggered[tower] ) 
-	    m_nBadLayersTrig->Fill( nBadLayers[tower][bilayer] );
-	  else m_nBadLayersNonTrig->Fill( nBadLayers[tower][bilayer] );
-	  //if( nBadLayers[tower][bilayer] > 1 ) badTower[tower] = true;
+	    m_nBadLayersTrig->Fill( nBadTC[tower][bilayer] );
+	  else m_nBadLayersNonTrig->Fill( nBadTC[tower][bilayer] );
+	  //if( nBadTC[tower][bilayer] > 1 ) badTower[tower] = true;
 	}
       if( badTower[tower] ){
 	sixInARow[tower] = false;
@@ -1257,13 +1325,22 @@ bool TkrHits::MIPfilter()
     m_cut[19] = m_cut[18] && m_cut[9] && m_cut[10];
     m_MIPtot = m_cut[16];
     m_MIPeff = m_cut[19];
+    m_cut[20] = m_MIPeff && (numT0X7>0) && (numNonT0X7==0);
+    m_cut[21] = m_MIPeff && (numT0X7>0) && (numNonT0X7>0);
+    m_cut[22] = m_MIPeff && (numT0X7==0);
+    m_cut[23] = m_MIPeff && (numT3X7>0) && (numNonT3X7==0);
+    m_cut[24] = m_MIPeff && (numT3X7>0) && (numNonT3X7>0);
+    m_cut[25] = m_MIPeff && (numT3X7==0);
 
     for(UInt_t tower=0;tower<g_nTower; tower++){
       if( sixInARow[tower] ){
 	if( nSixInARow > 1 ){
 	  m_sixInARow->Fill( tower );
-	  if( m_MIPeff ){
+	  if( m_MIPeff )
 	    m_sixInARowMIP->Fill( tower );
+	  if( m_MIPtot ){
+	    if( m_cut[20] ) m_sixInARowT0X7->Fill( tower );
+	    if( m_cut[23] ) m_sixInARowT3X7->Fill( tower );
 	  }
 	  // check various additional cuts
 	  for( int icut=0; icut<ncut; icut++ )
@@ -1272,8 +1349,11 @@ bool TkrHits::MIPfilter()
 	    m_sixInARowWithTrig->Fill( tower );
 	    for( int icut=0; icut<ncut; icut++ )
 	      if( m_cut[icut] ) m_sixInARowWithTrigCut->Fill( icut+0.5 );
-	    if( m_MIPeff ){
+	    if( m_MIPeff )
 	      m_sixInARowWithTrigMIP->Fill( tower );
+	    if( m_MIPtot ){
+	      if( m_cut[20] ) m_sixInARowWithTrigT0X7->Fill( tower );
+	      if( m_cut[23] ) m_sixInARowWithTrigT3X7->Fill( tower );
 	    }
 	  }
 	}
