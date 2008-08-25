@@ -58,7 +58,7 @@ const float minFracErr = 0.005;
 const float maxTot = 20.0;
 const int maxRawTOT = 256;
 
-static const int ncut = 20;
+static const int ncut = 26;
 
 //
 // ****** TOT infor struct *****
@@ -310,7 +310,7 @@ class TkrHits {
     *m_trkRMS, *m_trkRMS1TWR, *m_trkRMS2TWR, 
     *m_totT0X7L, *m_totT0X7H, *m_totT0X7TL, *m_totT0X7TH,
     *m_nBadLayersTrig, *m_nBadLayersNonTrig, *m_totTrig, *m_totNonTrig,
-    *m_deltaWindOpenTime,
+    *m_deltaWindOpenTime, *m_trigComb,
     *m_armsDist, *m_brmsDist[g_nLayer/3], *m_res, *m_resSel;
   TProfile *m_rmsProf1TWR, *m_rmsProf2TWR, *m_tresProfX, *m_tresProfY;
   TProfile *m_sigDist, *m_sigRMS, *m_sigTrad;
@@ -322,6 +322,8 @@ class TkrHits {
   TH1F *m_HAcdTileCount, *m_HAcdTotalEnergy, *m_HCalEnergyRaw, *m_HNumCalXtal;
   TH1F *m_sixInARow, *m_sixInARowWithTrig, *m_orphanTrig;
   TH1F *m_sixInARowMIP, *m_sixInARowWithTrigMIP, *m_orphanTrigMIP;
+  TH1F *m_sixInARowT0X7, *m_sixInARowWithTrigT0X7;
+  TH1F *m_sixInARowT3X7, *m_sixInARowWithTrigT3X7;
   TH1F *m_sixInARowAll, *m_sixInARowWithTrigAll;
   TH1F *m_sixInARowCut, *m_sixInARowWithTrigCut;
   TH1F *m_hitCut, *m_trackCut, *m_hCalTotalEnergyRaw;
