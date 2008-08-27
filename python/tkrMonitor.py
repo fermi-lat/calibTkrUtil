@@ -11,7 +11,7 @@ import tkrUtils
 
 # get tag and version numbers
 __tag__  = "$Name:  $"
-__version__  = "$Revision: 1.14 $"
+__version__  = "$Revision: 1.15 $"
 tagv = "%s:%s" % (__tag__.split()[1], __version__.split()[1])
 
 # ROOT initilization
@@ -43,8 +43,9 @@ keys = [ ("TOT_Peak", "layer", "D"), ("TOT_LWidth", "layer", "D"), \
          ("towerEff", "tower", "D"), ("towerEff_err", "tower", "D"), \
          ("trigEff", "tower", "D"), ("trigEff_err", "tower", "D"), \
          ("layerdXY", "layer", "D"), ("layerdXY_err", "layer", "D"), \
-         ("layerOcc", "layer", "D"), ("stripOcc", "layer", "D"), \
-         ("fracSat", "layer", "D") ]
+         ("layerOcc", "layer", "D"), ("layerOcc_err", "layer", "D"),\
+         ("stripOcc", "layer", "D"), ("stripOcc_err", "layer", "D"),\
+         ("fracSat", "layer", "D"), ("fracSat_err", "layer", "D") ]
 
 nelem = {}
 nelem["layer"] = nTower * nPlane
@@ -402,9 +403,7 @@ class TkrMonitor:
           socc /= (lexp*nStrip)
           lsat /= lexp
         else:
-          locc = 0.0
-          socc = 0.0
-          lsat = 0.0
+          locc,socc,lsat = 0,0,0
         self.towerHistsRef[tower]["layerOcc"].SetBinContent(unp+1,locc)
         self.towerHistsRef[tower]["stripOcc"].SetBinContent(unp+1,socc)
         self.towerHistsRef[tower]["fracSat"].SetBinContent(unp+1,lsat)
@@ -442,12 +441,9 @@ class TkrMonitor:
     for tower in range(nTower):
       ntrk = htrk.GetBinContent( tower+1 )
       ntrg = htrg.GetBinContent( tower+1 )
-      if ntrk > 0:
-        teff = ntrg/ntrk
-        terr = teff*(1-teff)/ntrk
-      else:
-        teff = 0.0
-        terr = 1.0E-5
+      if ntrk == 0: ntrk = 1
+      teff = ntrg/ntrk
+      terr = teff*(1-teff)/ntrk
       if terr >0.0: terr = math.sqrt(terr)
       else: terr = 1/ntrk
       key = "trigEff"
@@ -660,12 +656,9 @@ class TkrMonitor:
         self.latave["towerEff"] = (100.0, "hit efficiency")      
 
     sumltrk = hltrk.Integral()
-    if sumltrk > 0:
-      teff = hlhit.Integral()/sumltrk
-      terr = teff*(1-teff)/sumltrk
-    else:
-      teff = 0.0
-      terr = 1.0E-5
+    if sumltrk == 0: sumltrk = 1.0
+    teff = hlhit.Integral()/sumltrk
+    terr = teff*(1-teff)/sumltrk
     if terr >0.0:terr = math.sqrt(terr)
     else:terr = 1/sumltrk
     key = "towerEff"
@@ -828,12 +821,24 @@ class TkrMonitor:
       self.towerave["stripOcc"][(ielm+1)/nPlane-1] = self.sumsocc
       self.towerave["fracSat"][(ielm+1)/nPlane-1] = self.sumlsat      
     if lexp != None:
-      if lexp==0.0: lexp==1.0
+      if lexp == 0.0: lexp = 1.0
       locc /= lexp
+      loccerr = locc*(1-locc) / lexp
+      if loccerr > 0.0: locc = math.sqrt( locc )
+      else: loccerr = 1.0 / lexp
+      #
       socc /= (lexp*nStrip)
+      soccerr = socc*(1-socc) / lexp
+      if soccerr > 0.0: socc = math.sqrt( socc )
+      else: soccerr = 1.0 / lexp
+      #
       lsat /= lexp
+      lsaterr = lsat*(1-lsat) / lexp
+      if lsaterr > 0.0: lsat = math.sqrt( lsat )
+      else: lsaterr = 1.0 / lexp
     else:
       locc,socc,lsat = 0,0,0
+      loccerr,soccerr,lsaterr = 1,1,1
     self.maskHotstrip(tower, unp)
     if locc > self.limits["layerOcc"]:
       alert = "layer Occucpancy, %.1e > %.1e" \
@@ -851,6 +856,9 @@ class TkrMonitor:
     self.values["layerOcc"][ielm] = locc
     self.values["stripOcc"][ielm] = socc
     self.values["fracSat"][ielm] = lsat
+    self.values["layerOcc_err"][ielm] = loccerr
+    self.values["stripOcc_err"][ielm] = soccerr
+    self.values["fracSat_err"][ielm] = lsaterr
     self.towerHists[tower]["layerOcc"].SetBinContent(unp+1,locc)
     self.towerHists[tower]["stripOcc"].SetBinContent(unp+1,socc)
     self.towerHists[tower]["fracSat"].SetBinContent(unp+1,lsat)
@@ -861,10 +869,8 @@ class TkrMonitor:
     #strip Occupancy
     for strip in range(nStrip):
       shit = hmap.GetBinContent(strip+1)
-      if lexp > 0.0:
-        stocc = shit/lexp
-      else:
-        stocc = 0
+      if lexp == 0.0: lexp = 1.0
+      stocc = shit/lexp
       self.layerHists[tower][unp]["stripOcc"].SetBinContent(strip+1,stocc)
       if stocc > self.limits["stripOcc"]: 
         alert = "strip:%d occupancy, %.1e > %.1e" \
