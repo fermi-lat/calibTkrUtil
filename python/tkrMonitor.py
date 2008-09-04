@@ -11,7 +11,7 @@ import tkrUtils
 
 # get tag and version numbers
 __tag__  = "$Name:  $"
-__version__  = "$Revision: 1.15 $"
+__version__  = "$Revision: 1.16 $"
 tagv = "%s:%s" % (__tag__.split()[1], __version__.split()[1])
 
 # ROOT initilization
@@ -690,14 +690,15 @@ class TkrMonitor:
       for strip in range(nStrip):
         eocc += heocc.GetBinContent(strip+1)
         tocc += htocc.GetBinContent(strip+1)
-        if heocc.GetBinContent(strip+1) == 0: # count no-hit strip
+        # count no-hit strip
+        if heocc.Integral() > 10*nStrip and heocc.GetBinContent(strip+1) == 0: 
           nt += 1
           nl += 1 
         if (strip+1)%nChannel == 0:
           if eocc == 0.0:
             hmap = self.inputRoot.FindObjectAny( "hTkrHitMapT%d%s" %(tower,lname) )
             #print tower, lname, hmap.Integral(strip-nChannel-1, strip)
-            if hmap.Integral(strip-nChannel-1, strip) == 0:            
+            if hmap.Integral()>nStrip and hmap.Integral(strip-nChannel-1, strip) == 0:            
               self.hists["deadGTFE"].Fill(tower)
               alert = "Dead GTFE(No.%d)" % int((strip+1)/nChannel - 1)
               self.logAlerts( tower, unp, alert, "deadGTFE" ,alertLevels[0] )
@@ -824,17 +825,17 @@ class TkrMonitor:
       if lexp == 0.0: lexp = 1.0
       locc /= lexp
       loccerr = locc*(1-locc) / lexp
-      if loccerr > 0.0: locc = math.sqrt( locc )
+      if loccerr > 0.0: loccerr = math.sqrt( loccerr )
       else: loccerr = 1.0 / lexp
       #
       socc /= (lexp*nStrip)
       soccerr = socc*(1-socc) / lexp
-      if soccerr > 0.0: socc = math.sqrt( socc )
+      if soccerr > 0.0: soccerr = math.sqrt( soccerr )
       else: soccerr = 1.0 / lexp
       #
       lsat /= lexp
       lsaterr = lsat*(1-lsat) / lexp
-      if lsaterr > 0.0: lsat = math.sqrt( lsat )
+      if lsaterr > 0.0: lsaterr = math.sqrt( lsaterr )
       else: lsaterr = 1.0 / lexp
     else:
       locc,socc,lsat = 0,0,0
