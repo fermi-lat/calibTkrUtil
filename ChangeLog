@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Wed Sep  3 17:00:43 PDT 2008
+calibTkrUtil/python
+
+Modified Files:
+	tkrMonitor.py 
+Log Message:
+fix a bug instroduced by the addition of error calculation for occupancies
+
+    *
+------------------------------------------------------------
 User: htajima  Wed Sep  3 16:59:54 PDT 2008
 calibTkrUtil/doc
 
