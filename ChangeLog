@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Mon Sep  8 08:05:14 PDT 2008
+calibTkrUtil/python
+
+Modified Files:
+	mergeTkrRootFiles.py 
+Log Message:
+fix a problem when more than 100 files are merged.
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: calibTkrUtil-02-07-01, operation: add
 Package: calibTkrUtil
