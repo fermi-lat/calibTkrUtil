@@ -105,7 +105,7 @@ if __name__ == '__main__':
   # [out root file] [input root files]
   #
   t0 = time.time()
-  maxFiles = 100
+  maxFiles = 500
   tdir = "."
   oname = None
   fnames = []
@@ -172,24 +172,26 @@ if __name__ == '__main__':
       tRoot.Close()
       for tFile in tFiles: tFile.Close()
       print "Elapsed time: %.1f seconds" % (time.time()-t0) 
-    fnames = tnames
+    #fnames = tnames
 
   #
   # produce final output
   #
   for key in treeList.keys():
     treeList[key] = ROOT.TList()
+  rFiles = []
   for fname in fnames:
-    inFiles.append( ROOT.TFile( fname )  )
+    rFiles.append( ROOT.TFile( fname ) )
     # trees need to be picked up here to work properly
     for key in treeList.keys():
-      tree = inFiles[-1].FindObjectAny( key )
+      tree = rFiles[-1].FindObjectAny( key )
       if tree:
         treeList[key].Add( tree )
-        print key, tree.GetEntries()
-      
-  print "# of files to merge", len(inFiles)
+        #print key, tree.GetEntries()
+        
+  print "# of trees to merge", len(rFiles)
   outRoot = ROOT.TFile( oname, "RECREATE" )
+  print "open:", oname
   for key in treeList.keys():
     try:
       tree = ROOT.TTree.MergeTrees( treeList[key] )
@@ -198,13 +200,22 @@ if __name__ == '__main__':
       print key, "saved. size:", tree.GetEntries()
     except:
       print "merge erorr:", key
-  mergeObjects( objMap, outRoot, inFiles )
-  mergeDirectories( dirMap, outRoot, inFiles, "OUT" )
+      sys.exit()
+  if len(inFiles) == 0:
+    print "# of file to merge", len(rFiles)
+    mergeObjects( objMap, outRoot, rFiles )
+    mergeDirectories( dirMap, outRoot, rFiles, "OUT" )
+  else:
+    print "# of file to merge", len(inFiles)
+    sys.exit()
+    mergeObjects( objMap, outRoot, inFiles )
+    mergeDirectories( dirMap, outRoot, inFiles, "OUT" )
 
   print "close output file:", outRoot.GetName()
   outRoot.Close()
   print "close input files"
   for inFile in inFiles: inFile.Close()
+  for rFile in rFiles: rFile.Close()
 
   if len(tnames)>0:
     print "clean up temporary files"
