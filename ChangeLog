@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Wed Sep 10 14:03:17 PDT 2008
+calibTkrUtil/python
+
+Modified Files:
+	mergeTkrRootFiles.py 
+Log Message:
+optimized # of files to be processed in the first stage for 2-step merger, which is set to 15. It will speed up the process by a factor of 5 or more when more than 100 files are merged.
+
+    *
+------------------------------------------------------------
 User: htajima  Wed Sep 10 14:02:27 PDT 2008
 calibTkrUtil/doc
 
