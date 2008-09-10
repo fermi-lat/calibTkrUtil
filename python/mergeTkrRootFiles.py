@@ -105,7 +105,7 @@ if __name__ == '__main__':
   # [out root file] [input root files]
   #
   t0 = time.time()
-  maxFiles = 500
+  maxFiles = 15
   tdir = "."
   oname = None
   fnames = []
@@ -151,11 +151,14 @@ if __name__ == '__main__':
   # if total # of input files are larger than maximum
   # input files are divided.
   #
-  inFiles = []
   tnames = []
-  if len(fnames) > maxFiles:
+  ndiv = int(len(fnames)/maxFiles-1E-10) + 1
+  if ndiv > maxFiles:
+    print ndiv
+    ndiv = int( math.sqrt( float(len(fnames)) ) )
+  if ndiv > 1:
+    base = oname.split( "/" )[-1].split( "." )[0]
     ts = time.strftime("%y%m%d%H%M%S", time.gmtime() )
-    ndiv = int(len(fnames)/maxFiles) + 1
     for idiv in range(ndiv):
       kf = idiv*len(fnames)/ndiv
       kl = (idiv+1)*len(fnames)/ndiv
@@ -164,8 +167,9 @@ if __name__ == '__main__':
       tFiles = []
       for fname in fnames[kf:kl]:
         tFiles.append( ROOT.TFile( fname ) )
-      tname = os.path.join( tdir, "temp-%s-%d.root"%(ts,idiv) )
+      tname = os.path.join( tdir, "%s-%s-%d.root"%(base,ts,idiv) )
       tnames.append( tname )
+      print "open:", tname
       tRoot = ROOT.TFile( tname, "RECREATE" )
       mergeObjects( objMap, tRoot, tFiles )
       mergeDirectories( dirMap, tRoot, tFiles, "TEMP%d"%idiv )
@@ -201,20 +205,17 @@ if __name__ == '__main__':
     except:
       print "merge erorr:", key
       sys.exit()
-  if len(inFiles) == 0:
-    print "# of file to merge", len(rFiles)
-    mergeObjects( objMap, outRoot, rFiles )
-    mergeDirectories( dirMap, outRoot, rFiles, "OUT" )
-  else:
-    print "# of file to merge", len(inFiles)
-    sys.exit()
-    mergeObjects( objMap, outRoot, inFiles )
-    mergeDirectories( dirMap, outRoot, inFiles, "OUT" )
+  if len(tnames) > 0:
+    rFiles = []
+    for tname in tnames:
+      rFiles.append( ROOT.TFile( tname ) )
+  print "# of file to merge", len(rFiles)
+  mergeObjects( objMap, outRoot, rFiles )
+  mergeDirectories( dirMap, outRoot, rFiles, "OUT" )
 
   print "close output file:", outRoot.GetName()
   outRoot.Close()
   print "close input files"
-  for inFile in inFiles: inFile.Close()
   for rFile in rFiles: rFile.Close()
 
   if len(tnames)>0:
