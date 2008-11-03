@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: ecephas  Mon Nov  3 12:56:33 PST 2008
+calibTkrUtil/src
+
+Added Files:
+	tkrPyRoot.i 
+Log Message:
+manually created file from tkrPyRoot.in
+    *
+------------------------------------------------------------
 TAG
 Tag name: calibTkrUtil-02-07-03, operation: add
 Package: calibTkrUtil
