@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: ecephas  Tue Nov  4 07:55:16 PST 2008
+calibTkrUtil/calibTkrUtil
+
+Removed Files:
+	GeoConstants.h 
+Log Message:
+Moved file to calibTkrUtil/src/test
+    *
+------------------------------------------------------------
 User: ecephas  Tue Nov  4 06:59:00 PST 2008
 calibTkrUtil/src/test
 
