@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: ecephas  Tue Nov  4 07:57:30 PST 2008
+calibTkrUtil/src/test
+
+Added Files:
+	GeoConstants.h 
+Log Message:
+Moved file back to this location until Hiro and Johann figure out why it works fine in this location for cmt and not for Scons
+    *
+------------------------------------------------------------
 User: ecephas  Tue Nov  4 07:55:16 PST 2008
 calibTkrUtil/calibTkrUtil
 
