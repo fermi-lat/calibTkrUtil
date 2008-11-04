@@ -12,16 +12,18 @@ swigEnv = baseEnv.Clone()
 
 libEnv.Tool('calibTkrUtilLib', depsOnly = 1)
 
-calibTkrUtilRootcint = libEnv.Rootcint('calibTkrUtil/calibTkrUtil_rootcint', ['src/tkrPyRoot/tkrPyRoot.h',
+calibTkrUtilRootcint = libEnv.Rootcint('src/tkrPyRoot/tkrPyRoot_rootcint', ['src/tkrPyRoot/tkrPyRoot.h',
 			'src/tkrPyRoot/LinkDef.h'],
 			includes = [''])
  
-calibTkrUtil = libEnv.SharedLibrary('calibTkrUtil', listFiles(['src/*.cxx']) + ['src/tkrPyRoot/calibTkrUtil_rootcint.cxx']
+calibTkrUtil = libEnv.SharedLibrary('calibTkrUtil', listFiles(['src/*.cxx']) + ['src/tkrPyRoot/tkrPyRoot_rootcint.cxx']
 				+ ['src/tkrPyRoot/tkrPyRoot.cxx'])
 
 lib_tkrPyRoot = swigEnv.SharedLibrary('lib_tkrPyRoot', 'src/tkrPyRoot.i')
 
 progEnv.Tool('calibTkrUtilLib')
+tkrRootAnalysis = progEnv.Program('tkrRootAnalysis', listFiles(['src/test/*.cxx', 'src/*.cxx', 'src/tkrPyRoot/*.cxx']))
 progEnv.Tool('registerObjects', package = 'calibTkrUtil', libraries = [calibTkrUtil, lib_tkrPyRoot], 
+	binaries = [tkrRootAnalysis],
 	python = listFiles(['python/*.py']),
 	includes = listFiles(['calibTkrUtil/*.h']))
