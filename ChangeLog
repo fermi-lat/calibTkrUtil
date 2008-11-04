@@ -1,4 +1,36 @@
 ------------------------------------------------------------
+User: ecephas  Tue Nov  4 06:07:13 PST 2008
+calibTkrUtil
+
+Modified Files:
+	SConscript 
+Log Message:
+Changed 
+
+	calibTkrUtilRootcint = libEnv.Rootcint('calibTkrUtil/calibTkrUtil_rootcint', ['src/tkrPyRoot/tkrPyRoot.h',
+to
+
+	calibTkrUtilRootcint = libEnv.Rootcint('src/tkrPyRoot/tkrPyRoot_rootcint', ['src/tkrPyRoot/tkrPyRoot.h',
+
+Changed
+
+	calibTkrUtil = libEnv.SharedLibrary('calibTkrUtil', listFiles(['src/*.cxx']) + ['src/tkrPyRoot/calibTkrUtil_rootcint.cxx']
+
+to
+
+	calibTkrUtil = libEnv.SharedLibrary('calibTkrUtil', listFiles(['src/*.cxx']) + ['src/tkrPyRoot/tkrPyRoot_rootcint.cxx']
+---
+
+Added 
+	tkrRootAnalysis = progEnv.Program('tkrRootAnalysis', listFiles(['src/test/*.cxx', 'src/*.cxx', 'src/tkrPyRoot/*.cxx']))
+
+----
+
+Added "binaries = [tkrRootAnalysis]" to progEnv.Tool('registerObjects') ...
+
+
+    *
+------------------------------------------------------------
 User: ecephas  Mon Nov  3 13:59:26 PST 2008
 calibTkrUtil
 
