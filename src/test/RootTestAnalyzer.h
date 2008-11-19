@@ -13,7 +13,7 @@
 //#include "idents/CalXtalId.h"
 //#include "NtupleDef.h"
 #include "calibTkrUtil/TkrHits.h"
-#include "calibTkrUtil/TkrNoiseOcc.h"
+#include "../TkrNoiseOcc.h"
 
 class RootAnalyzer {
  public:
