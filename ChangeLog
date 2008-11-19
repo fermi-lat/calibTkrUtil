@@ -1,4 +1,16 @@
 ------------------------------------------------------------
+User: ecephas  Wed Nov 19 12:53:08 PST 2008
+GlastRelease-scons/calibTkrUtil/calibTkrUtil
+
+Removed Files:
+      Tag: GlastReleasev15r49
+	TkrNoiseOcc.h 
+Log Message:
+To make this pacakge consistent with the package organization convention, I moved TkrNoiseOcc.h to 
+calibTkrUtil/src directory.
+
+    *
+------------------------------------------------------------
 User: ecephas  Tue Nov  4 07:57:30 PST 2008
 calibTkrUtil/src/test
 
