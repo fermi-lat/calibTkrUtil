@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: ecephas  Wed Nov 19 13:19:07 PST 2008
+GlastRelease-scons/calibTkrUtil/calibTkrUtil
+
+Added Files:
+      Tag: GlastReleasev15r49
+	GeoConstants.h 
+Log Message:
+Moved from calibTkrUtil/src/test to calibTkrUtil/calibTkrUtil
+    *
+------------------------------------------------------------
 User: ecephas  Wed Nov 19 13:16:27 PST 2008
 GlastRelease-scons/calibTkrUtil/src
 
