@@ -1,4 +1,4 @@
-#include "calibTkrUtil/TkrNoiseOcc.h"
+#include "TkrNoiseOcc.h"
 
 int getUnpFromBilayer( int xyview, int bilayer ){
   int unp = -1;
