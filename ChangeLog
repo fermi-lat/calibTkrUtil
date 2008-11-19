@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: ecephas  Wed Nov 19 13:16:27 PST 2008
+GlastRelease-scons/calibTkrUtil/src
+
+Added Files:
+      Tag: GlastReleasev15r49
+	TkrNoiseOcc.h 
+Log Message:
+Moved file from calibTkrUtil/calibTkrUtil
+    *
+------------------------------------------------------------
 User: ecephas  Wed Nov 19 12:54:07 PST 2008
 GlastRelease-scons/calibTkrUtil/src/test
 
