@@ -1,4 +1,18 @@
 ------------------------------------------------------------
+User: ecephas  Wed Nov 19 12:54:07 PST 2008
+GlastRelease-scons/calibTkrUtil/src/test
+
+Removed Files:
+      Tag: GlastReleasev15r49
+	GeoConstants.h 
+Log Message:
+To make this pacakge consistent with the package organization convention, I moved TkrNoiseOcc.h to 
+calibTkrUtil/src directory.
+To make this pacakge consistent with the package organization convention, I moved GeoConstants.h to
+calibTkrUtil/calibTkrUtil directory.
+
+    *
+------------------------------------------------------------
 User: ecephas  Wed Nov 19 12:53:08 PST 2008
 GlastRelease-scons/calibTkrUtil/calibTkrUtil
 
