@@ -952,12 +952,18 @@ class XmlHandler:
       dtd = 'tkrCalibration.dtd'
     else:
       dtd = 'badStrips.dtd'
+#<<<<<<< tkrUtils.py
+    #dtdfile = os.path.join(os.getenv('TKR_ROOT'), 'tkr_lib', dtd)
+    #dtdfile = os.path.join(dtd_dir, dtd)
+#    dtdfile = os.path.join(os.getenv('CALIBTKRUTILROOT'), 'src',dtd)
+#=======
     try:
       dtdfile = os.path.join(os.getenv('CALIBTKRUTILROOT'), 'src', dtd)
       if not os.path.exists(dtdfile):
         dtdfile = os.path.join(os.getenv("LATMonRoot"),"TKR","TkrMonitor",dtd)
     except:
       dtdfile = os.path.join(os.getenv("LATMonRoot"), "TKR", "TkrMonitor", dtd)
+#>>>>>>> 1.4
     if not os.path.exists(dtdfile):
       print 'FATAL: Did not find the DTD file ' + dtdfile
       sys.exit()
@@ -1327,11 +1333,17 @@ def initHotXml( file, badType, runId, times, inst="LAT", tagv="1.1", \
 def addHotStrips( handler, tower, badStripMap ):
   tower_elem = handler.goToTower( (tower,g_Serials[tower]) )
   for unp in range(g_nUniPlanes-1,-1,-1):
-    list = badStripMap[tower][unp]
-    if len(list) > 0:
+    dlist = badStripMap["data"][tower][unp]
+    tlist = badStripMap["trig"][tower][unp]
+    if len(dlist) > 0:
       uniplane_elem = handler.goToUniplane( tower_elem, unp, '1',\
-                                            'false', 'true', 'true' )
-      handler.addStripList(uniplane_elem,list)
+                                            'false', 'false', 'true' )
+      handler.addStripList(uniplane_elem,dlist)
+    if len(tlist) > 0:
+      uniplane_elem = handler.goToUniplane( tower_elem, unp, '1',\
+                                            'false', 'true', 'false' )
+      handler.addStripList(uniplane_elem,tlist)
+                  
     else:
       uniplane_elem = handler.goToUniplane( tower_elem, unp, '1',\
                                             'false', 'false', 'false' )
@@ -1405,9 +1417,10 @@ def writeTFEXml( badStripMap, runId, topDir=None, times=None, timeStamp=None, ta
   for tower in range(g_nTowers):
     tower_elem = handler.goToTower( (tower, "TEM") )
     for unp in range(g_nUniPlanes-1,-1,-1):
-      stList = badStripMap[tower][unp]
-      if len(stList) > 0:
-        sptElm = handler.goToSPT( tower_elem, unp, stList, stList )
+      dList = badStripMap["data"][tower][unp]
+      tList = badStripMap["trig"][tower][unp]
+      if len(dList) > 0 or len(tList) > 0:
+        sptElm = handler.goToSPT( tower_elem, unp, tList, dList )
   handler.saveAndClose()
 
 

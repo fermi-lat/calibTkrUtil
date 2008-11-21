@@ -11,8 +11,10 @@ import tkrUtils
 
 # get tag and version numbers
 __tag__  = "$Name:  $"
-__version__  = "$Revision: 1.16 $"
+__version__  = "$Revision: 1.17 $"
 tagv = "%s:%s" % (__tag__.split()[1], __version__.split()[1])
+
+
 
 # ROOT initilization
 ROOT.gSystem.Load("tkrPyRoot")
@@ -29,8 +31,7 @@ nPlane = tkrUtils.g_nUniPlanes
 nStrip = tkrUtils.g_nStrips
 nGTFE = tkrUtils.g_nFE
 nChannel = tkrUtils.g_nChannels
-#nTower = 4
-#nPlane = 9
+
 
 nsat = 15 # GTRC hit limit + 1
 
@@ -121,11 +122,11 @@ class TkrMonitor:
     self.inputRoot = ROOT.TFile( iname )
     #print self.inputRoot.GetEndpointUrl()
     self.htmldir = htmldir
+    self.xmldir = self.htmldir
     if not os.path.exists( self.htmldir ):
       print "html directory, %s, does not exist. Create a new one." % htmldir
       os.mkdir( self.htmldir )
   
-    self.xmldir = self.htmldir
     self.refRoot = []
     try:
       self.mondir = os.path.join( os.getenv("LATMonRoot"), "TKR", "TkrMonitor" )
@@ -165,12 +166,16 @@ class TkrMonitor:
 
     self.striplogs = {}   
     self.badStrips = {}
+    self.badStrips["data"] = {}
+    self.badStrips["trig"] = {}
     for tower in range(nTower):
       self.striplogs[tower] = {}
-      self.badStrips[tower] = {}
+      self.badStrips["data"][tower] = {}
+      self.badStrips["trig"][tower] = {}
       for unp in range(nPlane):
         self.striplogs[tower][unp] = {}
-        self.badStrips[tower][unp] = []
+        self.badStrips["data"][tower][unp] = []
+        self.badStrips["trig"][tower][unp] = []
         for type in ("stripOcc","stripEff"):
           self.striplogs[tower][unp][type] = []
     
@@ -244,7 +249,7 @@ class TkrMonitor:
     self.hists["towerdY"] = ROOT.TH1F("towerdY", "tower delta Y", \
                                       nTower,0,nTower)
     self.hists["totPeak"] = ROOT.TH1F("totPeakDist",\
-                                      "TOT peak distributioin",25,2,7)
+                                      "TOT peak distributioin",25,3.8,6.0)
     self.hists["layerdXY"] = ROOT.TH2F("layerdXY_map", \
                                        "Layer displacement map",\
                                        nTower,0,nTower, nPlane,0,nPlane)
@@ -264,7 +269,7 @@ class TkrMonitor:
   def readParamLimitsXml(self):
     self.limits={}
     xname = os.path.join( self.mondir, "paramLimitsDefault.xml"  )
-    ### xname = os.path.join( self.mondir, "paramLimitsTest.xml"  )
+    #xname = os.path.join( "paramLimitsDefault.xml"  )
     print "read xml: %s" % xname
     dom = xml.dom.minidom.parse( xname )
     topElm = dom.getElementsByTagName("ParamLimits")[0]
@@ -278,9 +283,10 @@ class TkrMonitor:
         print "Invalid alert type: %s or level: %s." % (type,level)
         self.limits[type] = value
       else: self.limits[type] = value
-      print "mondir=",self.mondir
-    
+      #print "mondir=",self.mondir
 
+    #self.limits["stripOcc"] = self.limits["tmaskstripOcc"]
+ 
     
   #
   #*********************
@@ -289,7 +295,6 @@ class TkrMonitor:
   #
   def getTimeStamps(self):
     tree = self.inputRoot.FindObjectAny( "timeStamps" )
-    
     self.startTime = array.array( 'd', [-1] )
     self.endTime = array.array( 'd', [1] )
     self.firstRunId = array.array( 'L', [0] )
@@ -307,6 +312,7 @@ class TkrMonitor:
     if tree.firstRunId == tree.lastRunId: self.srunID = "%d" % tree.firstRunId
     else: self.srunID = "%d-%d" % ( tree.firstRunId, tree.lastRunId )
 
+
     tree = self.inputRoot.FindObjectAny( "tkrNoiseTree" )
     startTime = -1
     for i in range(tree.GetEntries()):
@@ -315,7 +321,7 @@ class TkrMonitor:
         startTime = tree.startTime
     self.runID = "%d" % startTime
 
-    #Temporary
+    #Temporary    
     if abs(self.firstRunId[0] - int(self.runID)) > 10000:
       self.runID = "%d" % self.firstRunId[0]
 
@@ -341,14 +347,22 @@ class TkrMonitor:
       for unp in range(nPlane):
         self.fitTOT( tower, unp )
         self.analyzeOccupancy( tower, unp )
-
+        self.mktrigmask(tower, unp)
+        
     self.analyzeTotPeak()
     self.analyzeDisplacement()
+    self.mkdatamask()
+
+    print self.badStrips["data"]
+    print self.badStrips["trig"]
+    
 
     saveHotStrips = False
     for tower in range(nTower):
       for unp in range(nPlane):
-        if len(self.badStrips[tower][unp]) > 0: saveHotStrips = True
+        if len(self.badStrips["data"][tower][unp]) > 0 \
+               or len(self.badStrips["trig"][tower][unp]) > 0:
+          saveHotStrips = True
 
     if saveHotStrips:
       year, month, day, hour, minute = tkrUtils.getDateTime( str(int(self.startTime[0])) )
@@ -360,8 +374,6 @@ class TkrMonitor:
                             self.runID, tagv)
       tkrUtils.writeHotXml( self.badStrips, self.runID, self.xmldir, times,\
                             self.runID, tagv)
-      # tkrUtils.writeHotXml(self.badStrips,self.runID,"/afs/slac.stanford.edu/u/ki/nishino")
-        
 
   
   #
@@ -453,7 +465,8 @@ class TkrMonitor:
       self.hists[key].SetBinError(tower+1,terr*100)
 
       if teff < self.limits["trigEff"]:
-        alert = "trigger efficiency, %.1f%s < %.1f%s" % (teff*100, "%", self.limits["trigEff"]*100, "%" )
+        alert = "trigger efficiency, %.1f%s < %.1f%s" \
+                % (teff*100, "%", self.limits["trigEff"]*100, "%" )
         self.logAlerts( tower, 0, alert, "trigEff" ,alertLevels[1] )   # 0 is dummy
 
       
@@ -640,8 +653,8 @@ class TkrMonitor:
       self.towerHists[tower][key].SetBinContent(unp+1,eff*100)
       self.towerHists[tower][key].SetBinError(unp+1,err*100)
       self.hists[key].SetBinContent(tower+1,unp+1,(1-eff)*100)
-      self.towerHists[tower][key].SetMaximum( 100.5 )
-      self.hists[key].SetMaximum( 100.5 )
+      #self.towerHists[tower][key].SetMaximum( 100.5 )
+      #self.hists[key].SetMaximum( 100.5 )
 
 
     if tower == 0:
@@ -667,7 +680,8 @@ class TkrMonitor:
     self.hists[key].SetBinContent(tower+1,teff*100)
     self.hists[key].SetBinError(tower+1,terr*100)
     if teff < self.limits["towerEff"]:
-        alert = "tower efficiency, %.1f%s < %.1f%s" % (teff*100, "%", self.limits["towerEff"]*100, "%" )
+        alert = "tower efficiency, %.1f%s < %.1f%s" \
+                % (teff*100, "%", self.limits["towerEff"]*100, "%" )
         self.logAlerts( tower, 0, alert, "towerEff" ,alertLevels[1] )   # 0 is dummy
 
     self.towerave["layerEff"][tower] = teff*100
@@ -698,7 +712,7 @@ class TkrMonitor:
           if eocc == 0.0:
             hmap = self.inputRoot.FindObjectAny( "hTkrHitMapT%d%s" %(tower,lname) )
             #print tower, lname, hmap.Integral(strip-nChannel-1, strip)
-            if hmap.Integral()>nStrip and hmap.Integral(strip-nChannel-1, strip) == 0:            
+            if hmap.Integral()>nStrip and hmap.Integral(strip-nChannel-1, strip) == 0:
               self.hists["deadGTFE"].Fill(tower)
               alert = "Dead GTFE(No.%d)" % int((strip+1)/nChannel - 1)
               self.logAlerts( tower, unp, alert, "deadGTFE" ,alertLevels[0] )
@@ -713,7 +727,7 @@ class TkrMonitor:
                                                            "layerEff", alertLevels[1]))
             #self.logAlerts( tower, unp, alert, "layerEff" ,alertLevels[2] )
           self.layerHists[tower][unp]["stripEff"].SetBinContent((strip+1)/nChannel,seff*100)
-          self.layerHists[tower][unp]["stripEff"].SetBinError((strip+1)/nChannel,serr*100)          
+          self.layerHists[tower][unp]["stripEff"].SetBinError((strip+1)/nChannel,serr*100) 
           self.layerHists[tower][unp]["stripEff"].SetMaximum( 100.5 )
           eocc,tocc = 0.0,0.0
       self.towerHists[tower]["fracNHstrip"].SetBinContent(unp+1,100*nl/nStrip)
@@ -728,7 +742,8 @@ class TkrMonitor:
     self.towerave["fracNHstrip"][tower] = sumdead/nPlane 
 
     if tower == nTower-1 :
-      self.latave["fracNHstrip"] = (self.hists["fracNHstrip"].Integral()/nTower, "fraction of no-hit strips")
+      self.latave["fracNHstrip"] = (self.hists["fracNHstrip"].Integral()/nTower,\
+                                    "fraction of no-hit strips")
 
 
 
@@ -783,9 +798,6 @@ class TkrMonitor:
                   % (resP, error, self.limits["layerdXYSigma"])
           self.logAlerts( tower, unp, alert, "layerdXY" ,alertLevels[2] )
       self.towerave["layerdXY"][tower] = sumresP/nPlane                        
-        
-        
-
 
 
   #
@@ -840,7 +852,6 @@ class TkrMonitor:
     else:
       locc,socc,lsat = 0,0,0
       loccerr,soccerr,lsaterr = 1,1,1
-    self.maskHotstrip(tower, unp)
     if locc > self.limits["layerOcc"]:
       alert = "layer Occucpancy, %.1e > %.1e" \
               % (locc,self.limits["layerOcc"])
@@ -889,7 +900,6 @@ class TkrMonitor:
     httexp = self.inputRoot.FindObjectAny( "hTkrTowerSumExpTwr%d-R%s" % (tower,self.srunID) )
     httocc = self.inputRoot.FindObjectAny( "hTkrTowerOccTwr%d-R%s" % (tower,self.srunID) )
 
-
     for k in range(httexp.GetNbinsX()+1):
         ttexp = httexp.GetBinContent(k+1)
         ttocc = httocc.GetBinContent(k+1)
@@ -897,7 +907,8 @@ class TkrMonitor:
           self.towerHists[tower]["stripOccT"].SetBinContent(k+1, ttocc/ttexp)
         else:
           self.towerHists[tower]["stripOccT"].SetBinContent(k+1, 0)
-          
+    self.towerHists[tower]["stripOccT"].SetAxisRange(0,httexp.GetNbinsX()+10)
+  
     for unp in range(nPlane):
       ielm = unp + tower*nPlane
       lname = tkrUtils.g_layerNames[unp]
@@ -914,39 +925,98 @@ class TkrMonitor:
         else:
           self.layerHists[tower][unp]["layerOccT"].SetBinContent(k+1, 0)
           self.layerHists[tower][unp]["stripOccT"].SetBinContent(k+1, 0)
+      self.layerHists[tower][unp]["layerOccT"].SetAxisRange(0,htexp.GetNbinsX()+10)
+      self.layerHists[tower][unp]["stripOccT"].SetAxisRange(0,htexp.GetNbinsX()+10)
 
+    
   #
   #***********************
-  # create Hot strip
+  # create Hot strip mask
   #***********************
   #
-  def maskHotstrip(self, tower, unp):
+  def mkdatamask(self):
+    (latocc, lexp) = (0.0, 0.0)
+    for tower in range(nTower):
+      for unp in range(nPlane):
+        lname = tkrUtils.g_layerNames[unp]
+        hmul = self.inputRoot.FindObjectAny( "hTkrNoiseMulT%d%s" %(tower,lname) )
+        hmap = self.inputRoot.FindObjectAny( "hTkrHitMapT%d%s" %(tower,lname) )
+        hWmap = self.inputRoot.FindObjectAny( "hTkrWHitMapT%d%s" %(tower,lname) )
+        lexp += hmul.Integral()
+        latocc += hmap.Integral()
+        if hmul.Integral() == 0: lsat = hmul.Integral(nsat,128)/1
+        else: lsat = hmul.Integral(nsat,128)/hmul.Integral()
+        if lsat > self.limits["fracSat"]: continue
+        for strip in range(nStrip):
+          #socc = hWmap.GetBinContent(strip+1) / hmul.Integral()
+          if hmul.Integral() == 0:socc = hmap.GetBinContent(strip+1)/1
+          else:socc = hmap.GetBinContent(strip+1)/hmul.Integral()
+          if socc > self.limits["dmaskstripOcc"] \
+                 and strip not in self.badStrips["data"][tower][unp]:
+            self.badStrips["data"][tower][unp].append(strip)
+            print "data mask strip: T%d L%d %d, socc= %.1e" % (tower, unp, strip, socc)
+    Latocc = latocc
+    if lexp == 0: lexp = 1.0E+5
+    while latocc/(lexp*nStrip) > self.limits["dmaskLatOcc"]:
+      latocc = Latocc
+      candidate = [(0,0,0,0)]        
+      for tower in range(nTower):
+        for unp in range(nPlane):
+          lname = tkrUtils.g_layerNames[unp]
+          hmap = self.inputRoot.FindObjectAny( "hTkrHitMapT%d%s" %(tower,lname) )
+          hmul = self.inputRoot.FindObjectAny( "hTkrNoiseMulT%d%s" %(tower,lname) )
+          if hmul.Integral() == 0: lsat = hmul.Integral(nsat,128)/1
+          else: lsat = hmul.Integral(nsat,128)/hmul.Integral()
+          if lsat > self.limits["fracSat"]: continue
+          for strip in range(nStrip):
+            socc = hmap.GetBinContent(strip)
+            if strip in self.badStrips["data"][tower][unp]:
+              latocc = latocc - socc            
+            candidate.sort()
+            if len(candidate) < 10 and strip not in self.badStrips["data"][tower][unp]:
+              candidate.append((socc, strip, tower, unp))
+            elif socc > candidate[0][0] and strip not in self.badStrips["data"][tower][unp]:
+              candidate[0] = (socc, strip, tower, unp)
+      candidate.reverse()
+      for vmax, strip, tower, unp in candidate:
+        if latocc/(lexp*nStrip) < self.limits["dmaskLatOcc"]:break
+        self.badStrips["data"][tower][unp].append(strip)
+        latocc = latocc - vmax
+        print "data mask strip: T%d L%d %d, latocc= %.1e" \
+              % (tower, unp, strip, latocc/(lexp*nStrip))
+
+      
+  def mktrigmask(self, tower, unp):
     lname = tkrUtils.g_layerNames[unp]
     hWmap = self.inputRoot.FindObjectAny( "hTkrWHitMapT%d%s" %(tower,lname) )
+    hmap = self.inputRoot.FindObjectAny( "hTkrHitMapT%d%s" %(tower,lname) )
     hmul = self.inputRoot.FindObjectAny( "hTkrNoiseMulT%d%s" %(tower,lname) )
     lexp = hmul.Integral()
     if lexp == 0: lexp = 1
-    locc = hWmap.Integral()/lexp
+    locc = hWmap.Integral()
     lsat = hmul.Integral(nsat,128)/lexp
     if lsat < self.limits["fracSat"]:
-      while locc > self.limits["layerOcc"]:
+      for strip in range(nStrip):
+        #socc = hWmap.GetBinContent(strip+1)
+        socc = hmap.GetBinContent(strip+1)
+        if socc/lexp > self.limits["tmaskstripOcc"] \
+               and strip not in self.badStrips["trig"][tower][unp]:
+          self.badStrips["trig"][tower][unp].append(strip)
+          print "trigger mask strip: T%d L%d %d, socc= %.1e" % (tower, unp, strip, socc/lexp)
+          locc = locc-socc
+      while locc/lexp > self.limits["tmasklayerOcc"]:        
         vmax,smax = -1,-1
         for strip in range(nStrip):
-          socc = hWmap.GetBinContent(strip+1)
+          #socc = hWmap.GetBinContent(strip+1)
+          socc = hmap.GetBinContent(strip+1)
           if socc > vmax:
-            if strip not in self.badStrips[tower][unp]:
+            if strip not in self.badStrips["trig"][tower][unp]:
               vmax = socc
               smax = strip
-        self.badStrips[tower][unp].append(smax)
-        print "mask strip: T%d L%d %d, %.1e" % (tower, unp, smax, vmax/lexp)
-        locc = (locc*lexp-vmax)/lexp
-      for strip in range(nStrip):
-        socc = hWmap.GetBinContent(strip+1) / lexp
-        if socc > self.limits["stripOcc"] \
-               and strip not in self.badStrips[tower][unp]:
-          self.badStrips[tower][unp].append(strip)
-          print "mask strip: T%d L%d %d, %.1e" % (tower, unp, strip, socc)
-                  
+        self.badStrips["trig"][tower][unp].append(smax)
+        #print "trigger mask strip: T%d L%d %d, sooc= %.1e" % (tower, unp, smax, vmax/lexp)
+        locc = locc-vmax
+
 
   #
   #*********************
@@ -988,6 +1058,9 @@ class TkrMonitor:
       if key == "stripOcc" or key == "stripEff":
           tl = self.setHistLimits(key, self.layerHists[tower][unp][key])
           tl.Draw("SAME")
+      if key == "stripOcc":
+          tl2 = self.setHistLimits("tmaskstripOcc", self.layerHists[tower][unp][key])
+          tl2.Draw("SAME")
       canvas.SaveAs( path )
       ROOT.gPad.SetLogy( 0 )
       self.savedPictures[tower][unp][key] = pname
@@ -1037,10 +1110,23 @@ class TkrMonitor:
                 self.htmlLine(self.hout1, alert, 2, red)
               else:
                 self.htmlLine(self.hout1,"strip%d:%s" %(strip,alert))
-            if len(self.badStrips[tower][unp]) > 0:
-              for s in self.badStrips[tower][unp]:
-                self.htmlLine(self.hout1,"Hot strip%d: Need to be Masked" %(s),2,red)
+            if len(self.badStrips["data"][tower][unp]) > 0:
+              for s in self.badStrips["data"][tower][unp]:
+                self.htmlLine(self.hout1,"Hot strip%d: Need to be data-Masked" %(s),2,red)
+            if len(self.badStrips["trig"][tower][unp]) > 0:
+              for s in self.badStrips["trig"][tower][unp]:
+                self.htmlLine(self.hout1,"Hot strip%d: Need to be trig-Masked" %(s),2,red)
+
+        for masktype in ("trig", "data"):
+          if len(self.badStrips[masktype][tower][unp])>0:
+            txt = self.badStrips[masktype][tower][unp]
+            txt = "%s-mask required: strip %s" %(masktype, txt)
+            self.htmlLine( self.hout1, txt, 2, red )
                 
+                
+
+
+                                                
       else :
         if self.striplogs[tower][unp].has_key( key ):
           if len(self.striplogs[tower][unp][key]) > 0:
@@ -1370,6 +1456,7 @@ class TkrMonitor:
           elif level == alertLevels[1]: color = yellow
           else: color = None
           self.htmlLine( self.hout, level, 2, color)
+          if key == "stripOcc":break
           for tower, unp, alert in self.logs[key][level]:         
             if key == "fracNHstrip" and self.latave["fracNHstrip"] > 50.0:
               self.htmlLine( self.hout, "Poor statistics, No displayed", 2, "blue")
@@ -1382,6 +1469,20 @@ class TkrMonitor:
             if key == "towerEff" or key == "trigEff":
               self.htmlLine( self.hout, "%s: %s" % (alert, towerLink) )
             else:self.htmlLine( self.hout, "%s: %s %s" % (alert, towerLink, layerLink) )
+    if key == "stripOcc":
+      for masktype in ("trig", "data"):
+        for tower in range(nTower):
+          for unp in range(nPlane):
+            lname = tkrUtils.g_layerNames[unp]
+            if len(self.badStrips[masktype][tower][unp])>0:          
+              txt = self.badStrips[masktype][tower][unp]   
+              txt = "%s-mask required: strip %s" %(masktype, txt) 
+              towerRef = self.htmlTowerReport( tower, unp )
+              towerLink = self.htmlLink( "Tower %d"%tower, towerRef )
+              layerRef = self.htmlLayerReport( tower, unp, txt )
+              layerLink = self.htmlLink( "Layer %s"%lname, layerRef )
+              self.htmlLine( self.hout, "%s: %s %s" % (txt, towerLink, layerLink) )
+            
     if self.latave.has_key(key): 
          txt = "Lat averaged %s: %.1f%s" % (self.latave[key][1], self.latave[key][0], "%") 
          self.htmlLine( self.hout, txt, 2, "green")
