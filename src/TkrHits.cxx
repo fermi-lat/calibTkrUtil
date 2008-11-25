@@ -511,14 +511,14 @@ TkrHits::TkrHits( bool initHistsFlag ):
 {
 
   // get version number from CVS string
-  std::string tag = "$Name:  $";
+  std::string tag = "$Name: v2r7p3 $";
   int i = tag.find( " " );
   tag.assign( tag, i+1, tag.size() );
   i = tag.find( " " );
   tag.assign( tag, 0, i ) ;
   m_tag = tag;
 
-  std::string version = "$Revision: 1.18 $";
+  std::string version = "$Revision: 1.19 $";
   i = version.find( " " );
   version.assign( version, i+1, version.size() );
   i = version.find( " " );
@@ -580,7 +580,7 @@ void TkrHits::initCommonHists(){
   // MIP filter hists
   //
   Float_t bins[21];
-  for( int i=0; i<21; i++) bins[i] = 20.0*pow(10,0.2*i);
+  for( int i=0; i<21; i++) bins[i] = 20.0*pow(Float_t(10.),Float_t(0.2*i));
   m_hAcdTileCount = new TH1F("acdTileCount", "AcdTileCount", 10, 0 , 10 );
   m_hAcdTotalEnergy = new TH1F("acdTotalEnergy", "AcdTotalEnergy", 100, 0 , 10 );
   m_hCalEnergyRaw = new TH1F("calEnergyRaw", "calEnergyRaw", 100, 0, 1000 );
@@ -2731,7 +2731,7 @@ void TkrHits::fillOccupancy( int tDiv )
     //if( layer==4 && view==0 ) m_brmsDist[layer/3]->Fill( delta );
     
     // select good clusters
-    if( fabs(delta) > 3.0 or !m_MIPtot ) continue;
+    if( (fabs(delta) > 3.0) || !m_MIPtot ) continue;
     
     if( view == 0 ){
       aview = 1;
