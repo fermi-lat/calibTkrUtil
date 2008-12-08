@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: ecephas  Mon Dec  8 13:40:19 PST 2008
+calibTkrUtil
+
+Modified Files:
+	SConscript 
+Log Message:
+Check in SConscript for calibTkrUtil v2r1p2 (for branch-tag, GlastReleasev15r49) 
+    *
+------------------------------------------------------------
 User: heather  Tue Nov 25 00:24:59 PST 2008
 calibTkrUtil/src
 
