@@ -2,6 +2,16 @@
 TAG
 Tag name: calibTkrUtil-02-01-02, operation: add
 Package: calibTkrUtil
+User: ecephas  Mon Dec  8 16:08:46 2008
+Files:
+  calibTkrUtil/calibTkrUtilLib.py  1.2
+  calibTkrUtil/calibTkrUtilLib.py  1.2
+
+    *
+------------------------------------------------------------
+TAG
+Tag name: calibTkrUtil-02-01-02, operation: add
+Package: calibTkrUtil
 User: ecephas  Mon Dec  8 13:40:25 2008
 Files:
   calibTkrUtil/SConscript  1.3
