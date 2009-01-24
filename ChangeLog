@@ -1,5 +1,17 @@
 ------------------------------------------------------------
 TAG
+Tag name: v2r1p2gl1, operation: del
+Package: calibTkrUtil
+User: glastrm  Sat Jan 24 13:23:18 2009
+Files:
+  calibTkrUtil/calibTkrUtil/GeoConstants.h  1.2.2.1
+  calibTkrUtil/src/TkrNoiseOcc.cxx  1.16.44.1
+  calibTkrUtil/src/TkrNoiseOcc.h  1.1.2.1
+  calibTkrUtil/src/test/RootTestAnalyzer.h  1.2.126.1
+
+    *
+------------------------------------------------------------
+TAG
 Tag name: v2r7p3gl1, operation: add
 Package: calibTkrUtil
 User: glastrm  Sat Jan 24 13:22:50 2009
