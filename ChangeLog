@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: ecephas  Sat Jan 24 13:40:06 PST 2009
+calibTkrUtil
+
+Modified Files:
+	SConscript 
+Log Message:
+Changed the scons version string from calibTkrUtil-02-07-03 to calibTkrUtil-02-07-03-01 to reflect the patch made (v2r7p3gl1) to get scons to build this package for GlastRelease-15-49-00
+    *
+------------------------------------------------------------
 TAG
 Tag name: v2r1p2gl1, operation: del
 Package: calibTkrUtil
