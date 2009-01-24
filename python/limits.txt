@@ -1,9 +1,0 @@
-layerEff  0.90
-layerOcc  0.05
-stripOcc  5.0E-5
-fracSat	  1.0E-4
-layerdXY   30.00
-towerEff  0.98
-towerOcc  5.0E-5
-totPeakSigma 3.0
-fracBadTot 0.1
