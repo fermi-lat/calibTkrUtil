@@ -1,5 +1,15 @@
 ------------------------------------------------------------
 TAG
+Tag name: v2r7p3, operation: del
+Package: calibTkrUtil
+User: glastrm  Sat Jan 24 14:07:01 2009
+Files:
+  calibTkrUtil/SConscript  1.4
+  calibTkrUtil/calibTkrUtilLib.py  1.2
+
+    *
+------------------------------------------------------------
+TAG
 Tag name: v2r7p3gl1, operation: add
 Package: calibTkrUtil
 User: ecephas  Sat Jan 24 14:05:59 2009
