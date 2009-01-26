@@ -1,5 +1,19 @@
 ------------------------------------------------------------
 TAG
+Tag name: v2r7p3gl1, operation: del
+Package: calibTkrUtil
+User: glastrm  Mon Jan 26 15:28:16 2009
+Files:
+  calibTkrUtil/calibTkrUtilLib.py  1.2
+  calibTkrUtil/SConscript  1.5
+  calibTkrUtil/calibTkrUtil/GeoConstants.h  1.2.2.1
+  calibTkrUtil/src/TkrNoiseOcc.cxx  1.16.44.1
+  calibTkrUtil/src/TkrNoiseOcc.h  1.1.2.1
+  calibTkrUtil/src/test/RootTestAnalyzer.h  1.2.126.1
+
+    *
+------------------------------------------------------------
+TAG
 Tag name: GlastRelease-15-49-00, operation: mov
 Package: calibTkrUtil
 User: glastrm  Mon Jan 26 14:58:53 2009
