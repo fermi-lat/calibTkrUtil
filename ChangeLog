@@ -2,6 +2,15 @@
 TAG
 Tag name: GlastRelease-15-49-00, operation: add
 Package: calibTkrUtil
+User: ecephas  Tue Jan 27 07:47:47 2009
+Files:
+  calibTkrUtil/SConscript  1.5
+
+    *
+------------------------------------------------------------
+TAG
+Tag name: GlastRelease-15-49-00, operation: add
+Package: calibTkrUtil
 User: glastrm  Tue Jan 27 07:44:16 2009
 Files:
   calibTkrUtil/.cvsignore  1.1.1.1
