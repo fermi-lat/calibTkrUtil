@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 TAG
+Tag name: v2r7p3gl1, operation: add
+Package: calibTkrUtil
+User: ecephas  Tue Jan 27 07:50:12 2009
+Files:
+  calibTkrUtil/calibTkrUtilLib.py  1.2
+
+    *
+------------------------------------------------------------
+TAG
 Tag name: GlastRelease-15-49-00, operation: add
 Package: calibTkrUtil
 User: ecephas  Tue Jan 27 07:48:14 2009
