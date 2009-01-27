@@ -2,6 +2,15 @@
 TAG
 Tag name: v2r7p3gl1, operation: add
 Package: calibTkrUtil
+User: ecephas  Tue Jan 27 07:50:29 2009
+Files:
+  calibTkrUtil/SConscript  1.5
+
+    *
+------------------------------------------------------------
+TAG
+Tag name: v2r7p3gl1, operation: add
+Package: calibTkrUtil
 User: ecephas  Tue Jan 27 07:50:12 2009
 Files:
   calibTkrUtil/calibTkrUtilLib.py  1.2
