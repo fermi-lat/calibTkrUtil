@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: htajima  Tue Feb  3 08:29:33 PST 2009
+calibTkrUtil/python
+
+Modified Files:
+	tkrUtils.py 
+Log Message:
+add variable for  tag info
+add charge scale root save and read functions.
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: v2r1p2, operation: del
 Package: calibTkrUtil
