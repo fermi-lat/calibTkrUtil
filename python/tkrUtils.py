@@ -3,6 +3,20 @@ from xml.dom import xmlbuilder
 
 import numarray, ROOT, pyfits
 
+try:
+  ROOT.gSystem.Load("libcommonRootData.so")
+  ROOT.gSystem.Load("libcalibRootData.so")
+except:
+  print "please do following to use this library"
+  print "setenv GR /nfs/farm/g/glast/u30/builds/rh9_gcc32/GlastRelease/GlastRelease-v15r13"
+  print "setenv PYTHONPATH ${GR}/lib:${GR}/SwigPolicy/v0r4p9/src:${PYTHONPATH}"
+  print "setenv LD_LIBRARY_PATH ${GR}/lib:${LD_LIBRARY_PATH}"
+  sys.exit()
+
+# get tag and version numbers
+__tag__  = "$Name:  $"
+__version__  = "$Revision: 1.0 $"
+tagv = "%s:%s" % (__tag__.split()[1], __version__.split()[1])
 
 g_nTowers = 16
 g_nTCC = 8
@@ -545,6 +559,44 @@ def getDateTime( time ):
     return (date.year-2000, date.month, date.day, date.hour, date.minute)
   
 
+def readChargeScaleFromRoot( rname ):
+  
+  rfile = ROOT.TFile( rname )
+  
+  params = []
+  for tower in range(g_nTowers):
+    hwserial = g_Serials[tower]
+    row=tower/4
+    col=tower%4
+    towerId = "Tower%d%d" % (row, col)
+    print tower, hwserial,
+    towerId = "Tower%d%d" % (row, col )
+    tree= rfile.Get(towerId);
+    twrbranch = tree.GetBranch("calibRootData::TkrTower");
+    twr = ROOT.calibRootData.TkrTower();
+    twrbranch.SetAddress(ROOT.AddressOf(twr));
+    twrbranch.GetEvent(0);
+
+    unibranch = tree.GetBranch("calibRootData::ChargeScaleUnilayer");
+    unilayer = ROOT.calibRootData.ChargeScaleUnilayer();
+    unibranch.SetAddress(ROOT.AddressOf(unilayer));
+    #print tower, (row, col), (twr.getRow(), twr.getCol()), twr.getSerial(), unibranch.GetEntries()
+    csarray = numarray.zeros( (g_nUniPlanes,g_nFE), numarray.Float32 )
+    for inp in range( unibranch.GetEntries() ):
+      unibranch.GetEvent(inp);
+      tkrId =  unilayer.getId()
+      unp = tkrId.getTray()*2 + tkrId.getBotTop() - 1
+      #print tkrId.getTowerX(),tkrId.getTowerY(),unp,tkrId.getTray(),tkrId.getBotTop(), unilayer.getNChildren()
+      for id in range( unilayer.getNChildren() ):
+        fe = unilayer.getObj(id)
+        csarray[unp][id] = fe.getScale()
+        #if csarray[unp][id] < 0.6: print tower, unp, id, csarray[unp][id] 
+      #if hwserial=="TkrFM3" and unp==5: print hwserial, tower, unp, csarray[unp] 
+        
+    params.append( ( hwserial, csarray ) )
+  return (-1, -1, -1, params)
+  
+
 def readChargeScaleFromXml( xmlfile ):
 
   # read charge scale xml file
@@ -599,7 +651,7 @@ def readChargeScaleFromXml( xmlfile ):
     params.append( ( hwserial, csarray ) )
 
   #print startTime, stopTime
-  return (timeStamp, startTime, stopTime, params)
+  return (-1, -1, -1, params)
 
 
 def compareResults( rawValues, refValues, limits=None ):
@@ -681,6 +733,66 @@ def readTotParams( fname ):
 
   return params
   
+
+def readTotParamsFromRoot( fname ):
+  print "Reading", fname
+  rf = ROOT.TFile(fname)
+  pmap = {}
+
+  for tower in range(g_nTowers):
+    hwserial = g_Serials[tower]
+    if not pmap.has_key( hwserial ):
+      # initialize arrays for tot parameters
+      p0array = numarray.zeros( (g_nUniPlanes,g_nStrips), numarray.Float32 )
+      p1array = numarray.zeros( (g_nUniPlanes,g_nStrips), numarray.Float32 )
+      p2array = numarray.zeros( (g_nUniPlanes,g_nStrips), numarray.Float32 )
+      chisqarray = numarray.zeros( (g_nUniPlanes,g_nStrips), numarray.Float32 )
+      pmap[hwserial] = [p0array, p1array, p2array, chisqarray]
+    row=tower/4
+    col=tower%4
+    towerId = "Tower%d%d" % (row, col )
+    tree= rf.Get(towerId);
+    twrbranch = tree.GetBranch("calibRootData::TkrTower");
+    twr = ROOT.calibRootData.TkrTower();
+    twrbranch.SetAddress(ROOT.AddressOf(twr));
+    twrbranch.GetEvent(0);
+
+    unibranch = tree.GetBranch("calibRootData::TotUnilayer");
+    unilayer = ROOT.calibRootData.TotUnilayer();
+    unibranch.SetAddress(ROOT.AddressOf(unilayer));
+    print tower, (row, col), (twr.getRow(), twr.getCol()), twr.getSerial(), unibranch.GetEntries()
+    for inp in range( unibranch.GetEntries() ):
+      unibranch.GetEvent(inp);
+      tkrId =  unilayer.getId()
+      unp = tkrId.getTray()*2 + tkrId.getBotTop() - 1
+      #print tower,unp,tkrId.getTray(),tkrId.getBotTop(), unilayer.getNStrips()
+      if unilayer.getNStrips() != g_nStrips:
+        print tkrId.getTowerX(),tkrId.getTowerY(),unp,tkrId.getTray(),tkrId.getBotTop(), unilayer.getNStrips(), g_nStrips
+      for st in range( unilayer.getNStrips() ):
+        strip = unilayer.getStrip(st)
+        id = strip.getStripId()
+        #if pmap[hwserial][0][unp][id] != 0.0:
+        #  print "multiple entries for", tower, unp, id, st, pmap[hwserial][0][unp][id], strip.getIntercept()
+        pmap[hwserial][0][unp][id] = strip.getIntercept()
+        pmap[hwserial][1][unp][id] = strip.getSlope()
+        pmap[hwserial][2][unp][id] = strip.getQuad()
+        if strip.getDf() > 0:
+          pmap[hwserial][3][unp][id] = strip.getChi2() / strip.getDf()
+        else:
+          pmap[hwserial][3][unp][id] = strip.getChi2()
+        # print st, strip.getStripId(), strip.getIntercept(), strip.getSlope(), strip.getChi2(), strip.getDf()
+        #if strip.getSlope() < 0.1 or (tower==0 or unp==0) and st==1535:
+        #if strip.getIntercept() > 3 or (tower==0 or unp==0) and st==1535:
+        #  print tower, unp, st, strip.getStripId(), strip.getIntercept(), \
+         #       strip.getSlope(), strip.getQuad(), strip.getChi2(), strip.getDf()
+  params = []
+  keys = pmap.keys()
+  keys.sort()
+  for hwserial in keys:
+    params.append( ( hwserial, pmap[hwserial] ) )
+
+  return params
+
 
 def readTotParamsFromFits( fname ):
   print "Reading", fname
@@ -941,6 +1053,59 @@ def saveParamsToXml( params, paramNames, times, topDir=None, calibType=None ):
 
     handler.saveAndClose()
     print "XML saved to", file
+
+
+def saveChargeScaleRoot( rname, chargeScale ):
+
+  rfile = ROOT.TFile( rname, "RECREATE" )
+  treeTowers = []
+
+  for tower in range(g_nTowers):
+    hwserial = g_Serials[tower]
+    row=tower/4
+    col=tower%4
+
+    towerId = "Tower%d%d" % (row, col)
+    treeTower = ROOT.TTree(towerId,   "tot data for "+towerId)
+    treeTowers.append( treeTower )
+    roottower = ROOT.calibRootData.TkrTower(int(row), int(col), hwserial )
+    towerBranch = treeTower.Branch( "calibRootData::TkrTower", \
+                                    "calibRootData::TkrTower", \
+                                    ROOT.AddressOf(roottower) )
+    print "filling Tower ", hwserial,row,col
+    towerBranch.Fill();
+
+    nullId = ROOT.commonRootData.TkrId();
+    scUni = ROOT.calibRootData.ChargeScaleUnilayer( nullId );
+    scUni.resize( g_nFE, False )
+    #print "set scUni"
+
+    uniBranch = treeTower.Branch("calibRootData::ChargeScaleUnilayer", \
+                                 "calibRootData::ChargeScaleUnilayer", \
+                                 ROOT.AddressOf(scUni))
+    #print "set uniBranch"
+
+    # loop planes
+    for unp in range(g_nUniPlanes):
+      tray    = int( g_TrayNames[unp][:-3] )
+      which   = g_TrayNames[unp][-3:]
+      top=1
+      if which=="bot": top =0
+
+      #print"scUni.setId"
+      scUni.setId(ROOT.commonRootData.TkrId(int(col), int(row), int(tray), top))
+      
+      for id in range(g_nFE):
+        scale, error, chisq, ndf = chargeScale[tower][unp][id]
+        #print "adding FE ",id
+        scUni.setChild( ROOT.calibRootData.ChargeScaleObj(id, scale, error, chisq, ndf) )
+
+      #print "filling plane ", unp, tray, which
+      uniBranch.Fill();
+
+  nBytes =  rfile.Write("", ROOT.TObject.kOverwrite);
+  print "Wrote "+ str(nBytes)+" bytes  to file "+ rname
+  rfile.Close();
 
   
 class XmlHandler:
