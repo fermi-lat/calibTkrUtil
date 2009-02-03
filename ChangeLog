@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: htajima  Tue Feb  3 08:30:12 PST 2009
+calibTkrUtil/src/tkrPyRoot
+
+Modified Files:
+	tkrPyRoot.cxx 
+Log Message:
+add interface for langau2fun
+
+    *
+------------------------------------------------------------
 User: htajima  Tue Feb  3 08:29:33 PST 2009
 calibTkrUtil/python
 
