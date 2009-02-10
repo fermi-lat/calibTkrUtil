@@ -21,7 +21,7 @@ TF1* defLangau2( char* name, Double_t xmin = 0, Double_t xmax = 0 ){
   return new TF1( name, langau2fun, xmin, xmax, 6 );
 }
 
-double add( double x, double y ){ return x*2 + y*3; }
+double add( double x, double y ){ return x*2 + y; }
 
 bool test(const std::string &x, int n, std::vector<double>& z){
 

@@ -17,5 +17,6 @@ double langaufun(double *, double *);
 double langau2fun(double *, double *);
 double add( double, double );
 TF1* defLangau( char*, Double_t, Double_t);
+TF1* defLangau2( char*, Double_t, Double_t);
 
 #endif
