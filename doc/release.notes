@@ -1,3 +1,7 @@
+/** @file release.notes
+ Package calibTkrUtil
+ EOH 
+
 Sep 10, 2008: HT  v2r7p3 optimized python/mergeTkrRootFiles.py where # of files to be processed in the first stage for 2-step merger is set to 15. It will speed up the process by a factor of 5 or more when more than 100 files are merged.
 Sep 08, 2008: HT  v2r7p2 bug fix for the case with more than 100 input files
 Sep 03, 2008: HT  v2r7p1 bug fix introduced by error calculation.
@@ -9,3 +13,4 @@ May 23, 2007: Mutsumi v1r7  change pass/fail criteion LAT-ave occupancy<1.0e-4
 
 May 23, 2006: JCT  v0 Initial release of package calibTkrUtil.
 Jun 13, 2006: JCT  v0r0p3 Consolidated release
+*/
