@@ -11,7 +11,7 @@ import tkrUtils
 
 # get tag and version numbers
 __tag__  = "$Name:  $"
-__version__  = "$Revision: 1.17 $"
+__version__  = "$Revision: 1.18 $"
 tagv = "%s:%s" % (__tag__.split()[1], __version__.split()[1])
 
 
@@ -119,6 +119,7 @@ class TkrMonitor:
     # set up directories and files.
     #
     print "open input root file: %s" % iname
+    self.iname = iname
     self.inputRoot = ROOT.TFile( iname )
     #print self.inputRoot.GetEndpointUrl()
     self.htmldir = htmldir
@@ -287,6 +288,18 @@ class TkrMonitor:
 
     #self.limits["stripOcc"] = self.limits["tmaskstripOcc"]
  
+  #
+  #***********************
+  # get tree from root file
+  # this is reuqire for ROOT v5.20 or higher
+  #***********************
+  #
+  def getTree( self, tname ):
+    self.inputRoot.Close()
+    self.inputRoot = ROOT.TFile( self.iname )
+    print "get tree: %s" % tname
+    return self.inputRoot.FindObjectAny( tname )
+
     
   #
   #*********************
@@ -294,7 +307,8 @@ class TkrMonitor:
   #*********************
   #
   def getTimeStamps(self):
-    tree = self.inputRoot.FindObjectAny( "timeStamps" )
+    #tree = self.inputRoot.FindObjectAny( "timeStamps" )
+    tree = self.getTree( "timeStamps" )
     self.startTime = array.array( 'd', [-1] )
     self.endTime = array.array( 'd', [1] )
     self.firstRunId = array.array( 'L', [0] )
@@ -312,8 +326,8 @@ class TkrMonitor:
     if tree.firstRunId == tree.lastRunId: self.srunID = "%d" % tree.firstRunId
     else: self.srunID = "%d-%d" % ( tree.firstRunId, tree.lastRunId )
 
-
-    tree = self.inputRoot.FindObjectAny( "tkrNoiseTree" )
+    #tree = self.inputRoot.FindObjectAny( "tkrNoiseTree" )
+    tree = self.getTree( "tkrNoiseTree" )
     startTime = -1
     for i in range(tree.GetEntries()):
       tree.GetEntry(0)
