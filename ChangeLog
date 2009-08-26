@@ -1,4 +1,16 @@
 ------------------------------------------------------------
+User: jrb  Wed Aug 26 13:10:52 PDT 2009
+GlastRelease-scons/calibTkrUtil
+
+Modified Files:
+	.cvsignore SConscript 
+Log Message:
+tkrPyRoot.cxx:  alternate form of #include needed for SCons build
+SConscript:     convert to use registerTargets
+.cvsignore:     ignore build, *.pyc
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: calibTkrUtil-02-09-01, operation: add
 Package: calibTkrUtil
