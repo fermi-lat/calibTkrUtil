@@ -1,5 +1,17 @@
 ------------------------------------------------------------
 User: jrb  Wed Aug 26 13:10:52 PDT 2009
+GlastRelease-scons/calibTkrUtil/src/tkrPyRoot
+
+Modified Files:
+	tkrPyRoot.cxx 
+Log Message:
+tkrPyRoot.cxx:  alternate form of #include needed for SCons build
+SConscript:     convert to use registerTargets
+.cvsignore:     ignore build, *.pyc
+
+    *
+------------------------------------------------------------
+User: jrb  Wed Aug 26 13:10:52 PDT 2009
 GlastRelease-scons/calibTkrUtil
 
 Modified Files:
