@@ -11,7 +11,11 @@
 //
 //-----------------------------------------------------------------------
 
-#include "tkrPyRoot.h"
+#ifndef SCons
+#  include "tkrPyRoot.h"
+#else
+#  include "tkrPyRoot/tkrPyRoot.h"
+#endif
 
 TF1* defLangau( char* name, Double_t xmin = 0, Double_t xmax = 0 ){
   return new TF1( name, langaufun, xmin, xmax, 4 );
