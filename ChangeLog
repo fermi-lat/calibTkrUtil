@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: jrb  Thu Aug 27 10:20:17 PDT 2009
+GlastRelease-scons/calibTkrUtil
+
+Modified Files:
+	SConscript 
+Log Message:
+Use SwigLibrary builder as appropriate (needed for Windows build)
+
+    *
+------------------------------------------------------------
 User: jrb  Wed Aug 26 13:10:52 PDT 2009
 GlastRelease-scons/calibTkrUtil/src/tkrPyRoot
 
