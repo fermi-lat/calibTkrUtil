@@ -21,7 +21,7 @@ libEnv['rootcnt_node'] = calibTkrUtilRootcint
 calibTkrUtil = libEnv.SharedLibrary('calibTkrUtil', listFiles(['src/*.cxx']) + ['src/tkrPyRoot/tkrPyRoot_rootcint.cxx']
 				+ ['src/tkrPyRoot/tkrPyRoot.cxx'])
 
-lib_tkrPyRoot = swigEnv.SharedLibrary('lib_tkrPyRoot', 'src/tkrPyRoot.i')
+lib_tkrPyRoot = swigEnv.SwigLibrary('lib_tkrPyRoot', 'src/tkrPyRoot.i')
 
 progEnv.Tool('calibTkrUtilLib')
 progEnv.AppendUnique(CPPPATH = ['src/test'])
