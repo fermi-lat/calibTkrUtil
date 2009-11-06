@@ -2,6 +2,7 @@
  Package calibTkrUtil
  EOH 
 
+ calibTkrUtil-02-09-02 05-Nov-2009    jrb Updates for SCons
  calibTkrUtil-02-09-01 29-Jul-2009 htajima accomodate ROOT v5.20
 Sep 10, 2008: HT  v2r7p3 optimized python/mergeTkrRootFiles.py where # of files to be processed in the first stage for 2-step merger is set to 15. It will speed up the process by a factor of 5 or more when more than 100 files are merged.
 Sep 08, 2008: HT  v2r7p2 bug fix for the case with more than 100 input files
