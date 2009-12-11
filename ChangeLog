@@ -1,5 +1,16 @@
 ------------------------------------------------------------
 User: jrb  Thu Dec 10 16:41:25 PST 2009
+calibTkrUtil/src/test
+
+Removed Files:
+	GeoConstants.h 
+Log Message:
+Move this include file to the standard place, so SCons (as well as CMT)
+can find it
+
+    *
+------------------------------------------------------------
+User: jrb  Thu Dec 10 16:41:25 PST 2009
 calibTkrUtil/calibTkrUtil
 
 Added Files:
