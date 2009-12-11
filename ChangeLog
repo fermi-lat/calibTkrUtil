@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: jrb  Thu Dec 10 16:41:25 PST 2009
+calibTkrUtil/calibTkrUtil
+
+Added Files:
+	GeoConstants.h 
+Log Message:
+Move this include file to the standard place, so SCons (as well as CMT)
+can find it
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: calibTkrUtil-02-09-02, operation: add
 Package: calibTkrUtil
