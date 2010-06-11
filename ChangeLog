@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: jrb  Thu Jun 10 17:42:13 PDT 2010
+GlastRelease-scons/calibTkrUtil
+
+Modified Files:
+	SConscript 
+Log Message:
+updates for SCons build
+    *
+------------------------------------------------------------
 TAG
 Tag name: calibTkrUtil-02-09-03, operation: add
 Package: calibTkrUtil
