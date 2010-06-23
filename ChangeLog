@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: jrb  Tue Jun 22 17:31:46 PDT 2010
+GlastRelease-scons/calibTkrUtil
+
+Modified Files:
+	SConscript 
+Log Message:
+eliminate duplicate target complaints
+    *
+------------------------------------------------------------
 TAG
 Tag name: calibTkrUtil-02-09-04, operation: add
 Package: calibTkrUtil
