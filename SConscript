@@ -27,8 +27,8 @@ lib_tkrPyRoot = swigEnv.SwigLibrary('lib_tkrPyRoot', 'src/tkrPyRoot.i')
 progEnv.Tool('calibTkrUtilLib')
 progEnv.AppendUnique(CPPPATH = ['src/test'])
 tkrRootAnalysis = progEnv.Program('tkrRootAnalysis',
-                                  listFiles(['src/test/*.cxx', 'src/*.cxx',
-                                             'src/tkrPyRoot/*.cxx']))
+                                  listFiles(['src/test/*.cxx']))
+#listFiles(['src/test/*.cxx', 'src/*.cxx',
 progEnv.Tool('registerTargets', package = 'calibTkrUtil',
              rootcintSharedCxts = [[calibTkrUtil, libEnv]],
              swigLibraryCxts = [[lib_tkrPyRoot, swigEnv]], 
