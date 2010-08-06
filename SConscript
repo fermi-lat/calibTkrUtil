@@ -2,7 +2,6 @@
 # $Header: 
 # Authors: Johann Cohen-Tanugi <cohen@slac.stanford.edu>
 # Version: calibTkrUtil-02-09-05
-import os
 Import('baseEnv')
 Import('listFiles')
 Import('packages')
@@ -10,12 +9,15 @@ progEnv = baseEnv.Clone()
 libEnv = baseEnv.Clone()
 swigEnv = baseEnv.Clone()
 
+locIncs = listFiles(['src/tkrPyRoot/*.h'])
 libEnv.Tool('addLinkDeps', package='calibTkrUtil', toBuild='rootlib')
 libEnv.AppendUnique(CPPPATH = ['src/test'])
 calibTkrUtilRootcint = libEnv.Rootcint('src/tkrPyRoot/tkrPyRoot_rootcint',
                                        ['src/tkrPyRoot/tkrPyRoot.h',
                                         'src/tkrPyRoot/LinkDef.h'],
-                                       includes = [''])
+                                       includes = [''],
+                                       localIncludes = locIncs,
+                                       packageName = 'calibTkrUtil')
 libEnv['rootcnt_node'] = calibTkrUtilRootcint
  
 calibTkrUtil = libEnv.RootDynamicLibrary('calibTkrUtil',
