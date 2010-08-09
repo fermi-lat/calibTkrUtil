@@ -2,6 +2,7 @@
  Package calibTkrUtil
  EOH 
 
+ calibTkrUtil-02-09-06 09-Aug-2010    jrb Support for no-variant-copy SCons build on Windows
  calibTkrUtil-02-09-05 22-Jun-2010    jrb Eliminate SCons duplicate target complaints
  calibTkrUtil-02-09-04 12-Jun-2010    jrb upgrades for SCons builds
  calibTkrUtil-02-09-03 10-Dec-2009    jrb Move GeoConstants.h to public include area
