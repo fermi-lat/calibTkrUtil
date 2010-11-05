@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: jrb  Fri Nov  5 15:53:22 PDT 2010
+GlastRelease-scons/calibTkrUtil
+
+Modified Files:
+      Tag: GlastReleasev18r7p1
+	SConscript 
+Log Message:
+bug fix for rootcint handling in project file
+    *
+------------------------------------------------------------
 User: jrb  Fri Nov  5 15:03:28 PDT 2010
 calibTkrUtil
 
