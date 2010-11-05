@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: jrb  Fri Nov  5 15:03:28 PDT 2010
+calibTkrUtil
+
+Modified Files:
+	SConscript 
+Log Message:
+fix typo in variable name
+    *
+------------------------------------------------------------
 TAG
 Tag name: calibTkrUtil-02-09-06, operation: add
 Package: calibTkrUtil
