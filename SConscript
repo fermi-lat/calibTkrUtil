@@ -18,7 +18,7 @@ calibTkrUtilRootcint = libEnv.Rootcint('src/tkrPyRoot/tkrPyRoot_rootcint',
                                        includes = [''],
                                        localIncludes = locIncs,
                                        packageName = 'calibTkrUtil')
-libEnv['rootcnt_node'] = calibTkrUtilRootcint
+libEnv['rootcint_node'] = calibTkrUtilRootcint
  
 calibTkrUtil = libEnv.RootDynamicLibrary('calibTkrUtil',
                                          listFiles(['src/*.cxx']) + ['src/tkrPyRoot/tkrPyRoot_rootcint.cxx']
