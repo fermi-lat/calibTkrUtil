@@ -2,6 +2,7 @@
  Package calibTkrUtil
  EOH 
 
+ calibTkrUtil-02-09-07 05-Jan-2011  lsrea mods for new cal param objects
  calibTkrUtil-02-09-06 09-Aug-2010    jrb Support for no-variant-copy SCons build on Windows
  calibTkrUtil-02-09-05 22-Jun-2010    jrb Eliminate SCons duplicate target complaints
  calibTkrUtil-02-09-04 12-Jun-2010    jrb upgrades for SCons builds
