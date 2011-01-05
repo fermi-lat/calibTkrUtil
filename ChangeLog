@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: lsrea  Wed Jan  5 15:46:35 PST 2011
+calibTkrUtil/src
+
+Modified Files:
+	TkrHits.cxx 
+Log Message:
+mods for new cal param objects
+
+    *
+------------------------------------------------------------
 User: jrb  Fri Nov  5 15:53:22 PDT 2010
 GlastRelease-scons/calibTkrUtil
 
