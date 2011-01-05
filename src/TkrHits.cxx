@@ -511,14 +511,14 @@ TkrHits::TkrHits( bool initHistsFlag ):
 {
 
   // get version number from CVS string
-  std::string tag = "$Name: v2r7p3 $";
+  std::string tag = "$Name:  $";
   int i = tag.find( " " );
   tag.assign( tag, i+1, tag.size() );
   i = tag.find( " " );
   tag.assign( tag, 0, i ) ;
   m_tag = tag;
 
-  std::string version = "$Revision: 1.19 $";
+  std::string version = "$Revision: 1.20 $";
   i = version.find( " " );
   version.assign( version, i+1, version.size() );
   i = version.find( " " );
@@ -1177,7 +1177,7 @@ bool TkrHits::MIPfilter()
   for( int cl=0; cl!=numClusters; cl++){
     CalCluster* calCluster = dynamic_cast<CalCluster*>(clusters->At(cl));
     if(calCluster) {
-      m_calEnergyRaw += calCluster->getParams().getEnergy();
+      m_calEnergyRaw += calCluster->getMomParams().getEnergy();
       num++;
     }
   }
