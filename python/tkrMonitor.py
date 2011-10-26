@@ -10,14 +10,14 @@ import ROOT
 import tkrUtils
 
 # get tag and version numbers
-__tag__  = "$Name:  $"
-__version__  = "$Revision: 1.18 $"
+__tag__  = "$Name: calibTkrUtil-02-09-06 $"
+__version__  = "$Revision: 1.19 $"
 tagv = "%s:%s" % (__tag__.split()[1], __version__.split()[1])
 
 
 
 # ROOT initilization
-ROOT.gSystem.Load("tkrPyRoot")
+ROOT.gSystem.Load("libtkrPyRoot")
 ROOT.gStyle.SetPalette(1)
 ROOT.gStyle.SetOptStat(0)
 ROOT.gROOT.SetBatch() # set ROOT into batch mode
