@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: monzani  Wed Oct 26 16:55:38 PDT 2011
+calibTkrUtil
+
+Modified Files:
+	SConscript calibTkrUtilLib.py 
+Log Message:
+making libtkrPyRoot
+    *
+------------------------------------------------------------
 TAG
 Tag name: GlastRelease-17-35-24-gr10, operation: add
 Package: calibTkrUtil
