@@ -1,7 +1,7 @@
 # -*- python -*-
 # $Header: 
 # Authors: Johann Cohen-Tanugi <cohen@slac.stanford.edu>
-# Version: calibTkrUtil-02-09-06
+# Version: calibTkrUtil-02-09-07
 Import('baseEnv')
 Import('listFiles')
 Import('packages')
@@ -18,13 +18,13 @@ calibTkrUtilRootcint = libEnv.Rootcint('src/tkrPyRoot/tkrPyRoot_rootcint',
                                        includes = [''],
                                        localIncludes = locIncs,
                                        packageName = 'calibTkrUtil')
-libEnv['rootcnt_node'] = calibTkrUtilRootcint
- 
-calibTkrUtil = libEnv.RootDynamicLibrary('calibTkrUtil',
+libEnv['rootcint_node'] = calibTkrUtilRootcint
+
+tkrPyRootLib = libEnv.RootDynamicLibrary('tkrPyRoot',
                                          listFiles(['src/*.cxx']) + ['src/tkrPyRoot/tkrPyRoot_rootcint.cxx']
                                          + ['src/tkrPyRoot/tkrPyRoot.cxx'])
 
-lib_tkrPyRoot = swigEnv.SwigLibrary('lib_tkrPyRoot', 'src/tkrPyRoot.i')
+tkrPyRootSwigLib = swigEnv.SwigLibrary('_tkrPyRoot', 'src/tkrPyRoot.i')
 
 progEnv.Tool('calibTkrUtilLib')
 progEnv.AppendUnique(CPPPATH = ['src/test'])
@@ -32,8 +32,8 @@ tkrRootAnalysis = progEnv.Program('tkrRootAnalysis',
                                   listFiles(['src/test/*.cxx']))
 #listFiles(['src/test/*.cxx', 'src/*.cxx',
 progEnv.Tool('registerTargets', package = 'calibTkrUtil',
-             rootcintSharedCxts = [[calibTkrUtil, libEnv]],
-             swigLibraryCxts = [[lib_tkrPyRoot, swigEnv]], 
+             rootcintSharedCxts = [[tkrPyRootLib, libEnv]],
+             swigLibraryCxts = [[tkrPyRootSwigLib, swigEnv]], 
              binaryCxts = [[tkrRootAnalysis, progEnv]],
              includes = listFiles(['calibTkrUtil/*.h']))
 
