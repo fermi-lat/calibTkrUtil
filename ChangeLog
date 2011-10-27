@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: monzani  Wed Oct 26 19:04:04 PDT 2011
+calibTkrUtil/python
+
+Modified Files:
+      Tag: GlastRelease-17-35-24-br01
+	tkrMonitor.py 
+Log Message:
+now making libtkrPyRoot
+    *
+------------------------------------------------------------
 User: monzani  Wed Oct 26 19:04:03 PDT 2011
 calibTkrUtil
 
