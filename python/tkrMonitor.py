@@ -10,8 +10,8 @@ import ROOT
 import tkrUtils
 
 # get tag and version numbers
-__tag__  = "$Name: calibTkrUtil-02-09-06 $"
-__version__  = "$Revision: 1.19 $"
+__tag__  = "$Name:  $"
+__version__  = "$Revision: 1.20 $"
 tagv = "%s:%s" % (__tag__.split()[1], __version__.split()[1])
 
 
@@ -115,6 +115,8 @@ yellow = "#e08000"
 #**************************************************************************
 class TkrMonitor:
   def __init__(self, iname, htmldir):
+    #
+    self.noData = False
     #
     # set up directories and files.
     #
@@ -328,12 +330,16 @@ class TkrMonitor:
 
     #tree = self.inputRoot.FindObjectAny( "tkrNoiseTree" )
     tree = self.getTree( "tkrNoiseTree" )
-    startTime = -1
-    for i in range(tree.GetEntries()):
-      tree.GetEntry(0)
-      if startTime<0 or tree.startTime<startTime:
-        startTime = tree.startTime
-    self.runID = "%d" % startTime
+
+    if tree == None:
+      self.runID = "%d" % self.startTime[0]
+    else:
+      startTime = -1
+      for i in range(tree.GetEntries()):
+        tree.GetEntry(0)
+        if startTime<0 or tree.startTime<startTime:
+          startTime = tree.startTime
+      self.runID = "%d" % startTime
 
     #Temporary    
     if abs(self.firstRunId[0] - int(self.runID)) > 10000:
@@ -347,10 +353,12 @@ class TkrMonitor:
   #*********************
   #
   def analyzeTKR(self):
-    self.ffit = ROOT.defLangau( "langau", 0, 30 )
-    self.ffit.SetParNames( "LWidth", "MP", "Area", "GSigma" )
     
     self.analyzeTrigEff()
+    if self.noData: return
+  
+    self.ffit = ROOT.defLangau( "langau", 0, 30 )
+    self.ffit.SetParNames( "LWidth", "MP", "Area", "GSigma" )
     #
     # loop towers/layers ann fit TOT distributions
     #
@@ -388,6 +396,7 @@ class TkrMonitor:
                             self.runID, tagv)
       tkrUtils.writeHotXml( self.badStrips, self.runID, self.xmldir, times,\
                             self.runID, tagv)
+
 
   
   #
@@ -463,6 +472,10 @@ class TkrMonitor:
   #
   def analyzeTrigEff(self):
     htrk = self.inputRoot.FindObjectAny( "sixInARowMIP" )
+    if htrk == None:
+      self.noData = True
+      return
+    
     htrg = self.inputRoot.FindObjectAny( "sixInARowWithTrigMIP" )
     for tower in range(nTower):
       ntrk = htrk.GetBinContent( tower+1 )
@@ -487,7 +500,8 @@ class TkrMonitor:
     if htrk.Integral() > 0:
       self.latave["trigEff"] = (100*htrg.Integral()/htrk.Integral(), "trigger efficiency")
     else:
-      self.latave["trigEff"] = (100.0, "trigger efficiency")      
+      self.latave["trigEff"] = (100.0, "trigger efficiency")
+
 
   #
   #*********************
@@ -1374,6 +1388,7 @@ class TkrMonitor:
     #### main page
     path = os.path.join( self.htmldir, "index.html" )
     self.hout = open( path,"w")
+    print "html file: %s" % self.hout
 
     self.hout.write( "<html>\n" )
     self.hout.write( "<head><title>LAT-TKR Monitor Report</title><head>\n" )
@@ -1399,6 +1414,11 @@ class TkrMonitor:
     self.htmlLine( self.hout, "<B>Script tag</B>: %s" \
                     % __tag__.split()[1] )
     self.hout.write( "</ul>" )
+
+    if self.noData: # if there not data, finish here
+      self.hout.write( "</body>\n</html>" )
+      self.hout.close()
+      return
 
     #
     # summary plots and alerts
