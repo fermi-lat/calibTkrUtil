@@ -1,10 +1,10 @@
 package calibTkrUtil
-# $Header: /nfs/slac/g/glast/ground/cvs/calibTkrUtil/cmt/requirements,v 1.19 2010/08/09 20:38:15 jrb Exp $
-version v2r9p6gr1
+# $Header: /nfs/slac/g/glast/ground/cvs/calibTkrUtil/cmt/requirements,v 1.19.8.1 2011/10/27 02:05:13 monzani Exp $
+version v2r9p6gr02
 author Johann Cohen-Tanugi <cohen@slac.stanford.edu>
 
 
-# $Header: /nfs/slac/g/glast/ground/cvs/calibTkrUtil/cmt/requirements,v 1.19 2010/08/09 20:38:15 jrb Exp $
+# $Header: /nfs/slac/g/glast/ground/cvs/calibTkrUtil/cmt/requirements,v 1.19.8.1 2011/10/27 02:05:13 monzani Exp $
 
 author Johann Cohen-Tanugi <cohen@slac.stanford.edu>
 
