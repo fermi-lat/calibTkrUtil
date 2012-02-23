@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: monzani  Wed Feb 22 16:05:20 PST 2012
+calibTkrUtil/python
+
+Modified Files:
+      Tag: GlastRelease-17-35-24-br02
+	tkrMonitor.py 
+Log Message:
+propagating tkrMonitor fix
+    *
+------------------------------------------------------------
 TAG
 Tag name: GlastRelease-17-35-24-gr23, operation: add
 Package: calibTkrUtil
