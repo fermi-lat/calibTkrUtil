@@ -1,13 +1,4 @@
 ------------------------------------------------------------
-User: heather  Wed Oct  3 09:32:52 PDT 2012
-calibTkrUtil
-
-Modified Files:
-	SConscript 
-Log Message:
-tagging
-    *
-------------------------------------------------------------
 TAG
 Tag name: calibTkrUtil-02-10-00, operation: add
 Package: calibTkrUtil
