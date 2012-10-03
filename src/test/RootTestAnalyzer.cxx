@@ -24,11 +24,11 @@ using std::cout;
 using std::endl;
 
 RootAnalyzer::RootAnalyzer() : m_outputFile(0),
-			       m_mcChain(0), m_mcBranch(0), 
-			       //m_mcEvent(0),  m_tree(0), m_branch(0),
-			       m_reconChain(0), m_reconBranch(0), 
-			       m_reconEvent(0), m_digiChain(0),m_digiBranch(0),
-			       m_digiEvent(0)
+                               m_mcChain(0), m_mcBranch(0), 
+                               //m_mcEvent(0),  m_tree(0), m_branch(0),
+                               m_reconChain(0), m_reconBranch(0), 
+                               m_reconEvent(0), m_digiChain(0),m_digiBranch(0),
+                               m_digiEvent(0)
 {
   // make sure unsigned int hold 32 bit data 
   assert(sizeof(unsigned int) == 4);
@@ -185,18 +185,18 @@ void RootAnalyzer::parseOptionFile(const char* f)
     for(int iLayer = 0; iLayer != g_nTkrLayer; ++iLayer) {
       for(int iView = 0; iView != g_nView; ++iView) {
 
-	char name1[] = "hit00000";
-	sprintf(name1, "hit%02d%02d%1d", iTower, iLayer, iView);
+        char name1[] = "hit00000";
+        sprintf(name1, "hit%02d%02d%1d", iTower, iLayer, iView);
 
-	m_stripHits[iTower][iLayer][iView] = 
-	  new TH1F(name1, name1, g_nStripsPerLayer, 0, g_nStripsPerLayer);
+        m_stripHits[iTower][iLayer][iView] = 
+          new TH1F(name1, name1, g_nStripsPerLayer, 0, g_nStripsPerLayer);
 
-	char name2[] = "map00000";
-	sprintf(name2, "map%02d%02d%1d", iTower, iLayer, iView);
+        char name2[] = "map00000";
+        sprintf(name2, "map%02d%02d%1d", iTower, iLayer, iView);
 
-	m_stripMap[iTower][iLayer][iView] = 
-	  new TH2F(name2, name2, g_nFEC, 0, g_nFEC, g_nStripsPerLayer/g_nFEC,
-		   0, g_nStripsPerLayer/g_nFEC);
+        m_stripMap[iTower][iLayer][iView] = 
+          new TH2F(name2, name2, g_nFEC, 0, g_nFEC, g_nStripsPerLayer/g_nFEC,
+                   0, g_nStripsPerLayer/g_nFEC);
 
       }
     }
@@ -326,10 +326,10 @@ void RootAnalyzer::analyzeData( int numEvents = 10000 )
       float dt = cTime - startTime;
       if( dt < 10 ) continue;
       std::cout << iEvent << " events processed in "
-		<< dt << " s, "
-		<< int(iEvent/dt) << " events/s, estimated time: "
-		<< int( (nEvent-iEvent)*dt/iEvent ) << " s"
-		<< std::endl;
+                << dt << " s, "
+                << int(iEvent/dt) << " events/s, estimated time: "
+                << int( (nEvent-iEvent)*dt/iEvent ) << " s"
+                << std::endl;
     }
 
 
@@ -337,13 +337,13 @@ void RootAnalyzer::analyzeData( int numEvents = 10000 )
   time( &endTime );
   if( endTime==startTime )
     std::cout << "total # of events: " << nEvent 
-		<< " in " << (endTime-startTime) << " s, "
-		<< std::endl;
+                << " in " << (endTime-startTime) << " s, "
+                << std::endl;
   else
     std::cout << "total # of events: " << nEvent 
-	      << " in " << (endTime-startTime) << " s, "
-	      << nEvent/(endTime-startTime) << " events/s"
-	      << std::endl;
+              << " in " << (endTime-startTime) << " s, "
+              << nEvent/(endTime-startTime) << " events/s"
+              << std::endl;
   
 }
 
@@ -387,22 +387,22 @@ void RootAnalyzer::analyzeData( int numEvents = 10000 )
 //     for(int iPar = 0; iPar != nPar; ++iPar) {
 //       McParticle* par = m_mcEvent->getMcParticle(iPar);
 //       if(par && par->getProcess() == "conv" && iPair == 0) {
-// 	  const TVector3& pos = par->getInitialPosition();
-// 	  m_ntuple.m_convPos[0] = (float) pos.X();
-// 	  m_ntuple.m_convPos[1] = (float) pos.Y();
-// 	  m_ntuple.m_convPos[2] = (float) pos.Z();
-// 	  m_ntuple.m_pairEne[iPair++] = par->getInitialFourMomentum().Energy();
-// 	  x0 = par->getInitialFourMomentum().Px();
-// 	  y0 = par->getInitialFourMomentum().Py();
-// 	  z0 = par->getInitialFourMomentum().Pz();
-// 	  continue;
+//           const TVector3& pos = par->getInitialPosition();
+//           m_ntuple.m_convPos[0] = (float) pos.X();
+//           m_ntuple.m_convPos[1] = (float) pos.Y();
+//           m_ntuple.m_convPos[2] = (float) pos.Z();
+//           m_ntuple.m_pairEne[iPair++] = par->getInitialFourMomentum().Energy();
+//           x0 = par->getInitialFourMomentum().Px();
+//           y0 = par->getInitialFourMomentum().Py();
+//           z0 = par->getInitialFourMomentum().Pz();
+//           continue;
 //       }
 //       if(par && par->getProcess() == "conv" && iPair == 1) { 
-// 	//second particle produced by pair production
-// 	  m_ntuple.m_pairEne[iPair++] = par->getInitialFourMomentum().Energy();
-// 	  x1 = par->getInitialFourMomentum().Px();
-// 	  y1 = par->getInitialFourMomentum().Py();
-// 	  z1 = par->getInitialFourMomentum().Pz();
+//         //second particle produced by pair production
+//           m_ntuple.m_pairEne[iPair++] = par->getInitialFourMomentum().Energy();
+//           x1 = par->getInitialFourMomentum().Px();
+//           y1 = par->getInitialFourMomentum().Py();
+//           z1 = par->getInitialFourMomentum().Pz();
 //       }
 //     }
 
@@ -417,12 +417,12 @@ void RootAnalyzer::analyzeData( int numEvents = 10000 )
 //     for(int iPosHit = 0; iPosHit != nPosHit; ++iPosHit) {
 //       McPositionHit* posHit = m_mcEvent->getMcPositionHit(iPosHit);
 //       if(posHit) {
-// 	VolumeIdentifier id = posHit->getVolumeId();
-// 	int iTower, iLayer, iView;
-// 	if( extractTowerLayerView(id, iTower, iLayer, iView) ) {
-// 	    m_ntuple.m_depositEne[iTower][iLayer][iView] += 
-// 	      posHit->getDepositedEnergy();
-// 	}
+//         VolumeIdentifier id = posHit->getVolumeId();
+//         int iTower, iLayer, iView;
+//         if( extractTowerLayerView(id, iTower, iLayer, iView) ) {
+//             m_ntuple.m_depositEne[iTower][iLayer][iView] += 
+//               posHit->getDepositedEnergy();
+//         }
 //       }
 //     } 
 
@@ -432,11 +432,11 @@ void RootAnalyzer::analyzeData( int numEvents = 10000 )
 //     for(int iIntHit = 0; iIntHit != nIntHit; ++iIntHit) {
 //       McIntegratingHit* intHit = m_mcEvent->getMcIntegratingHit(iIntHit);
 //       if(intHit) {
-// 	VolumeIdentifier id = intHit->getVolumeId();
-// 	// the 4th id must be 0 if the volume is a CAL crystal
-// 	if(id[3] == 0) {
-// 	  m_ntuple.m_mcCalEnergy += intHit->getTotalEnergy();
-// 	}
+//         VolumeIdentifier id = intHit->getVolumeId();
+//         // the 4th id must be 0 if the volume is a CAL crystal
+//         if(id[3] == 0) {
+//           m_ntuple.m_mcCalEnergy += intHit->getTotalEnergy();
+//         }
 //       }
 //     }
 // }
@@ -456,15 +456,15 @@ void RootAnalyzer::analyzeData( int numEvents = 10000 )
 //       TkrCluster* cluster = dynamic_cast<TkrCluster*>(siClusterCol->At(i));
 //       if(cluster) {
 
-// 	TowerId tId(cluster->getTkrId().getTowerX(), cluster->getTkrId().getTowerY());
-// 	int iTower = tId.id();
-// 	int iLayer = cluster->getLayer();
-// 	int iView = cluster->getTkrId().getView();
+//         TowerId tId(cluster->getTkrId().getTowerX(), cluster->getTkrId().getTowerY());
+//         int iTower = tId.id();
+//         int iLayer = cluster->getLayer();
+//         int iView = cluster->getTkrId().getView();
 
-// 	assert(iLayer >= 0 && iLayer <= g_nTkrLayer - 1);
+//         assert(iLayer >= 0 && iLayer <= g_nTkrLayer - 1);
 
-// 	++m_ntuple.m_nTkrClusters[iTower][iLayer][iView];
-// 	++m_ntuple.m_totalClusters[iTower];
+//         ++m_ntuple.m_nTkrClusters[iTower][iLayer][iView];
+//         ++m_ntuple.m_totalClusters[iTower];
 
 //       }
 //     }
@@ -515,7 +515,7 @@ void RootAnalyzer::analyzeData( int numEvents = 10000 )
 //         m_ntuple.m_tkr1EndPos[0] = endPos.x();
 //         m_ntuple.m_tkr1EndPos[1] = endPos.y();
 //         m_ntuple.m_tkr1EndPos[2] = endPos.z();
-// 	// Need -1 here .....
+//         // Need -1 here .....
 //         m_ntuple.m_tkr1EndDir[0] = -1.0*endSlope.x();
 //         m_ntuple.m_tkr1EndDir[1] = -1.0*endSlope.y();
 //         m_ntuple.m_tkr1EndDir[2] = -1.0*endSlope.z();
@@ -523,7 +523,7 @@ void RootAnalyzer::analyzeData( int numEvents = 10000 )
 //         m_ntuple.m_tkr2EndPos[0] = endPos.x();
 //         m_ntuple.m_tkr2EndPos[1] = endPos.y();
 //         m_ntuple.m_tkr2EndPos[2] = endPos.z();
-// 	// Need -1 here .....
+//         // Need -1 here .....
 //         m_ntuple.m_tkr2EndDir[0] = -1.0*endSlope.x();
 //         m_ntuple.m_tkr2EndDir[1] = -1.0*endSlope.y();
 //         m_ntuple.m_tkr2EndDir[2] = -1.0*endSlope.z();
@@ -552,34 +552,34 @@ void RootAnalyzer::analyzeData( int numEvents = 10000 )
 //       int nCalRec = calXtalRecCol->GetLast() + 1;
 
 //       for(int i = 0; i != nCalRec; ++i) {
-// 	CalXtalRecData* calData = 
-// 	  dynamic_cast<CalXtalRecData*>(calXtalRecCol->At(i));
-// 	if(calData) {
+//         CalXtalRecData* calData = 
+//           dynamic_cast<CalXtalRecData*>(calXtalRecCol->At(i));
+//         if(calData) {
 
-// 	  CalXtalId id = calData->getPackedId();
-// 	  int iTower = id.getTower();
-// 	  int iLayer = id.getLayer();
-// 	  int iCol = id.getColumn();
+//           CalXtalId id = calData->getPackedId();
+//           int iTower = id.getTower();
+//           int iLayer = id.getLayer();
+//           int iCol = id.getColumn();
 
-// 	  float ene = calData->getEnergy();
+//           float ene = calData->getEnergy();
           
 //           float eneNeg = calData->getEnergy(0,CalXtalId::NEG);
 //           float enePos = calData->getEnergy(0,CalXtalId::POS);
 
-// 	  if(ene >= 0) ++(m_ntuple.m_nCrystalHit[iTower]);
+//           if(ene >= 0) ++(m_ntuple.m_nCrystalHit[iTower]);
 
-// 	  // CAL layer end energies:
+//           // CAL layer end energies:
 //           m_ntuple.m_xtalEne[iTower][iLayer][iCol][0] = enePos;
 //           m_ntuple.m_xtalEne[iTower][iLayer][iCol][1] = eneNeg;
 
-// 	  if(ene > m_ntuple.m_maxCalEnergy) m_ntuple.m_maxCalEnergy = ene;
+//           if(ene > m_ntuple.m_maxCalEnergy) m_ntuple.m_maxCalEnergy = ene;
 
-// 	  TVector3 pos =  calData->getPosition();
-// 	  m_ntuple.m_xtalPos[iTower][iLayer][iCol][0] = pos.x();
-// 	  m_ntuple.m_xtalPos[iTower][iLayer][iCol][1] = pos.y();
-// 	  m_ntuple.m_xtalPos[iTower][iLayer][iCol][2] = pos.z();
+//           TVector3 pos =  calData->getPosition();
+//           m_ntuple.m_xtalPos[iTower][iLayer][iCol][0] = pos.x();
+//           m_ntuple.m_xtalPos[iTower][iLayer][iCol][1] = pos.y();
+//           m_ntuple.m_xtalPos[iTower][iLayer][iCol][2] = pos.z();
 
-// 	}
+//         }
 //       }
 //     }
 
@@ -716,8 +716,8 @@ void RootAnalyzer::analyzeData( int numEvents = 10000 )
 //   unsigned tmpGemCno   = m_digiEvent->getGem().getCnoVector();
   
 //   m_ntuple.m_triggerTicks = evtTicks(m_ntuple.m_gemTriggerTime, 
-// 									m_ntuple.m_gemOnePpsSeconds, m_ntuple.m_gemOnePpsTime,
-// 									m_ntuple.m_ebfSecond, m_ntuple.m_ebfNanoSecond);
+//                                                                         m_ntuple.m_gemOnePpsSeconds, m_ntuple.m_gemOnePpsTime,
+//                                                                         m_ntuple.m_ebfSecond, m_ntuple.m_ebfNanoSecond);
 
 //   for (int iTower = 0; iTower<g_nTower; iTower++) {
 //     m_ntuple.m_gemTkrVector[iTower]   = ((tmpGemTkr >> iTower) & 1) ;      
@@ -846,8 +846,8 @@ void RootAnalyzer::analyzeData( int numEvents = 10000 )
 //       // fill in corrected tot
 //     /*
 //       if(m_mcFile == 0) {
-// 	correctTotDataLinear(tkrDigi);
-// 	correctTotDataQuad(tkrDigi);
+//         correctTotDataLinear(tkrDigi);
+//         correctTotDataQuad(tkrDigi);
 //       }
 //     */
 //   }
@@ -876,8 +876,8 @@ void RootAnalyzer::fillOutputTree()
 
 
 // bool RootAnalyzer::extractTowerLayerView(const VolumeIdentifier& id, 
-// 					 int& iTower, int& iLayer, 
-// 					 int& iView) const
+//                                          int& iTower, int& iLayer, 
+//                                          int& iView) const
 // {
 //   // id code is formatted as the following (if only one tower is simulated):
 //   // Tower(0)/TowerY(0)/TowerX(0)/TKR(1)/TrayNo(0-18)/Measure(0,1)/View(0,1)/
@@ -939,15 +939,15 @@ void RootAnalyzer::fillStripHits(const TkrDigi* tkrDigi)
 //     for(int iLayer = (g_nTkrLayer-1); iLayer >= 0; --iLayer) {
 
 //       if(m_ntuple.m_nStrips[iTower][iLayer][0] > 0 &&
-// 	 m_ntuple.m_nStrips[iTower][iLayer][1] > 0) {
+//          m_ntuple.m_nStrips[iTower][iLayer][1] > 0) {
 
-// 	float totX = std::max(m_ntuple.m_tot[iTower][iLayer][0][0], 
-// 			      m_ntuple.m_tot[iTower][iLayer][0][1]);
-// 	float totY = std::max(m_ntuple.m_tot[iTower][iLayer][1][0], 
-// 			      m_ntuple.m_tot[iTower][iLayer][1][1]);
+//         float totX = std::max(m_ntuple.m_tot[iTower][iLayer][0][0], 
+//                               m_ntuple.m_tot[iTower][iLayer][0][1]);
+//         float totY = std::max(m_ntuple.m_tot[iTower][iLayer][1][0], 
+//                               m_ntuple.m_tot[iTower][iLayer][1][1]);
 
-// 	m_ntuple.m_topTot[iTower] = std::max(totX, totY);
-// 	break;
+//         m_ntuple.m_topTot[iTower] = std::max(totX, totY);
+//         break;
 //       }
 //     }
 
@@ -961,20 +961,20 @@ void RootAnalyzer::fillStripHits(const TkrDigi* tkrDigi)
 //       TkrVertex* tkrVertex = dynamic_cast<TkrVertex*>(vertices->At(0));
 //       if(tkrVertex) {
 
-// 	TkrTrack* trk = (TkrTrack*) tkrVertex->getTrack(0);
-// 	TkrTrackHit* hit = (TkrTrackHit*) trk->First();
-// 	commonRootData::TkrId id = hit->getClusterPtr()->getTkrId();
-// 	TowerId tId(id.getTowerX(), id.getTowerX());
-// 	int convLayer = hit->getClusterPtr()->getLayer();
-// 	int convTower = tId.id();
+//         TkrTrack* trk = (TkrTrack*) tkrVertex->getTrack(0);
+//         TkrTrackHit* hit = (TkrTrackHit*) trk->First();
+//         commonRootData::TkrId id = hit->getClusterPtr()->getTkrId();
+//         TowerId tId(id.getTowerX(), id.getTowerX());
+//         int convLayer = hit->getClusterPtr()->getLayer();
+//         int convTower = tId.id();
 
-// 	assert(convLayer >= 0 && convLayer <g_nTkrLayer);
-// 	float totX = std::max(m_ntuple.m_tot[convTower][convLayer][0][0], 
-// 			      m_ntuple.m_tot[convTower][convLayer][0][1]);
-// 	float totY = std::max(m_ntuple.m_tot[convTower][convLayer][1][0], 
-// 			      m_ntuple.m_tot[convTower][convLayer][1][1]);
+//         assert(convLayer >= 0 && convLayer <g_nTkrLayer);
+//         float totX = std::max(m_ntuple.m_tot[convTower][convLayer][0][0], 
+//                               m_ntuple.m_tot[convTower][convLayer][0][1]);
+//         float totY = std::max(m_ntuple.m_tot[convTower][convLayer][1][0], 
+//                               m_ntuple.m_tot[convTower][convLayer][1][1]);
 
-// 	m_ntuple.m_convTot = std::max(totX, totY);
+//         m_ntuple.m_convTot = std::max(totX, totY);
 //       }
 //     }
 //   }
@@ -991,7 +991,7 @@ void RootAnalyzer::fillStripHits(const TkrDigi* tkrDigi)
 //       const TkrDiagnosticData* pDiag = m_digiEvent->getTkrDiagnostic(i);
 //       int iTower = pDiag->tower();
 //       if(m_ntuple.m_diagLength[iTower]) {
-// 	m_ntuple.m_tpTkr[iTower][pDiag->gtcc()] = pDiag->getDataWord();
+//         m_ntuple.m_tpTkr[iTower][pDiag->gtcc()] = pDiag->getDataWord();
 //       }
 //     }
 
@@ -1008,12 +1008,12 @@ void RootAnalyzer::fillStripHits(const TkrDigi* tkrDigi)
 
 //       int iTower = pDiag->tower();
 //       if(m_ntuple.m_diagLength[iTower]) {
-// 	m_ntuple.m_tpCal[pDiag->tower()][pDiag->layer()] = pDiag->getDataWord();
+//         m_ntuple.m_tpCal[pDiag->tower()][pDiag->layer()] = pDiag->getDataWord();
 //       }
 //     }
 
 //     ElecToGeo::getInstance()->decodeCalTp(m_ntuple.m_tpCal, m_ntuple.m_calReq,
-// 					  m_ntuple.m_calLogAccepts);
+//                                           m_ntuple.m_calLogAccepts);
 
 //   }
 // }

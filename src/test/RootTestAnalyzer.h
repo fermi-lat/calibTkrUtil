@@ -32,8 +32,8 @@ class RootAnalyzer {
   void produceOutputFile();
 
   //enum {g_nTower=16, g_nTkrLayer=18, g_nView=2, g_nCalLayer=8, g_nCol=12, 
-  //	g_nTot=2, g_nStripsPerLayer=1536, g_nFace=2, g_nTP=8, g_nFEC=24, 
-  //	g_nCno=12};
+  //        g_nTot=2, g_nStripsPerLayer=1536, g_nFace=2, g_nTP=8, g_nFEC=24, 
+  //        g_nCno=12};
 
  private:
 
@@ -68,7 +68,7 @@ class RootAnalyzer {
   // Convertion is hardwired so it may not work if identifier in xml files
   // changed
 /*   bool extractTowerLayerView(const VolumeIdentifier& id, int& iTower,  */
-/* 			     int& iLayer, int& iView) const; */
+/*                              int& iLayer, int& iView) const; */
 
   // fill stripHits and map histogrammes
   //void fillStripHits(const TkrDigi* tkrDigi);

@@ -298,8 +298,8 @@ class TkrHits {
   bool closeToTrack( const TkrCluster*, TkrCluster*[g_nTower][g_nUniPlane] );
   float getTrackRMS();
   Double_t leastSquareLinearFit( std::vector<Double_t> &vy, 
-			     std::vector<Double_t> &vx, 
-			     Double_t &y0, Double_t &dydx );
+                             std::vector<Double_t> &vx, 
+                             Double_t &y0, Double_t &dydx );
 
   //virtual float calcCharge( layerId lid, int iStrip, int tot){ return tot;};
   float calcCharge( layerId lid, int iStrip, int tot);
