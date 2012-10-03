@@ -27,7 +27,7 @@ class paramTimeDep{
   ~paramTimeDep(){;};
   void clear();
   void fill( int tower, int bilayer, int view, Double_t timeStamp,
-	     float nExp, float nOcc );
+             float nExp, float nOcc );
  private:
   UInt_t m_id, m_startTime, m_duration, m_nx;
   float m_binSize;
@@ -54,7 +54,7 @@ class TkrNoiseOcc {
   ~TkrNoiseOcc();  
 
   //void initAnalysis(int nEvent, int evt_interval, int coincidence_cut,
-  //		    int multi_ld, int multi_hd, int periodic_trig);
+  //                    int multi_ld, int multi_hd, int periodic_trig);
   void initAnalysis(UInt_t duration=120, UInt_t nx=60);
   void setCoincidenceCut(int coincidence_cut);
   void setMultiRange(int multi_ld, int multi_hd);

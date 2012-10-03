@@ -148,12 +148,12 @@ towerVar::towerVar( int twr, bool badStrips ){
       rHits[unp][strip] = 0;
       dHits[unp][strip] = 0;
       if( badStrips ){
-	bsv.eHits[strip] = 0;
-	bsv.tHits[strip] = 0;
-	bsv.lHits[strip] = 0;
-	for(int iWafer = 0; iWafer != g_nWafer; ++iWafer)
-	  for( int tDiv = 0; tDiv != g_nTime; tDiv++)
-	    bsv.nHits[strip][iWafer][tDiv] = 0;
+        bsv.eHits[strip] = 0;
+        bsv.tHits[strip] = 0;
+        bsv.lHits[strip] = 0;
+        for(int iWafer = 0; iWafer != g_nWafer; ++iWafer)
+          for( int tDiv = 0; tDiv != g_nTime; tDiv++)
+            bsv.nHits[strip][iWafer][tDiv] = 0;
       }
       tcv.totQuad[strip] = -1.0;
       tcv.totGain[strip] = -1.0;
@@ -162,7 +162,7 @@ towerVar::towerVar( int twr, bool badStrips ){
     for( int idiv=0; idiv!=g_nDiv; idiv++){
       tcv.chargeScale[idiv] = 0.0;
       for( int ibin=0; ibin!=nTotHistBin; ibin++)
-	tcv.chargeDist[idiv][ibin] = 0;
+        tcv.chargeDist[idiv][ibin] = 0;
     }
     if( badStrips ) bsVar.push_back( bsv );
     tcVar.push_back( tcv );
@@ -242,23 +242,23 @@ void towerVar::saveHists( bool saveTimeOcc ){
     delete lhist;
     if( saveTimeOcc ){
       for(int iWafer = 0; iWafer != g_nWafer; ++iWafer)
-	for( int tDiv = 0; tDiv != g_nTime; tDiv++){
-	  sprintf(name,"occT%d%sw%dt%d", towerId, lname.c_str(), iWafer, tDiv);
-	  hist = new TH1F(name, name, g_nStrip, 0, g_nStrip);
-	  for( int strip=0; strip!=g_nStrip; strip++)
-	    hist->Fill( strip+0.1, bsVar[unp].nHits[strip][iWafer][tDiv] );
-	  hist->Write(0, TObject::kOverwrite);
-	  delete hist;
-	}
+        for( int tDiv = 0; tDiv != g_nTime; tDiv++){
+          sprintf(name,"occT%d%sw%dt%d", towerId, lname.c_str(), iWafer, tDiv);
+          hist = new TH1F(name, name, g_nStrip, 0, g_nStrip);
+          for( int strip=0; strip!=g_nStrip; strip++)
+            hist->Fill( strip+0.1, bsVar[unp].nHits[strip][iWafer][tDiv] );
+          hist->Write(0, TObject::kOverwrite);
+          delete hist;
+        }
     }
     else{
       for(int iWafer = 0; iWafer != g_nWafer; ++iWafer){
-	sprintf(name,"occT%d%sw%d", towerId, lname.c_str(), iWafer);
-	hist = new TH1F(name, name, g_nStrip, 0, g_nStrip);
-	for( int strip=0; strip!=g_nStrip; strip++)
-	  hist->Fill( strip+0.1, bsVar[unp].nHits[strip][iWafer][0] );
-	hist->Write(0, TObject::kOverwrite); 
-	delete hist;
+        sprintf(name,"occT%d%sw%d", towerId, lname.c_str(), iWafer);
+        hist = new TH1F(name, name, g_nStrip, 0, g_nStrip);
+        for( int strip=0; strip!=g_nStrip; strip++)
+          hist->Fill( strip+0.1, bsVar[unp].nHits[strip][iWafer][0] );
+        hist->Write(0, TObject::kOverwrite); 
+        delete hist;
      }
     }
   }
@@ -388,7 +388,7 @@ void histogram::Add( const TH1* hist ){
 
   if( hist->GetNbinsX() != nbins ){ 
     std::cout << "histogram::Add, # of bin mismatch" << nbins << " " 
-	      << hist->GetNbinsX() << std::endl;
+              << hist->GetNbinsX() << std::endl;
     return;
   }
 
@@ -415,7 +415,7 @@ float histogram::Integral( const int bin1, const int bin2 ){
   if( max > nbins ) max = nbins;
   if( max < min ){ 
     std::cout << "histogram::Integral, invalid integration region: "
-	      << min << " " << max << std::endl;
+              << min << " " << max << std::endl;
     return 0.0;
   }
   for( int bin=min; bin<max; bin++) integral += contents[bin];
@@ -480,19 +480,19 @@ void towerVar::readHists( TFile* hfile, UInt_t iRoot, UInt_t nRoot ){
       sprintf(name,"occT%d%sw%d", towerId, lname.c_str(), iWafer );
       hist = (TH1F*)hfile->FindObjectAny( name );
       if( hist ){ // check if simple version exist
-	int tdiv = (iRoot*g_nTime)/nRoot;
-	for( int strip=0; strip!=g_nStrip; strip++)
-	  bsVar[unp].nHits[strip][iWafer][tdiv] 
-	    += (int)hist->GetBinContent( strip+1 );
-	continue; // no need to get time dependent histograms
+        int tdiv = (iRoot*g_nTime)/nRoot;
+        for( int strip=0; strip!=g_nStrip; strip++)
+          bsVar[unp].nHits[strip][iWafer][tdiv] 
+            += (int)hist->GetBinContent( strip+1 );
+        continue; // no need to get time dependent histograms
       }
       for( int tDiv = 0; tDiv != g_nTime; tDiv++){
-	sprintf(name,"occT%d%sw%dt%d", towerId, lname.c_str(), iWafer, tDiv );
-	hist = (TH1F*)hfile->FindObjectAny( name );
-	int tdiv = (tDiv+iRoot*g_nTime)/nRoot;
-	for( int strip=0; strip!=g_nStrip; strip++)
-	  bsVar[unp].nHits[strip][iWafer][tdiv] 
-	    += (int)hist->GetBinContent( strip+1 );
+        sprintf(name,"occT%d%sw%dt%d", towerId, lname.c_str(), iWafer, tDiv );
+        hist = (TH1F*)hfile->FindObjectAny( name );
+        int tdiv = (tDiv+iRoot*g_nTime)/nRoot;
+        for( int strip=0; strip!=g_nStrip; strip++)
+          bsVar[unp].nHits[strip][iWafer][tdiv] 
+            += (int)hist->GetBinContent( strip+1 );
       }
     }
   }
@@ -518,7 +518,7 @@ TkrHits::TkrHits( bool initHistsFlag ):
   tag.assign( tag, 0, i ) ;
   m_tag = tag;
 
-  std::string version = "$Revision: 1.20 $";
+  std::string version = "$Revision: 1.21 $";
   i = version.find( " " );
   version.assign( version, i+1, version.size() );
   i = version.find( " " );
@@ -526,7 +526,7 @@ TkrHits::TkrHits( bool initHistsFlag ):
   m_version = version;
   m_revision = atof( m_version.c_str() );
   std::cout << "TkrHits, Tag: " << m_tag 
-	    << ", version: " << m_version << std::endl;
+            << ", version: " << m_version << std::endl;
 
   for(int tower = 0; tower != g_nTower; ++tower)
     m_towerPtr[tower] = -1;
@@ -585,7 +585,7 @@ void TkrHits::initCommonHists(){
   m_hAcdTotalEnergy = new TH1F("acdTotalEnergy", "AcdTotalEnergy", 100, 0 , 10 );
   m_hCalEnergyRaw = new TH1F("calEnergyRaw", "calEnergyRaw", 100, 0, 1000 );
   m_hCalTotalEnergyRaw = new TH1F("calTotalEnergyRaw", "calTotalEnergyRaw", \
-				  20, bins );
+                                  20, bins );
   m_hNumCalXtal = new TH1F("numCalXtal", "# of Cal Xtal with energy>0 per layer", 10, 0, 10 );
   m_HAcdTileCount = new TH1F("acdTileCountC", "AcdTileCount after track cut", 10, 0 , 10 );
   m_HAcdTotalEnergy = new TH1F("acdTotalEnergyC", "AcdTotalEnergy after track cut", 100, 0 , 10 );
@@ -596,50 +596,50 @@ void TkrHits::initCommonHists(){
   // siz in a row histograms
   //
   m_sixInARow = new TH1F( "sixInARow", "# of 6-in-a-row per Tower", 
-			  g_nTower, 0, g_nTower );
+                          g_nTower, 0, g_nTower );
   m_sixInARowWithTrig = new TH1F( "sixInARowWithTrig",
-				  "# of 6-in-a-row with trigger", 
-				  g_nTower, 0, g_nTower );
+                                  "# of 6-in-a-row with trigger", 
+                                  g_nTower, 0, g_nTower );
   m_orphanTrig = new TH1F( "orphanTrig", "# of triggers without 6-in-a-row", 
-			   g_nTower, 0, g_nTower );
+                           g_nTower, 0, g_nTower );
   m_sixInARowMIP = new TH1F( "sixInARowMIP", 
-			     "# of 6-in-a-row per Tower (MIP)", 
-			     g_nTower, 0, g_nTower );
+                             "# of 6-in-a-row per Tower (MIP)", 
+                             g_nTower, 0, g_nTower );
   m_sixInARowT0X7 = new TH1F( "sixInARowT0X7", 
-			     "# of 6-in-a-row per Tower (T0X7)", 
-			     g_nTower, 0, g_nTower );
+                             "# of 6-in-a-row per Tower (T0X7)", 
+                             g_nTower, 0, g_nTower );
   m_sixInARowT3X7 = new TH1F( "sixInARowT3X7", 
-			     "# of 6-in-a-row per Tower (T3X7)", 
-			     g_nTower, 0, g_nTower );
+                             "# of 6-in-a-row per Tower (T3X7)", 
+                             g_nTower, 0, g_nTower );
   m_sixInARowWithTrigMIP = new TH1F( "sixInARowWithTrigMIP",
-				     "# of 6-in-a-row with trigger (MIP)", 
-				     g_nTower, 0, g_nTower );
+                                     "# of 6-in-a-row with trigger (MIP)", 
+                                     g_nTower, 0, g_nTower );
   m_sixInARowWithTrigT0X7 = new TH1F( "sixInARowWithTrigT0X7",
-				     "# of 6-in-a-row with trigger (T0X7)", 
-				     g_nTower, 0, g_nTower );
+                                     "# of 6-in-a-row with trigger (T0X7)", 
+                                     g_nTower, 0, g_nTower );
   m_sixInARowWithTrigT3X7 = new TH1F( "sixInARowWithTrigT3X7",
-				     "# of 6-in-a-row with trigger (T3X7)", 
-				     g_nTower, 0, g_nTower );
+                                     "# of 6-in-a-row with trigger (T3X7)", 
+                                     g_nTower, 0, g_nTower );
   m_orphanTrigMIP = new TH1F( "orphanTrigMIP", 
-			      "# of triggers without 6-in-a-row (MIP)", 
-			      g_nTower, 0, g_nTower );
+                              "# of triggers without 6-in-a-row (MIP)", 
+                              g_nTower, 0, g_nTower );
   m_sixInARowAll = new TH1F( "sixInARowAll", 
-			     "# of 6-in-a-row per Tower (MIP, All)", 
-			     g_nTower, 0, g_nTower );
+                             "# of 6-in-a-row per Tower (MIP, All)", 
+                             g_nTower, 0, g_nTower );
   m_sixInARowWithTrigAll = new TH1F( "sixInARowWithTrigAll",
-				     "# of 6-in-a-row with trig (MIP, All)", 
-				     g_nTower, 0, g_nTower );
+                                     "# of 6-in-a-row with trig (MIP, All)", 
+                                     g_nTower, 0, g_nTower );
   m_sixInARowCut = new TH1F( "sixInARowCut", 
-			     "# of 6-in-a-row per Tower (MIP, Cut)", 
-			     ncut, 0, ncut );
+                             "# of 6-in-a-row per Tower (MIP, Cut)", 
+                             ncut, 0, ncut );
   m_sixInARowWithTrigCut = new TH1F( "sixInARowWithTrigCut",
-				     "# of 6-in-a-row with trig (MIP, Cut)", 
-				     ncut, 0, ncut );
+                                     "# of 6-in-a-row with trig (MIP, Cut)", 
+                                     ncut, 0, ncut );
   m_hitCut = new TH1F( "hitCut", "# of hits with cut", ncut, 0, ncut );
   m_trackCut = new TH1F( "trackCut", "# of tracks with cut", ncut, 0, ncut );
 
   m_trigComb = new TH1F("trigComb", "trigger combination", \
-			g_nTkrLayer, 0, g_nTkrLayer );
+                        g_nTkrLayer, 0, g_nTkrLayer );
   m_totTrig = new TH1F("totTrig", "totTrig", 256, 0, 256);
   m_totNonTrig = new TH1F("totNonTrig", "totNonTrig", 256, 0, 256);
   m_nBadLayersNonTrig = new TH1F("nBadLayersNonTrig", "nBadLayersNonTrig", 10, 0, 10);
@@ -813,7 +813,7 @@ void TkrHits::saveAllHist( bool saveWaferOcc, bool runFitTot )
       gDirectory->mkdir( rdir );
       gDirectory->cd( rdir );
       for( UInt_t i=0; i!=nhist; i++ )
-	m_chargeHist[tower*nhist+i]->Write(0, TObject::kOverwrite);
+        m_chargeHist[tower*nhist+i]->Write(0, TObject::kOverwrite);
       gDirectory->cd( ".." );
     }
   }
@@ -848,7 +848,7 @@ void TkrHits::saveAllHist( bool saveWaferOcc, bool runFitTot )
       std::cout.setf( std::ios::fixed );
       std::cout.precision( 5 );
       std::cout << "LAT hit efficiency " << icut << ": " 
-		<< eff << " +- " << error << std::endl;
+                << eff << " +- " << error << std::endl;
       hEff->SetBinContent( icut+1, eff );
       hEff->SetBinError( icut+1, error );
     }
@@ -861,7 +861,7 @@ void TkrHits::saveAllHist( bool saveWaferOcc, bool runFitTot )
       std::cout.setf( std::ios::fixed );
       std::cout.precision( 5 );
       std::cout << "LAT trigger efficiency " << icut << ": " 
-		<< eff << " +- " << error << std::endl;
+                << eff << " +- " << error << std::endl;
       tEff->SetBinContent( icut+1, eff );
       tEff->SetBinError( icut+1, error );
     }
@@ -900,14 +900,14 @@ void TkrHits::saveAllHist( bool saveWaferOcc, bool runFitTot )
       if( error == 0.0 ) error = 1.0;
       ineffDist->Fill( 100*(1-eff)+0.0001 );
       if( (eff-0.98)/error<-3.0 && m_log.is_open() ){
-	layerId lid( unp );
-	std::string lname = lid.getLayerName();
-	std::cout << m_towerVar[tw].hwserial << " T" << m_towerVar[tw].towerId 
-		  << " " << lname
-		  << " low efficiency: " << eff << " +- " << error << std::endl;
-	m_log << m_towerVar[tw].hwserial << " T" << m_towerVar[tw].towerId 
-	      << " " << lname
-	      << " low efficiency: " << eff << " +- " << error << std::endl;
+        layerId lid( unp );
+        std::string lname = lid.getLayerName();
+        std::cout << m_towerVar[tw].hwserial << " T" << m_towerVar[tw].towerId 
+                  << " " << lname
+                  << " low efficiency: " << eff << " +- " << error << std::endl;
+        m_log << m_towerVar[tw].hwserial << " T" << m_towerVar[tw].towerId 
+              << " " << lname
+              << " low efficiency: " << eff << " +- " << error << std::endl;
       }
       //
       // check for alignment outliers
@@ -915,14 +915,14 @@ void TkrHits::saveAllHist( bool saveWaferOcc, bool runFitTot )
       error = m_towerVar[tw].resProf->GetBinError( unp+1 );
       if( error == 0.0 ) error = 1.0;
       if( (fabs(offset)-0.1)/error > 3.0 && m_log.is_open() ){
-	layerId lid( unp );
-	std::string lname = lid.getLayerName();
-	std::cout << m_towerVar[tw].hwserial << " T" << m_towerVar[tw].towerId 
-		  << " " << lname
-		  << " large offset: " << offset << " +- " << error << std::endl;
-	m_log << m_towerVar[tw].hwserial << " T" << m_towerVar[tw].towerId 
-	      << " " << lname
-	      << " large offset: " << offset << " +- " << error << std::endl;
+        layerId lid( unp );
+        std::string lname = lid.getLayerName();
+        std::cout << m_towerVar[tw].hwserial << " T" << m_towerVar[tw].towerId 
+                  << " " << lname
+                  << " large offset: " << offset << " +- " << error << std::endl;
+        m_log << m_towerVar[tw].hwserial << " T" << m_towerVar[tw].towerId 
+              << " " << lname
+              << " large offset: " << offset << " +- " << error << std::endl;
       }
     }
     //
@@ -930,10 +930,10 @@ void TkrHits::saveAllHist( bool saveWaferOcc, bool runFitTot )
     frac = m_towerVar[tw].numHitGTRC->Integral( 15, 65 ) 
       / ( numEvents * g_nUniPlane * 2 );
     if( frac > 1.0E-4 && m_log.is_open() ){
-	 std::cout << m_towerVar[tw].hwserial << " T" << m_towerVar[tw].towerId 
-		   << " high fraction of large GTRC hits: " << frac << std::endl;
-	 m_log << m_towerVar[tw].hwserial << " T" << m_towerVar[tw].towerId 
-	       << " high fraction of large GTRC hits: " << frac << std::endl;
+         std::cout << m_towerVar[tw].hwserial << " T" << m_towerVar[tw].towerId 
+                   << " high fraction of large GTRC hits: " << frac << std::endl;
+         m_log << m_towerVar[tw].hwserial << " T" << m_towerVar[tw].towerId 
+               << " high fraction of large GTRC hits: " << frac << std::endl;
     }
   }
 
@@ -957,7 +957,7 @@ void TkrHits::saveAllHist( bool saveWaferOcc, bool runFitTot )
     std::cout.setf( std::ios::fixed );
     std::cout.precision( 5 );
     std::cout << "LAT trigger efficiency: " << eff << " +- " << error 
-	      << std::endl;
+              << std::endl;
   }
   
   tteff->Add( m_sixInARowWithTrigMIP );
@@ -979,13 +979,13 @@ void TkrHits::saveAllHist( bool saveWaferOcc, bool runFitTot )
       std::cout.setf( std::ios::fixed );
       std::cout.precision( 5 );
       std::cout << m_towerVar[tw].hwserial << " T" << twr
-		<< " tower efficiency: " << eff << " +- " << error 
-		<< std::endl;
+                << " tower efficiency: " << eff << " +- " << error 
+                << std::endl;
       m_log.setf( std::ios::fixed );
       m_log.precision( 5 );
       m_log << m_towerVar[tw].hwserial << " T" << twr
-	    << " tower efficiency: " << eff << " +- " << error 
-	    << std::endl;
+            << " tower efficiency: " << eff << " +- " << error 
+            << std::endl;
     }
     eff = tteff->GetBinContent( twr+1 );
     entry = m_sixInARowMIP->GetBinContent( twr+1 );
@@ -1016,8 +1016,8 @@ void TkrHits::saveAllHist( bool saveWaferOcc, bool runFitTot )
     std::cout.setf( std::ios::fixed );
     std::cout.precision( 5 );
     std::cout << m_towerVar[tw].hwserial << " T" << twr
-	      << " T0X7 trigger efficiency: " << eff << " +- " << error 
-	      << std::endl;
+              << " T0X7 trigger efficiency: " << eff << " +- " << error 
+              << std::endl;
   }
   tteffT0X7->Write(0, TObject::kOverwrite);
   m_sixInARowT0X7->Write(0, TObject::kOverwrite);
@@ -1037,8 +1037,8 @@ void TkrHits::saveAllHist( bool saveWaferOcc, bool runFitTot )
     std::cout.setf( std::ios::fixed );
     std::cout.precision( 5 );
     std::cout << m_towerVar[tw].hwserial << " T" << twr
-	      << " T3X7 trigger efficiency: " << eff << " +- " << error 
-	      << std::endl;
+              << " T3X7 trigger efficiency: " << eff << " +- " << error 
+              << std::endl;
   }
   m_sixInARowT3X7->Write(0, TObject::kOverwrite);
   m_sixInARowWithTrigT3X7->Write(0, TObject::kOverwrite);
@@ -1051,16 +1051,16 @@ void TkrHits::saveAllHist( bool saveWaferOcc, bool runFitTot )
       int twr = m_towerVar[tw].towerId;
       std::cout.precision( 3 );
       std::cout << m_towerVar[tw].hwserial << " T" << twr
-		<< " xshift: " << m_tresProfX->GetBinContent( twr+1 )
-		<< " +- " << m_tresProfX->GetBinError( twr+1 )
-		<< " yshift: " << m_tresProfY->GetBinContent( twr+1 )
-		<< " +- " << m_tresProfY->GetBinError( twr+1 ) << std::endl;
+                << " xshift: " << m_tresProfX->GetBinContent( twr+1 )
+                << " +- " << m_tresProfX->GetBinError( twr+1 )
+                << " yshift: " << m_tresProfY->GetBinContent( twr+1 )
+                << " +- " << m_tresProfY->GetBinError( twr+1 ) << std::endl;
       m_log.precision( 3 );
       m_log << m_towerVar[tw].hwserial << " T" << twr
-	    << " xshift: " << m_tresProfX->GetBinContent( twr+1 )
-	    << " +- " << m_tresProfX->GetBinError( twr+1 )
-	    << " yshift: " << m_tresProfY->GetBinContent( twr+1 )
-	    << " +- " << m_tresProfY->GetBinError( twr+1 ) << std::endl;
+            << " xshift: " << m_tresProfX->GetBinContent( twr+1 )
+            << " +- " << m_tresProfX->GetBinError( twr+1 )
+            << " yshift: " << m_tresProfY->GetBinContent( twr+1 )
+            << " +- " << m_tresProfY->GetBinError( twr+1 ) << std::endl;
     }
   }
 
@@ -1171,6 +1171,7 @@ bool TkrHits::MIPfilter()
   assert(calRecon != 0);
   TObjArray* clusters = calRecon->getCalClusterCol();
   int numClusters = clusters->GetEntries();
+  if(numClusters) numClusters -= 2; // uber and uber2
   //Event::CalCluster* calCluster = pCals->front();
   m_calEnergyRaw = 0;
   int num = 0;
@@ -1232,8 +1233,8 @@ bool TkrHits::MIPfilter()
       sixInARow[tower] = false;
       m_goodTrackTowerFlag[ tower ] = triggered[tower];
       for (UInt_t bilayer=0; bilayer<g_nTkrLayer; bilayer++){
-	nHitTC[tower][bilayer] = 0;
-	nBadTC[tower][bilayer] = 0;
+        nHitTC[tower][bilayer] = 0;
+        nBadTC[tower][bilayer] = 0;
       }
     }
     
@@ -1245,28 +1246,28 @@ bool TkrHits::MIPfilter()
       Int_t bilayer = tkrDigi->getBilayer();
       UInt_t numHits = tkrDigi->getNumHits();
       if( numHits > 0 ){
-	Int_t tot = tkrDigi->getToT(0);
-	Int_t toth = tkrDigi->getToT(1);
-	if( toth > tot ) tot = toth;
-	//if( tot<5 || tot>252 ) m_cut[5] = true;
-	if( tot<1 || tot>252 ) m_cut[5] = true;
-	int cmin = bilayer - 2;
-	if( cmin < 0 ) cmin = 0;
-	int cmax = bilayer+1;
-	if( cmax > g_nTkrLayer ) cmax = g_nTkrLayer;
-	for(int tc=cmin; tc<cmax; tc++){ // loop trigger combinations
-	  nHitTC[tower][tc]++;
-	  if( tot<10 || tot>252 ) nBadTC[tower][tc]++;
-	  if( nHitTC[tower][tc] >= 6 ){
-	    sixInARow[tower] = true;
-	    m_trigComb->Fill( tc );
-	    if( abs(tc-6) < 2 ) // trigger combination invovling X7
-	      if( tower == 0 ) numT0X7++;
-	      else if( tower == 3 ) numT3X7++;
-	    else if( tower == 0 ) numNonT0X7++;
-	    else if( tower == 3 ) numNonT3X7++;
-	  }
-	}
+        Int_t tot = tkrDigi->getToT(0);
+        Int_t toth = tkrDigi->getToT(1);
+        if( toth > tot ) tot = toth;
+        //if( tot<5 || tot>252 ) m_cut[5] = true;
+        if( tot<1 || tot>252 ) m_cut[5] = true;
+        int cmin = bilayer - 2;
+        if( cmin < 0 ) cmin = 0;
+        int cmax = bilayer+1;
+        if( cmax > g_nTkrLayer ) cmax = g_nTkrLayer;
+        for(int tc=cmin; tc<cmax; tc++){ // loop trigger combinations
+          nHitTC[tower][tc]++;
+          if( tot<10 || tot>252 ) nBadTC[tower][tc]++;
+          if( nHitTC[tower][tc] >= 6 ){
+            sixInARow[tower] = true;
+            m_trigComb->Fill( tc );
+            if( abs(tc-6) < 2 ) // trigger combination invovling X7
+              if( tower == 0 ) numT0X7++;
+              else if( tower == 3 ) numT3X7++;
+            else if( tower == 0 ) numNonT0X7++;
+            else if( tower == 3 ) numNonT3X7++;
+          }
+        }
       }
     }
 
@@ -1285,32 +1286,32 @@ bool TkrHits::MIPfilter()
     int nSixInARow = 0;
     for(UInt_t tower=0; tower<g_nTower; tower++){
       if( sixInARow[tower] )
-	for (UInt_t bilayer=0; bilayer<g_nTkrLayer; bilayer++){
-	  if( triggered[tower] ) 
-	    m_nBadLayersTrig->Fill( nBadTC[tower][bilayer] );
-	  else m_nBadLayersNonTrig->Fill( nBadTC[tower][bilayer] );
-	  //if( nBadTC[tower][bilayer] > 1 ) badTower[tower] = true;
-	}
+        for (UInt_t bilayer=0; bilayer<g_nTkrLayer; bilayer++){
+          if( triggered[tower] ) 
+            m_nBadLayersTrig->Fill( nBadTC[tower][bilayer] );
+          else m_nBadLayersNonTrig->Fill( nBadTC[tower][bilayer] );
+          //if( nBadTC[tower][bilayer] > 1 ) badTower[tower] = true;
+        }
       if( badTower[tower] ){
-	sixInARow[tower] = false;
-	m_goodTrackTowerFlag[ tower ] = false;
+        sixInARow[tower] = false;
+        m_goodTrackTowerFlag[ tower ] = false;
       }
       if( sixInARow[tower] ){
-	nSixInARow++;
-	// search for additional tower
-	for(UInt_t tw=tower+1; tw<g_nTower; tw++){ 
-	  if( sixInARow[tw] ){
-	    int row1 = tower/4;
-	    int row2 = tw/4;
-	    int col1 = tower%4;
-	    int col2 = tw%4;
-	    bool adj = false;
-	    if( row1==row2 && abs(col1-col2)<2 ) adj = true;
-	    if( col1==col2 && abs(row1-row2)<2 ) adj = true;
-	    if( ! adj )  m_cut[6] = false;
-	    // any towers needs to be adjacent
-	  }
-	}
+        nSixInARow++;
+        // search for additional tower
+        for(UInt_t tw=tower+1; tw<g_nTower; tw++){ 
+          if( sixInARow[tw] ){
+            int row1 = tower/4;
+            int row2 = tw/4;
+            int col1 = tower%4;
+            int col2 = tw%4;
+            bool adj = false;
+            if( row1==row2 && abs(col1-col2)<2 ) adj = true;
+            if( col1==col2 && abs(row1-row2)<2 ) adj = true;
+            if( ! adj )  m_cut[6] = false;
+            // any towers needs to be adjacent
+          }
+        }
       }
     }
 
@@ -1334,38 +1335,38 @@ bool TkrHits::MIPfilter()
 
     for(UInt_t tower=0;tower<g_nTower; tower++){
       if( sixInARow[tower] ){
-	if( nSixInARow > 1 ){
-	  m_sixInARow->Fill( tower );
-	  if( m_MIPeff )
-	    m_sixInARowMIP->Fill( tower );
-	  if( m_MIPtot ){
-	    if( m_cut[20] ) m_sixInARowT0X7->Fill( tower );
-	    if( m_cut[23] ) m_sixInARowT3X7->Fill( tower );
-	  }
-	  // check various additional cuts
-	  for( int icut=0; icut<ncut; icut++ )
-	    if( m_cut[icut] ) m_sixInARowCut->Fill( icut+0.5 );
-	  if( triggered[tower] ){
-	    m_sixInARowWithTrig->Fill( tower );
-	    for( int icut=0; icut<ncut; icut++ )
-	      if( m_cut[icut] ) m_sixInARowWithTrigCut->Fill( icut+0.5 );
-	    if( m_MIPeff )
-	      m_sixInARowWithTrigMIP->Fill( tower );
-	    if( m_MIPtot ){
-	      if( m_cut[20] ) m_sixInARowWithTrigT0X7->Fill( tower );
-	      if( m_cut[23] ) m_sixInARowWithTrigT3X7->Fill( tower );
-	    }
-	  }
-	}
-	if( m_MIPeff ){
-	  m_sixInARowAll->Fill( tower );
-	  if( triggered[tower] )
-	    m_sixInARowWithTrigAll->Fill( tower );
-	}
+        if( nSixInARow > 1 ){
+          m_sixInARow->Fill( tower );
+          if( m_MIPeff )
+            m_sixInARowMIP->Fill( tower );
+          if( m_MIPtot ){
+            if( m_cut[20] ) m_sixInARowT0X7->Fill( tower );
+            if( m_cut[23] ) m_sixInARowT3X7->Fill( tower );
+          }
+          // check various additional cuts
+          for( int icut=0; icut<ncut; icut++ )
+            if( m_cut[icut] ) m_sixInARowCut->Fill( icut+0.5 );
+          if( triggered[tower] ){
+            m_sixInARowWithTrig->Fill( tower );
+            for( int icut=0; icut<ncut; icut++ )
+              if( m_cut[icut] ) m_sixInARowWithTrigCut->Fill( icut+0.5 );
+            if( m_MIPeff )
+              m_sixInARowWithTrigMIP->Fill( tower );
+            if( m_MIPtot ){
+              if( m_cut[20] ) m_sixInARowWithTrigT0X7->Fill( tower );
+              if( m_cut[23] ) m_sixInARowWithTrigT3X7->Fill( tower );
+            }
+          }
+        }
+        if( m_MIPeff ){
+          m_sixInARowAll->Fill( tower );
+          if( triggered[tower] )
+            m_sixInARowWithTrigAll->Fill( tower );
+        }
       }
       else if( triggered[tower] ){
-	m_orphanTrig->Fill( tower );
-	if( m_MIPeff ) m_orphanTrigMIP->Fill( tower );
+        m_orphanTrig->Fill( tower );
+        if( m_MIPeff ) m_orphanTrigMIP->Fill( tower );
       }
     }
   }
@@ -1487,155 +1488,155 @@ void TkrHits::fitTot()
       std::cout << " " << lname;
       bool alarm = false;
       for(int iDiv = 0; iDiv != m_nDiv; ++iDiv){
-	m_towerVar[tw].tcVar[unp].chargeScale[iDiv] = meanChargeScale;
-	
-	float area, ave, rms;
-	Double_t *par, *error;
-	float peak, errPeak, width, errWidth;
-	  
-	// fill charge for each FE
-	char name[] = "chargeT00X00fe0000";
-	if( m_nDiv != 1 )
-	  sprintf(name,"chargeT%d%sfe%d", tower, lname.c_str(), iDiv);
-	else
-	  sprintf(name,"chargeT%d%s", tower, lname.c_str());
-	TH1F* chargeHist = new TH1F(name, name, nTotHistBin, 0, maxTot);
-	chargeHist->SetLineWidth( 2 );
-	float binWidth = maxTot / nTotHistBin;
-	for( int ibin=0; ibin!=nTotHistBin; ibin++){
-	  if( m_towerVar[tw].tcVar[unp].chargeDist[iDiv][ibin] < 0 ){
-	    std::cout << "invalid count " << tower << " " << lname << " " 
-		      << iDiv << " " << ibin << " " 
-		      << m_towerVar[tw].tcVar[unp].chargeDist[iDiv][ibin]
-		      << std::endl;
-	    continue;
-	  }
-	  totalCount +=  m_towerVar[tw].tcVar[unp].chargeDist[iDiv][ibin];
-	  chargeHist->Fill( (ibin+0.5)*binWidth, 
-			    m_towerVar[tw].tcVar[unp].chargeDist[iDiv][ibin] );
-	}
-	m_chargeHist.push_back( chargeHist );
-	//std::cout << "T" << tower << " " << lname << " " << iDiv << std::endl;
-	//if( m_histMode ) continue; // do not fit during hist mode.
+        m_towerVar[tw].tcVar[unp].chargeScale[iDiv] = meanChargeScale;
+        
+        float area, ave, rms;
+        Double_t *par, *error;
+        float peak, errPeak, width, errWidth;
+          
+        // fill charge for each FE
+        char name[] = "chargeT00X00fe0000";
+        if( m_nDiv != 1 )
+          sprintf(name,"chargeT%d%sfe%d", tower, lname.c_str(), iDiv);
+        else
+          sprintf(name,"chargeT%d%s", tower, lname.c_str());
+        TH1F* chargeHist = new TH1F(name, name, nTotHistBin, 0, maxTot);
+        chargeHist->SetLineWidth( 2 );
+        float binWidth = maxTot / nTotHistBin;
+        for( int ibin=0; ibin!=nTotHistBin; ibin++){
+          if( m_towerVar[tw].tcVar[unp].chargeDist[iDiv][ibin] < 0 ){
+            std::cout << "invalid count " << tower << " " << lname << " " 
+                      << iDiv << " " << ibin << " " 
+                      << m_towerVar[tw].tcVar[unp].chargeDist[iDiv][ibin]
+                      << std::endl;
+            continue;
+          }
+          totalCount +=  m_towerVar[tw].tcVar[unp].chargeDist[iDiv][ibin];
+          chargeHist->Fill( (ibin+0.5)*binWidth, 
+                            m_towerVar[tw].tcVar[unp].chargeDist[iDiv][ibin] );
+        }
+        m_chargeHist.push_back( chargeHist );
+        //std::cout << "T" << tower << " " << lname << " " << iDiv << std::endl;
+        //if( m_histMode ) continue; // do not fit during hist mode.
 
-	// fit charge for each FE
-	area = chargeHist->Integral();
-	ave = chargeHist->GetMean();
-	rms = chargeHist->GetRMS();
-	m_entries->Fill( area );
-	//std::cout << area << " " << ave << " " << rms << std::endl;
-	if( area<200 || ave==0.0 || rms==0.0 ){ 
-	  m_log << "T" << tower << " " << lname
-		<< " " << iDiv << ", Entries: " << area
-		<< ", Mean: " << ave << ", RMS: " << rms 
-		<< " skipped." << std::endl;
-	  continue;
-	}
-	
-	//
-	// check the presence of bad TOT values
-	// try not to include these TOT in the fit.
-	//
-	int bin = int(ave*0.5/binWidth) + 1;
-	float fracBadTot = chargeHist->Integral(1,bin)
-	  / chargeHist->Integral();
-	m_fracBatTot->Fill( fracBadTot );
+        // fit charge for each FE
+        area = chargeHist->Integral();
+        ave = chargeHist->GetMean();
+        rms = chargeHist->GetRMS();
+        m_entries->Fill( area );
+        //std::cout << area << " " << ave << " " << rms << std::endl;
+        if( area<200 || ave==0.0 || rms==0.0 ){ 
+          m_log << "T" << tower << " " << lname
+                << " " << iDiv << ", Entries: " << area
+                << ", Mean: " << ave << ", RMS: " << rms 
+                << " skipped." << std::endl;
+          continue;
+        }
+        
+        //
+        // check the presence of bad TOT values
+        // try not to include these TOT in the fit.
+        //
+        int bin = int(ave*0.5/binWidth) + 1;
+        float fracBadTot = chargeHist->Integral(1,bin)
+          / chargeHist->Integral();
+        m_fracBatTot->Fill( fracBadTot );
 
-	float lowLim = ave - 1.4 * rms;
-	if( fracBadTot > 0.05 && lowLim < ave*0.5 ){
-	  lowLim = ave*0.5;
-	  alarm = true;
-	  std::cout << std::endl << "WARNING, large bad TOT fraction: " 
-		    << fracBadTot << ", T" << tower << " " << lname
-		    << " " << iDiv;
-	  m_log << "WARNING, large bad TOT fraction: " 
-		<< fracBadTot << ", T" << tower << " " << lname
-		<< " " << iDiv << std::endl;
-	}
+        float lowLim = ave - 1.4 * rms;
+        if( fracBadTot > 0.05 && lowLim < ave*0.5 ){
+          lowLim = ave*0.5;
+          alarm = true;
+          std::cout << std::endl << "WARNING, large bad TOT fraction: " 
+                    << fracBadTot << ", T" << tower << " " << lname
+                    << " " << iDiv;
+          m_log << "WARNING, large bad TOT fraction: " 
+                << fracBadTot << ", T" << tower << " " << lname
+                << " " << iDiv << std::endl;
+        }
 
-	ffit->SetParLimits( 0, 0.10, 0.5 );
-	ffit->SetParLimits( 1, 0.0, ave*2 );
-	ffit->SetParLimits( 2, 0.0, area*0.4 );
-	ffit->SetParLimits( 3, 0.35, 0.85 );
-	ffit->SetRange( lowLim, ave+2.5*rms );
-	ffit->SetParameters( rms*0.2, ave*0.75, area*0.1, rms*0.4 );
-	ffit->FixParameter( 4, m_RSigma );
-	ffit->FixParameter( 5, m_GFrac );
-	chargeHist->Fit( "langau2", "RBQ" );
-	
-	//0:width(scale) 1:peak 2:total area 3:width(sigma)
-	par = ffit->GetParameters();
-	error = ffit->GetParErrors();
-	
-	peak = float( *(par+1) );
-	errPeak = float( *(error+1) );
-	if( peak > 0 ) m_fracErrDist->Fill( errPeak*sqrt(area/1000)/peak );
-	
-	width = float( *(par+3) );
-	errWidth = float( *(error+3) );
+        ffit->SetParLimits( 0, 0.10, 0.5 );
+        ffit->SetParLimits( 1, 0.0, ave*2 );
+        ffit->SetParLimits( 2, 0.0, area*0.4 );
+        ffit->SetParLimits( 3, 0.35, 0.85 );
+        ffit->SetRange( lowLim, ave+2.5*rms );
+        ffit->SetParameters( rms*0.2, ave*0.75, area*0.1, rms*0.4 );
+        ffit->FixParameter( 4, m_RSigma );
+        ffit->FixParameter( 5, m_GFrac );
+        chargeHist->Fit( "langau2", "RBQ" );
+        
+        //0:width(scale) 1:peak 2:total area 3:width(sigma)
+        par = ffit->GetParameters();
+        error = ffit->GetParErrors();
+        
+        peak = float( *(par+1) );
+        errPeak = float( *(error+1) );
+        if( peak > 0 ) m_fracErrDist->Fill( errPeak*sqrt(area/1000)/peak );
+        
+        width = float( *(par+3) );
+        errWidth = float( *(error+3) );
 
-	float chisq = ffit->GetChisquare();
-	float ndf = ffit->GetNDF();
-	if( ndf > 0 ) m_chisqDist->Fill( chisq/ndf );
-	if( peak > 0.0 ){
-	  float chargeScale =  m_peakMIP / peak;
-	  addScaledHist( chargeHist, m_chist[6], chargeScale );
-	  m_chargeScale->Fill( chargeScale );
-	  m_langauWidth->Fill( *(par+0) ); //  width (scale)
-	  m_langauGSigma->Fill( *(par+3) ); // width (sigma)
-	  if( fabs(chargeScale-meanChargeScale) > rangeChargeScale ){
-	    alarm = true;
-	    std::cout << std::endl << "WARNING, Abnormal charge scale: " 
-		      << chargeScale << ", T" << tower << " " << lname
-		      << " " << iDiv;
-	    m_log << "WARNING, Abnormal charge scale: "
-		  << chargeScale << ", T" << tower << " " << lname 
-		  << " " << iDiv << std::endl;
-	    if( chargeScale > meanChargeScale ) 
-	      chargeScale = meanChargeScale + rangeChargeScale;
-	    if( chargeScale < meanChargeScale ) 
-	      chargeScale = meanChargeScale - rangeChargeScale;
-	  }
-	  if( chisq/ndf > maxChisq ){ // large chisq/ndf
-	    alarm = true;
-	    std::cout << std::endl << "WARNING, large chisq/ndf: "
-		      << chisq/ndf << ", T" << tower << " " << lname
-		      << " " << iDiv;
-	    m_log << "WARNING, large chisq/ndf: "
-		  << chisq/ndf << ", T" << tower << " " << lname
-		  << " " << iDiv << std::endl;
-	  }
-	  // large peak fit error
-	  if( errPeak*sqrt(area/1000)/peak > maxFracErr 
-	      || errPeak*sqrt(area/1000)/peak < minFracErr ){ 
-	    alarm = true;
-	    std::cout << std::endl << "WARNING, abnormal peak fit error: "
-		      << errPeak*sqrt(area/1000)/peak << ", T" << tower 
-		      << " " << lname << " " << iDiv;
-	    m_log << "WARNING, abnormal peak fit error: "
-		  << errPeak*sqrt(area/1000)/peak << ", T" << tower << " " 
-		  << lname << " " << iDiv << std::endl;
-	  }
-	  m_towerVar[tw].tcVar[unp].chargeScale[iDiv] = chargeScale;
-	}
-	else{
-	  alarm = true;
-	  std::cout << std::endl << "WARNING, negative peak value: "
-		    << peak << ", T" << tower << " " << lname 
-		    << " " << iDiv;
-	  m_log << "WARNING, negative peak value: "
-		<< peak << ", T" << tower << " " << lname 
-		<< " " << iDiv << std::endl;
-	}
-	
-	m_log << "Fit T" << tower << " " << lname << " " 
-	      << iDiv << ' ';
-	m_log.precision(3);
-	m_log << area << ' ' << ave << ' ' << rms << ", " << *(par+0) << ' '
-	      << *(par+1) << ' ' << *(par+2) << ' ' << *(par+3) << ", "
-	      << errPeak/peak << " " << int(chisq+0.5) << "/" << ndf
-	      << std::endl;
-	
+        float chisq = ffit->GetChisquare();
+        float ndf = ffit->GetNDF();
+        if( ndf > 0 ) m_chisqDist->Fill( chisq/ndf );
+        if( peak > 0.0 ){
+          float chargeScale =  m_peakMIP / peak;
+          addScaledHist( chargeHist, m_chist[6], chargeScale );
+          m_chargeScale->Fill( chargeScale );
+          m_langauWidth->Fill( *(par+0) ); //  width (scale)
+          m_langauGSigma->Fill( *(par+3) ); // width (sigma)
+          if( fabs(chargeScale-meanChargeScale) > rangeChargeScale ){
+            alarm = true;
+            std::cout << std::endl << "WARNING, Abnormal charge scale: " 
+                      << chargeScale << ", T" << tower << " " << lname
+                      << " " << iDiv;
+            m_log << "WARNING, Abnormal charge scale: "
+                  << chargeScale << ", T" << tower << " " << lname 
+                  << " " << iDiv << std::endl;
+            if( chargeScale > meanChargeScale ) 
+              chargeScale = meanChargeScale + rangeChargeScale;
+            if( chargeScale < meanChargeScale ) 
+              chargeScale = meanChargeScale - rangeChargeScale;
+          }
+          if( chisq/ndf > maxChisq ){ // large chisq/ndf
+            alarm = true;
+            std::cout << std::endl << "WARNING, large chisq/ndf: "
+                      << chisq/ndf << ", T" << tower << " " << lname
+                      << " " << iDiv;
+            m_log << "WARNING, large chisq/ndf: "
+                  << chisq/ndf << ", T" << tower << " " << lname
+                  << " " << iDiv << std::endl;
+          }
+          // large peak fit error
+          if( errPeak*sqrt(area/1000)/peak > maxFracErr 
+              || errPeak*sqrt(area/1000)/peak < minFracErr ){ 
+            alarm = true;
+            std::cout << std::endl << "WARNING, abnormal peak fit error: "
+                      << errPeak*sqrt(area/1000)/peak << ", T" << tower 
+                      << " " << lname << " " << iDiv;
+            m_log << "WARNING, abnormal peak fit error: "
+                  << errPeak*sqrt(area/1000)/peak << ", T" << tower << " " 
+                  << lname << " " << iDiv << std::endl;
+          }
+          m_towerVar[tw].tcVar[unp].chargeScale[iDiv] = chargeScale;
+        }
+        else{
+          alarm = true;
+          std::cout << std::endl << "WARNING, negative peak value: "
+                    << peak << ", T" << tower << " " << lname 
+                    << " " << iDiv;
+          m_log << "WARNING, negative peak value: "
+                << peak << ", T" << tower << " " << lname 
+                << " " << iDiv << std::endl;
+        }
+        
+        m_log << "Fit T" << tower << " " << lname << " " 
+              << iDiv << ' ';
+        m_log.precision(3);
+        m_log << area << ' ' << ave << ' ' << rms << ", " << *(par+0) << ' '
+              << *(par+1) << ' ' << *(par+2) << ' ' << *(par+3) << ", "
+              << errPeak/peak << " " << int(chisq+0.5) << "/" << ndf
+              << std::endl;
+        
       }
       if( alarm ) std::cout << std::endl;
     }
@@ -1699,9 +1700,9 @@ void TkrHits::addScaledHist( TH1F* hist1, TH1F* hist2, float xscale ){
       Double_t size2 = hist2->GetBinWidth( ibin2 );
       Double_t high2 = low2 + size2;
       if( ibin2 >= hist2->GetNbinsX()+1 ){
-	hist2->SetBinContent( ibin2, count-sum+count2 );
-	sum = count;
-	break;
+        hist2->SetBinContent( ibin2, count-sum+count2 );
+        sum = count;
+        break;
       }
       if( low2 >= high || high2 <= low ) break;
       else if( low>=low2 && high<=high2 ) cvalue = count;
@@ -1709,7 +1710,7 @@ void TkrHits::addScaledHist( TH1F* hist1, TH1F* hist2, float xscale ){
       else if( low<=low2 && high<=high2 ) cvalue = count*(high-low2)/size;
       else if( low>=low2 && high>=high2 ) cvalue = count*(high2-low)/size;
       else
-	std::cout << "orphan case: " << low << " " << high << " " << low2 << " " << high2 << std::endl;
+        std::cout << "orphan case: " << low << " " << high << " " << low2 << " " << high2 << std::endl;
       hist2->SetBinContent( ibin2, cvalue+count2 );
       sum += cvalue;
       ibin2++;
@@ -1811,14 +1812,14 @@ void TkrHits::monitorTKR(){
     if( tower >= 0 && tower < g_nTower ) tw = m_towerPtr[ tower ];
     if( tw < 0 ){
       if( m_log.is_open() && m_numErrors == 0 ){
-	std::cout << "Data Error, invalid tower ID: " << tower << std::endl;
-	m_log << "Data Error, invalid tower ID: " << tower << std::endl;
-	std::cout << "Data error is issued only once and total number of " 
-		  << "occurnaces will be reported at the end of analysis." 
-		  << std::endl;
-	m_log << "Data error is issued only once and total number of " 
-	      << "occurnaces will be reported at the end of analysis." 
-	      << std::endl;
+        std::cout << "Data Error, invalid tower ID: " << tower << std::endl;
+        m_log << "Data Error, invalid tower ID: " << tower << std::endl;
+        std::cout << "Data error is issued only once and total number of " 
+                  << "occurnaces will be reported at the end of analysis." 
+                  << std::endl;
+        m_log << "Data error is issued only once and total number of " 
+              << "occurnaces will be reported at the end of analysis." 
+              << std::endl;
       }
       m_numErrors++;
       continue;
@@ -1838,21 +1839,21 @@ void TkrHits::monitorTKR(){
     }
     if( numl > maxHitGTRC || numh > maxHitGTRC ){
       if( layer < 0 || layer >= g_nLayer || view < 0 || view >= g_nView ){
-	m_numErrors++;
-	continue;
+        m_numErrors++;
+        continue;
       }
       layerId lid( layer, view );
-      if( numl > maxHitGTRC ) m_largeMulGTRC->Fill( lid.uniPlane );	
+      if( numl > maxHitGTRC ) m_largeMulGTRC->Fill( lid.uniPlane );        
       if( numh > maxHitGTRC ) m_largeMulGTRC->Fill( lid.uniPlane );
     }
     if( m_log.is_open() && (numh>bufferSizeGTRC||numl>bufferSizeGTRC) ){
       char vw[] = "XY";
       std::cout << m_towerVar[tw].hwserial << "" << tower
-		<< vw[view] << layer << " invalid GTRC multiplicity: " 
-		<< numh << " " << numl << std::endl;
+                << vw[view] << layer << " invalid GTRC multiplicity: " 
+                << numh << " " << numl << std::endl;
       m_log << m_towerVar[tw].hwserial << " T" << tower
-	    << vw[view] << layer << " invalid GTRC multiplicity: " 
-	    << numh << " " << numl << std::endl;
+            << vw[view] << layer << " invalid GTRC multiplicity: " 
+            << numh << " " << numl << std::endl;
     }
   } 
 }
@@ -1867,7 +1868,7 @@ void TkrHits::getDigiClusters()
   // check data errors
   if( m_numErrors > 1E4 ){
     std::cout << "Too many data errrors are observed: " << m_numErrors 
-	      << std::endl << "EXIT." << std::endl;
+              << std::endl << "EXIT." << std::endl;
     exit( EXIT_FAILURE );
   }
   //
@@ -1919,8 +1920,8 @@ void TkrHits::getDigiClusters()
       // Retrieve the strip number
       Int_t iStrip = tkrDigi->getStrip(ihit);
       if( iStrip < 0 || iStrip >= g_nStrip ){
-	m_numErrors++;
-	continue;
+        m_numErrors++;
+        continue;
       }
       strips.push_back( iStrip );
       m_towerVar[tw].dHits[uniPlane][iStrip]++;      
@@ -1930,14 +1931,14 @@ void TkrHits::getDigiClusters()
       bool newCls = false;
       if( m_towerVar[tw].digiClusters[uniPlane].empty() ) newCls = true;
       else if( !m_towerVar[tw].digiClusters[uniPlane].back().addStrip( strips[i] ) )
-	newCls = true;
+        newCls = true;
       
       if( newCls ){
-	m_ldigi->Fill( uniPlane );
-	if( strips[i] <= lastRC0Strip )
-	  m_towerVar[tw].digiClusters[uniPlane].push_back( Cluster( strips[i], totl ) );
-	else
-	  m_towerVar[tw].digiClusters[uniPlane].push_back( Cluster( strips[i], toth ) );
+        m_ldigi->Fill( uniPlane );
+        if( strips[i] <= lastRC0Strip )
+          m_towerVar[tw].digiClusters[uniPlane].push_back( Cluster( strips[i], totl ) );
+        else
+          m_towerVar[tw].digiClusters[uniPlane].push_back( Cluster( strips[i], toth ) );
       }
     }
   }
@@ -1958,7 +1959,7 @@ void TkrHits::getReconClusters()
     if( twr != int(tw) ) {
       std::cout << "Invalid tower id: " << twr << " != " << tw << std::endl;
       if( m_log.is_open() )
-	m_log << "Invalid tower id: " << twr << " != " << tw << std::endl;
+        m_log << "Invalid tower id: " << twr << " != " << tw << std::endl;
       exit( EXIT_FAILURE );
     }
     for( int unp=0; unp<g_nUniPlane; unp++)
@@ -1997,9 +1998,9 @@ void TkrHits::getReconClusters()
       lastTower = lid.tower;
       m_trackTowerList.push_back( lastTower );
       if( lid.view == 0 )
-	m_towerVar[tw].center[1] = (cluster->getPosition()).Y();
+        m_towerVar[tw].center[1] = (cluster->getPosition()).Y();
       else
-	m_towerVar[tw].center[0] = (cluster->getPosition()).X();
+        m_towerVar[tw].center[0] = (cluster->getPosition()).X();
     }
     m_lrec->Fill( lid.uniPlane );
   }
@@ -2029,103 +2030,103 @@ void TkrHits::selectGoodClusters(){
       int view = lid.view;
       float zpos = posZ[view][layer];
       //std::cout << layer << " " << view << " " 
-      //	<< m_towerVar[twr].digiClusters[unp].size() << std::endl;
+      //        << m_towerVar[twr].digiClusters[unp].size() << std::endl;
 
       int numCls = 0;
       for( UInt_t i=0; i!= m_towerVar[twr].digiClusters[unp].size(); i++){
-	cluster = &( m_towerVar[twr].digiClusters[unp].at(i) );
+        cluster = &( m_towerVar[twr].digiClusters[unp].at(i) );
 
-	if( tower == 0 && layer == 7 && view == 0 )
-	  if( cluster->getFirstStrip() > 768 )
-	    m_totT0X7H->Fill( cluster->getRawToT() );
-	  else m_totT0X7L->Fill( cluster->getRawToT() );
-	
-	// calculate position
-	float pos = ( cluster->getLastStrip() + cluster->getFirstStrip() )/2;
-	int ladder = int( pos * 4 / g_nStrip );
-	pos = pos - g_nStrip * 0.5 + 0.5;
-	pos = pos * stripPitch + ladderGap * (ladder - 1.5 ) + m_towerVar[twr].center[view];
-	//std::cout <<  cluster->getLastStrip() << " " 
-	//<< cluster->getFirstStrip() << " " << pos << std::endl;
-	if( view == 0 )
-	  cluster->setXYZ( pos, m_towerVar[twr].center[1], zpos );
-	else
-	  cluster->setXYZ( m_towerVar[twr].center[0], pos, zpos );
-	cluster->setId( tower, unp );
-	if( m_towerVar[twr].reconClusters[unp] )
-	  cluster->setCorrectedTot( m_peakMIP * m_towerVar[twr].reconClusters[unp]->getMips() );
-	
-	// check if this cluster is close to the track position
-	layerId tlid;
+        if( tower == 0 && layer == 7 && view == 0 )
+          if( cluster->getFirstStrip() > 768 )
+            m_totT0X7H->Fill( cluster->getRawToT() );
+          else m_totT0X7L->Fill( cluster->getRawToT() );
+        
+        // calculate position
+        float pos = ( cluster->getLastStrip() + cluster->getFirstStrip() )/2;
+        int ladder = int( pos * 4 / g_nStrip );
+        pos = pos - g_nStrip * 0.5 + 0.5;
+        pos = pos * stripPitch + ladderGap * (ladder - 1.5 ) + m_towerVar[twr].center[view];
+        //std::cout <<  cluster->getLastStrip() << " " 
+        //<< cluster->getFirstStrip() << " " << pos << std::endl;
+        if( view == 0 )
+          cluster->setXYZ( pos, m_towerVar[twr].center[1], zpos );
+        else
+          cluster->setXYZ( m_towerVar[twr].center[0], pos, zpos );
+        cluster->setId( tower, unp );
+        if( m_towerVar[twr].reconClusters[unp] )
+          cluster->setCorrectedTot( m_peakMIP * m_towerVar[twr].reconClusters[unp]->getMips() );
+        
+        // check if this cluster is close to the track position
+        layerId tlid;
 
-	// find closest recon clusters
-	float dzmin=10000, dzmin2=10000, dz;
-	int numSkip=0, umin=0, umin2=0, tl, tunp;
-	const TkrCluster* tcls;
-	for( int dl=1; dl<g_nLayer; dl++){
-	  for( int dir=-1; dir<2; dir+=2){
-	    tl = layer + dl*dir;
-	    if( tl < g_nLayer && tl >=0 ){
-	      tlid.setLayer( tl, view );
-	      tunp = tlid.uniPlane;
-	      tcls = m_towerVar[twr].reconClusters[tunp];
-	      if( tcls ){
-		dz = fabs( zpos - tcls->getPosition().Z() );
-		if( dz < dzmin ){
-		  dzmin2 = dzmin;
-		  umin2 = umin;
-		  dzmin = dz;
-		  umin = tunp;
-		}
-		else if( dz < dzmin2 ){
-		  dzmin2 = dz;
-		  umin2 = tunp;	
-		}
-		else numSkip++;
-	      }
-	    }
-	    if( numSkip > 1 ) break;
-	  }
-	  if( numSkip > 1 ) break;
-	}
+        // find closest recon clusters
+        float dzmin=10000, dzmin2=10000, dz;
+        int numSkip=0, umin=0, umin2=0, tl, tunp;
+        const TkrCluster* tcls;
+        for( int dl=1; dl<g_nLayer; dl++){
+          for( int dir=-1; dir<2; dir+=2){
+            tl = layer + dl*dir;
+            if( tl < g_nLayer && tl >=0 ){
+              tlid.setLayer( tl, view );
+              tunp = tlid.uniPlane;
+              tcls = m_towerVar[twr].reconClusters[tunp];
+              if( tcls ){
+                dz = fabs( zpos - tcls->getPosition().Z() );
+                if( dz < dzmin ){
+                  dzmin2 = dzmin;
+                  umin2 = umin;
+                  dzmin = dz;
+                  umin = tunp;
+                }
+                else if( dz < dzmin2 ){
+                  dzmin2 = dz;
+                  umin2 = tunp;        
+                }
+                else numSkip++;
+              }
+            }
+            if( numSkip > 1 ) break;
+          }
+          if( numSkip > 1 ) break;
+        }
 
-	if( dzmin2>1000 || dzmin>1000 ) continue;
+        if( dzmin2>1000 || dzmin>1000 ) continue;
 
-	TVector3 pos1 = m_towerVar[twr].reconClusters[umin]->getPosition();
-	TVector3 pos2 = m_towerVar[twr].reconClusters[umin2]->getPosition();
+        TVector3 pos1 = m_towerVar[twr].reconClusters[umin]->getPosition();
+        TVector3 pos2 = m_towerVar[twr].reconClusters[umin2]->getPosition();
 
-	float delta;
-	if( lid.view == 0 ){
-	  pos = pos1.X() + ( pos2.X()-pos1.X() ) * ( zpos-pos1.Z() ) / ( pos2.Z() - pos1.Z() );
-	  delta = cluster->getPosition().X() - pos;
-	}
-	else{
-	  pos = pos1.Y() + ( pos2.Y()-pos1.Y() ) * ( zpos-pos1.Z() ) / ( pos2.Z() - pos1.Z() );
-	  delta = cluster->getPosition().Y() - pos;
-	}
-	
-	if( display ) std::cout << tower << " " << lid.layer << " " << lid.view << ", " << delta << " " << " " << pos << " " << zpos;
-	m_armsDist->Fill( delta );
-	if( fabs(delta) > 3.0 ){
-	  if( display ) std::cout << " **************" << std::endl;
-	  continue;
-	}
-	if( display ) std::cout << std::endl;
-	
-	//
-	// good cluster, multiple cluster per layer allowed.
-	//
-	numCls++;
-	m_clusters.push_back( cluster ); 
-	for(int iStrip = cluster->getFirstStrip(); 
-	    iStrip != int(cluster->getLastStrip()+1); ++iStrip){
-	  m_towerVar[twr].rHits[unp][iStrip]++;
-	  m_lcls->Fill( unp );
-	}
-	if( tower == 0 && layer == 7 && view == 0 )
-	  if( cluster->getFirstStrip() > 768 )
-	    m_totT0X7TH->Fill( cluster->getRawToT() );
-	  else m_totT0X7TL->Fill( cluster->getRawToT() );
+        float delta;
+        if( lid.view == 0 ){
+          pos = pos1.X() + ( pos2.X()-pos1.X() ) * ( zpos-pos1.Z() ) / ( pos2.Z() - pos1.Z() );
+          delta = cluster->getPosition().X() - pos;
+        }
+        else{
+          pos = pos1.Y() + ( pos2.Y()-pos1.Y() ) * ( zpos-pos1.Z() ) / ( pos2.Z() - pos1.Z() );
+          delta = cluster->getPosition().Y() - pos;
+        }
+        
+        if( display ) std::cout << tower << " " << lid.layer << " " << lid.view << ", " << delta << " " << " " << pos << " " << zpos;
+        m_armsDist->Fill( delta );
+        if( fabs(delta) > 3.0 ){
+          if( display ) std::cout << " **************" << std::endl;
+          continue;
+        }
+        if( display ) std::cout << std::endl;
+        
+        //
+        // good cluster, multiple cluster per layer allowed.
+        //
+        numCls++;
+        m_clusters.push_back( cluster ); 
+        for(int iStrip = cluster->getFirstStrip(); 
+            iStrip != int(cluster->getLastStrip()+1); ++iStrip){
+          m_towerVar[twr].rHits[unp][iStrip]++;
+          m_lcls->Fill( unp );
+        }
+        if( tower == 0 && layer == 7 && view == 0 )
+          if( cluster->getFirstStrip() > 768 )
+            m_totT0X7TH->Fill( cluster->getRawToT() );
+          else m_totT0X7TL->Fill( cluster->getRawToT() );
       }
       m_numClsDist->Fill( numCls );
       //std::cout << tower << " " << uniPlane << std::endl;
@@ -2158,23 +2159,23 @@ bool TkrHits::closeToTrack( const TkrCluster* cluster, TkrCluster* clusters[g_nT
     for( int dir=-1; dir<2; dir+=2){
       tl = layer + dl*dir;
       if( tl < g_nLayer && tl >=0 ){
-	tlid.setLayer( tl, view );
-	tunp = tlid.uniPlane;
-	tcls = clusters[tower][tunp];
-	if( tcls ){
-	  dz = fabs( zpos - tcls->getPosition().Z() );
-	  if( dz < dzmin ){
-	    dzmin2 = dzmin;
-	    umin2 = umin;
-	    dzmin = dz;
-	    umin = tunp;
-	  }
-	  else if( dz < dzmin2 ){
-	    dzmin2 = dz;
-	    umin2 = tunp;	
-	  }
-	  else numSkip++;
-	}
+        tlid.setLayer( tl, view );
+        tunp = tlid.uniPlane;
+        tcls = clusters[tower][tunp];
+        if( tcls ){
+          dz = fabs( zpos - tcls->getPosition().Z() );
+          if( dz < dzmin ){
+            dzmin2 = dzmin;
+            umin2 = umin;
+            dzmin = dz;
+            umin = tunp;
+          }
+          else if( dz < dzmin2 ){
+            dzmin2 = dz;
+            umin2 = tunp;        
+          }
+          else numSkip++;
+        }
       }
       if( numSkip > 1 ) break;
     }
@@ -2182,8 +2183,8 @@ bool TkrHits::closeToTrack( const TkrCluster* cluster, TkrCluster* clusters[g_nT
   }
 
   if( display ) std::cout << numSkip << " " << lid.uniPlane << " " 
-			  << umin << " " << dzmin << " " 
-			  << umin2 << " " << dzmin2 << ", ";
+                          << umin << " " << dzmin << " " 
+                          << umin2 << " " << dzmin2 << ", ";
   
   if( dzmin2>1000 || dzmin>1000 ){
     if( display ) std::cout << std::endl;
@@ -2236,10 +2237,10 @@ bool TkrHits::passCut()
     if(track) {
       nHits = track->getNumFitHits();
       if( nHits > maxHits ){
-	maxHits = nHits;
-	m_track = track;
-	m_pos = track->getInitialPosition();
-	m_dir = track->getInitialDirection();
+        maxHits = nHits;
+        m_track = track;
+        m_pos = track->getInitialPosition();
+        m_dir = track->getInitialDirection();
       }
     }
   }
@@ -2386,12 +2387,12 @@ float TkrHits::getTrackRMS(){
     if( m_trackTowerList.size() == 1 ){
       m_trkRMS1TWR->Fill( m_trackRMS );
       if( m_trackRMS < 2.0 ) 
-	m_rmsProf1TWR->Fill( twr, m_trackRMS );
+        m_rmsProf1TWR->Fill( twr, m_trackRMS );
     }
     else if( m_trackTowerList.size() == 2 ){
       m_trkRMS2TWR->Fill( m_trackRMS );
       if( trms[twr] < 2.0 )
-	m_rmsProf2TWR->Fill( twr, trms[twr] );
+        m_rmsProf2TWR->Fill( twr, trms[twr] );
     }
   }
 
@@ -2406,10 +2407,10 @@ float TkrHits::getTrackRMS(){
   if( numTracks > 2 ) return m_trackRMS;
   if( numTracks==2 && ( ref1twr<0 || ref2twr<0 ) ){ // invalid
     std::cout << "invalid reference tower numbers: " << ref1twr 
-	      << " " << ref2twr << std::endl;
+              << " " << ref2twr << std::endl;
     if( m_log.is_open() )
       m_log << "invalid reference tower numbers: " << ref1twr 
-	    << " " << ref2twr << std::endl;
+            << " " << ref2twr << std::endl;
     return m_trackRMS;  
   }
   //
@@ -2429,35 +2430,35 @@ float TkrHits::getTrackRMS(){
       if( twr!=ref1twr ) reftwr = ref1twr;
       else if( twr!=ref2twr ) reftwr = ref2twr;
       else{
-	std::cout << "invalid tower numbers: " << twr << " " << ref1twr 
-		  << " " << ref2twr << std::endl;
-	if( m_log.is_open() )
-	  m_log << "invalid tower numbers: " << twr << " " << ref1twr 
-		<< " " << ref2twr << std::endl;
-	continue;
+        std::cout << "invalid tower numbers: " << twr << " " << ref1twr 
+                  << " " << ref2twr << std::endl;
+        if( m_log.is_open() )
+          m_log << "invalid tower numbers: " << twr << " " << ref1twr 
+                << " " << ref2twr << std::endl;
+        continue;
       }
 #ifdef DEBUG_PRINT
       std::cout << "getTrackRMS: " << twr << " " << reftwr
-		<< ", " << offsetx[twr] << " " << offsety[twr] 
-		<< ", " << offsetx[reftwr] << " " << offsety[reftwr] 
-		<< ", " << x0[reftwr] << " " << y0[reftwr]
-		<< ", " << dxdz[reftwr] << " " << dydz[reftwr]
-		<< std::endl;
+                << ", " << offsetx[twr] << " " << offsety[twr] 
+                << ", " << offsetx[reftwr] << " " << offsety[reftwr] 
+                << ", " << x0[reftwr] << " " << y0[reftwr]
+                << ", " << dxdz[reftwr] << " " << dydz[reftwr]
+                << std::endl;
 #endif
       //
       // calculate track intercept at tower boudary
       if( offsetx[twr] == offsetx[reftwr] ){ // boundary at y
-	boundy = 0.5 * ( offsety[twr] + offsety[reftwr] );
-	boundz = (boundy-y0[reftwr]) / dydz[reftwr];
-	boundx = boundz * dxdz[reftwr] + x0[reftwr];
-	// total thickness of wall
-	trad = sqrt( 1 + (1+dxdz[reftwr]*dxdz[reftwr])/(dydz[reftwr]*dydz[reftwr]) );
+        boundy = 0.5 * ( offsety[twr] + offsety[reftwr] );
+        boundz = (boundy-y0[reftwr]) / dydz[reftwr];
+        boundx = boundz * dxdz[reftwr] + x0[reftwr];
+        // total thickness of wall
+        trad = sqrt( 1 + (1+dxdz[reftwr]*dxdz[reftwr])/(dydz[reftwr]*dydz[reftwr]) );
       }
       else if( offsety[twr] == offsety[reftwr] ){ // boundary at x
-	boundx = 0.5 * ( offsetx[twr] + offsetx[reftwr] );
-	boundz = (boundx-x0[reftwr]) / dxdz[reftwr];
-	boundy = boundz * dydz[reftwr] + y0[reftwr];
-	trad = sqrt( 1 + (1+dydz[reftwr]*dydz[reftwr])/(dxdz[reftwr]*dxdz[reftwr]) );
+        boundx = 0.5 * ( offsetx[twr] + offsetx[reftwr] );
+        boundz = (boundx-x0[reftwr]) / dxdz[reftwr];
+        boundy = boundz * dydz[reftwr] + y0[reftwr];
+        trad = sqrt( 1 + (1+dydz[reftwr]*dydz[reftwr])/(dxdz[reftwr]*dxdz[reftwr]) );
       }
       else numTracks = 3;
       dldz = sqrt( dxdz[reftwr]*dxdz[reftwr] + dydz[reftwr]*dydz[reftwr] + 1 );
@@ -2468,23 +2469,23 @@ float TkrHits::getTrackRMS(){
       residual = vx[twr][i] - ( x0[twr]+dxdz[twr]*vzx[twr][i] );
       if( fabs( residual ) > 1.0 ) continue;
       if( m_MIPtot && dirz<m_maxDirZ ) 
-	m_towerVar[m_towerPtr[twr]].resProf->Fill( upx[twr][i], residual );
+        m_towerVar[m_towerPtr[twr]].resProf->Fill( upx[twr][i], residual );
       if( numTracks==2 ){
-	trkpos = x0[reftwr] + dxdz[reftwr]*vzx[twr][i];
-	if( fabs( trkpos-boundx ) < 5.0 ) continue;
-	residual = vx[twr][i] - trkpos;
-	dist = dldz * fabs(vzx[twr][i]-boundz);
-	if( trms[reftwr]<0.3 && trad<maxtrad )
-	  m_sigDist->Fill( dist, residual );
-	if( trad<maxtrad && dist>mindist && dist<maxdist)
-	  m_sigRMS->Fill( trms[reftwr], residual );
-	if( trms[reftwr]<0.3 && dist>mindist && dist<maxdist)
-	  m_sigTrad->Fill( trad, residual );
-	if( fabs(residual)<3.0 && trms[reftwr]<0.3 
-	    && trad<maxtrad && dist>mindist && dist<maxdist ){
-	  m_tresProfX->Fill( twr, residual );
-	  m_towerVar[m_towerPtr[twr]].resX->Fill( residual );
-	}
+        trkpos = x0[reftwr] + dxdz[reftwr]*vzx[twr][i];
+        if( fabs( trkpos-boundx ) < 5.0 ) continue;
+        residual = vx[twr][i] - trkpos;
+        dist = dldz * fabs(vzx[twr][i]-boundz);
+        if( trms[reftwr]<0.3 && trad<maxtrad )
+          m_sigDist->Fill( dist, residual );
+        if( trad<maxtrad && dist>mindist && dist<maxdist)
+          m_sigRMS->Fill( trms[reftwr], residual );
+        if( trms[reftwr]<0.3 && dist>mindist && dist<maxdist)
+          m_sigTrad->Fill( trad, residual );
+        if( fabs(residual)<3.0 && trms[reftwr]<0.3 
+            && trad<maxtrad && dist>mindist && dist<maxdist ){
+          m_tresProfX->Fill( twr, residual );
+          m_towerVar[m_towerPtr[twr]].resX->Fill( residual );
+        }
       }
     }
     //
@@ -2492,28 +2493,28 @@ float TkrHits::getTrackRMS(){
     for( UInt_t i=0; i<vy[twr].size(); i++){
       residual = vy[twr][i] - ( y0[twr]+dydz[twr]*vzy[twr][i] );
       if( twr==0 && upy[twr][i]==4 && m_MIPtot ){
-	m_res->Fill( residual );
-	if( dirz<m_maxDirZ ) m_resSel->Fill( residual );
+        m_res->Fill( residual );
+        if( dirz<m_maxDirZ ) m_resSel->Fill( residual );
       }
       if( fabs( residual ) > 1.0 ) continue;
       if( m_MIPtot && dirz<m_maxDirZ ) 
-	m_towerVar[m_towerPtr[twr]].resProf->Fill( upy[twr][i], residual );
+        m_towerVar[m_towerPtr[twr]].resProf->Fill( upy[twr][i], residual );
       if( numTracks==2 ){
-	trkpos = y0[reftwr] + dydz[reftwr]*vzy[twr][i];
-	if( fabs( trkpos-boundy ) < 5.0 ) continue;
-	residual = vy[twr][i] - trkpos;
-	dist = dldz * fabs(vzy[twr][i]-boundz);
-	if( trms[reftwr]<maxrms && trad<maxtrad )
-	  m_sigDist->Fill( dist, residual );
-	if( trad<maxtrad && dist>mindist && dist<maxdist)
-	  m_sigRMS->Fill( trms[reftwr], residual );
-	if( trms[reftwr]<maxrms && dist>mindist && dist<maxdist)
-	  m_sigTrad->Fill( trad, residual );
-	if( fabs(residual)<3.0 && trms[reftwr]<maxrms 
-	    && trad<maxtrad && dist>mindist && dist<maxdist ){
-	  m_tresProfY->Fill( twr, residual );
-	  m_towerVar[m_towerPtr[twr]].resY->Fill( residual );
-	}
+        trkpos = y0[reftwr] + dydz[reftwr]*vzy[twr][i];
+        if( fabs( trkpos-boundy ) < 5.0 ) continue;
+        residual = vy[twr][i] - trkpos;
+        dist = dldz * fabs(vzy[twr][i]-boundz);
+        if( trms[reftwr]<maxrms && trad<maxtrad )
+          m_sigDist->Fill( dist, residual );
+        if( trad<maxtrad && dist>mindist && dist<maxdist)
+          m_sigRMS->Fill( trms[reftwr], residual );
+        if( trms[reftwr]<maxrms && dist>mindist && dist<maxdist)
+          m_sigTrad->Fill( trad, residual );
+        if( fabs(residual)<3.0 && trms[reftwr]<maxrms 
+            && trad<maxtrad && dist>mindist && dist<maxdist ){
+          m_tresProfY->Fill( twr, residual );
+          m_towerVar[m_towerPtr[twr]].resY->Fill( residual );
+        }
       }
     }
   }
@@ -2527,8 +2528,8 @@ float TkrHits::getTrackRMS(){
 
 
 Double_t TkrHits::leastSquareLinearFit( std::vector<Double_t> &vy, 
-					std::vector<Double_t> &vx, 
-					Double_t &y0, Double_t &dydx ){
+                                        std::vector<Double_t> &vx, 
+                                        Double_t &y0, Double_t &dydx ){
 
   Double_t sumX=0.0, sumXX=0.0, sumXY=0.0, sumY=0.0, sumYY=0.0;
   UInt_t num = vy.size();
@@ -2570,7 +2571,7 @@ void TkrHits::fillOccupancy( int tDiv )
     int tower = m_towerVar[tw].towerId;
     for( int layer=0; layer<g_nLayer; layer++)
       for( int view=0; view<g_nView; view++)
-	for( int i=0; i<g_nWafer+1; i++) nHits[tower][layer][view][i] = 0;
+        for( int i=0; i<g_nWafer+1; i++) nHits[tower][layer][view][i] = 0;
   }
   
   //
@@ -2591,7 +2592,7 @@ void TkrHits::fillOccupancy( int tDiv )
     int layer = lid.layer;
     
     for(int iStrip = cluster->getFirstStrip(); 
-	iStrip != int(cluster->getLastStrip()+1); ++iStrip){
+        iStrip != int(cluster->getLastStrip()+1); ++iStrip){
       nHits[tower][layer][view][iStrip/lStrip]++;
       nHits[tower][layer][view][g_nWafer]++;
     }
@@ -2622,15 +2623,15 @@ void TkrHits::fillOccupancy( int tDiv )
     // check if track moves across towers.
     if( tower != lastTower ){
       if( lastTower < 0 ){ 
-	lastTower = tower;
-	towers[0] = tower;
-	nTowers = 1;
+        lastTower = tower;
+        towers[0] = tower;
+        nTowers = 1;
       }
       else{
-	towers[0] = lastTower;
-	towers[1] = tower;
-	nTowers = 2;
-	lastTower = -1;
+        towers[0] = lastTower;
+        towers[1] = tower;
+        nTowers = 2;
+        lastTower = -1;
       }
     }
     
@@ -2644,60 +2645,60 @@ void TkrHits::fillOccupancy( int tDiv )
       // layers where hits are expected.
       // hit in the same layer or hits in both layers below and above.
       if( hitLayers[lyr] != 0
-	  || ( lyr!=0 && lyr!=g_nLayer-1 
-	       && hitLayers[lyr+1]>0 && hitLayers[lyr-1]>0 ) ){
-	posz =  posZ[view][lyr];
-	dxz = posz - preXZ;
-	tpos[0] = preX + dirX*dxz;
-	dyz = posz - preYZ;
-	tpos[1] = preY + dirY*dyz;
-	
-	int margin = 20;
-	for( int tw=0; tw<nTowers; tw++){ // check both tower
-	  int twr = towers[tw];
-	  int vtw = m_towerPtr[twr];
-	  int numActive=0;
-	  int numVG=0;
-	  for( int vw=0; vw!=g_nView; vw++){
-	    strips[vw]=-1;
-	    lpos = tpos[vw] - m_towerVar[vtw].center[vw];
-	    for( int iw=0; iw!=g_nWafer; ++iw){
-	      float stp = ( lpos-ladderGap*(iw-1.5) ) / stripPitch 
-		+ g_nStrip/2;
-	      if( stp>=iw*lStrip && stp<(iw+1)*lStrip ) strips[vw] = int(stp);
-	    }
-	    if( strips[vw] > 0 ){ 
-	      numActive++;
-	      int stp = strips[vw] % lStrip;
-	      if( stp>margin && stp<lStrip-margin ) numVG++;
-	    }
-	  }
-	  // check if track go thorugh active region in all views
-	  if( numActive == g_nView ){
-	    for( int vw=0; vw!=g_nView; vw++){
-	      layerId lid( lyr, vw );
-	      if( m_MIPeff ) 
-		m_towerVar[vtw].bsVar[lid.uniPlane].tHits[strips[vw]]++;
-	      if( numVG == g_nView ){
-		if( m_MIPeff ) m_towerVar[vtw].bsVar[lid.uniPlane].tLayer++;
-		for(int icut=0; icut<ncut; icut++)
-		  if( m_cut[icut] ) m_trackCut->Fill( icut+0.5 );
-	      }
-	      m_ltrk->Fill( lid.uniPlane );
-	      // layer with associated hits
-	      if( hitPlanes[layer][vw]>0 ){
-		if( m_MIPeff ) 
-		  m_towerVar[vtw].bsVar[lid.uniPlane].eHits[strips[vw]]++;
-		if( numVG == g_nView ){
-		  if( m_MIPeff ) 
-		    m_towerVar[vtw].bsVar[lid.uniPlane].hLayer++;
-		  for(int icut=0; icut<ncut; icut++)
-		    if( m_cut[icut] ) m_hitCut->Fill( icut+0.5 );
-		}
-	      }
-	    }
-	  }
-	} // tower loop
+          || ( lyr!=0 && lyr!=g_nLayer-1 
+               && hitLayers[lyr+1]>0 && hitLayers[lyr-1]>0 ) ){
+        posz =  posZ[view][lyr];
+        dxz = posz - preXZ;
+        tpos[0] = preX + dirX*dxz;
+        dyz = posz - preYZ;
+        tpos[1] = preY + dirY*dyz;
+        
+        int margin = 20;
+        for( int tw=0; tw<nTowers; tw++){ // check both tower
+          int twr = towers[tw];
+          int vtw = m_towerPtr[twr];
+          int numActive=0;
+          int numVG=0;
+          for( int vw=0; vw!=g_nView; vw++){
+            strips[vw]=-1;
+            lpos = tpos[vw] - m_towerVar[vtw].center[vw];
+            for( int iw=0; iw!=g_nWafer; ++iw){
+              float stp = ( lpos-ladderGap*(iw-1.5) ) / stripPitch 
+                + g_nStrip/2;
+              if( stp>=iw*lStrip && stp<(iw+1)*lStrip ) strips[vw] = int(stp);
+            }
+            if( strips[vw] > 0 ){ 
+              numActive++;
+              int stp = strips[vw] % lStrip;
+              if( stp>margin && stp<lStrip-margin ) numVG++;
+            }
+          }
+          // check if track go thorugh active region in all views
+          if( numActive == g_nView ){
+            for( int vw=0; vw!=g_nView; vw++){
+              layerId lid( lyr, vw );
+              if( m_MIPeff ) 
+                m_towerVar[vtw].bsVar[lid.uniPlane].tHits[strips[vw]]++;
+              if( numVG == g_nView ){
+                if( m_MIPeff ) m_towerVar[vtw].bsVar[lid.uniPlane].tLayer++;
+                for(int icut=0; icut<ncut; icut++)
+                  if( m_cut[icut] ) m_trackCut->Fill( icut+0.5 );
+              }
+              m_ltrk->Fill( lid.uniPlane );
+              // layer with associated hits
+              if( hitPlanes[layer][vw]>0 ){
+                if( m_MIPeff ) 
+                  m_towerVar[vtw].bsVar[lid.uniPlane].eHits[strips[vw]]++;
+                if( numVG == g_nView ){
+                  if( m_MIPeff ) 
+                    m_towerVar[vtw].bsVar[lid.uniPlane].hLayer++;
+                  for(int icut=0; icut<ncut; icut++)
+                    if( m_cut[icut] ) m_hitCut->Fill( icut+0.5 );
+                }
+              }
+            }
+          }
+        } // tower loop
       } // valid layer
     } // layer loop
     preLayer = layer;
@@ -2706,7 +2707,7 @@ void TkrHits::fillOccupancy( int tDiv )
     posz = position.Z();
     if( fabs(posz-posZ[view][layer]) > 0.01 )
       std::cout << "Incosistent z position: " << layer << " " << view << ", " 
-		<< posZ[view][layer] << " != " << posz << std::endl;
+                << posZ[view][layer] << " != " << posz << std::endl;
     dyz = posz - preYZ;
     dxz = posz - preXZ;
     deltax = preX + dirX*dxz - position.X();
@@ -2756,21 +2757,21 @@ void TkrHits::fillOccupancy( int tDiv )
     int twr = m_towerPtr[tower];
     m_locc->Fill( lid.uniPlane );
     for(int iStrip = cluster->getFirstStrip(); 
-	iStrip != int(cluster->getLastStrip()+1); ++iStrip){
+        iStrip != int(cluster->getLastStrip()+1); ++iStrip){
       m_towerVar[twr].bsVar[unp].lHits[iStrip]++;
       if( nHits[tower][layer][aview][g_nWafer] > 0 ){
-	for( int iw=0; iw<g_nWafer; iw++ )
-	  if( nHits[tower][layer][aview][iw] > 0 ){
-	    m_towerVar[twr].bsVar[unp].nHits[iStrip][iw][tDiv]++;
-	    m_aPos[iw]->Fill( apos-89.5*(iw-1.5) );
-	  }
+        for( int iw=0; iw<g_nWafer; iw++ )
+          if( nHits[tower][layer][aview][iw] > 0 ){
+            m_towerVar[twr].bsVar[unp].nHits[iStrip][iw][tDiv]++;
+            m_aPos[iw]->Fill( apos-89.5*(iw-1.5) );
+          }
       }
       else{
-	for( int iw=0; iw<g_nWafer; iw++ )
-	  if( fabs( apos-89.5*(iw-1.5) ) < 44.4 ){
-	    m_towerVar[twr].bsVar[unp].nHits[iStrip][iw][tDiv]++;
-	    m_aPos[iw]->Fill( apos-89.5*(iw-1.5) );
-	  }
+        for( int iw=0; iw<g_nWafer; iw++ )
+          if( fabs( apos-89.5*(iw-1.5) ) < 44.4 ){
+            m_towerVar[twr].bsVar[unp].nHits[iStrip][iw][tDiv]++;
+            m_aPos[iw]->Fill( apos-89.5*(iw-1.5) );
+          }
       }
     }
   }

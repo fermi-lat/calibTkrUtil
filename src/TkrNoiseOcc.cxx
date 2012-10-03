@@ -11,7 +11,7 @@ int getUnpFromBilayer( int xyview, int bilayer ){
     unp = 4 * ( (bilayer+1)/2 );
     if(bilayer%2!=0) unp--;
     //std::cout << "Y" << bilayer << ": " << unp << std::endl;
-  }	
+  }        
   return unp;
 }
 
@@ -43,7 +43,7 @@ TkrNoiseOcc::initAnalysis(UInt_t duration, UInt_t nx){
   int tower, bilayer, xyview;
   int ix;
 
-  //m_nEvent          = nEvent;	   
+  //m_nEvent          = nEvent;           
   //m_evt_interval    = evt_interval;   
 
   //Default values
@@ -66,21 +66,21 @@ TkrNoiseOcc::initAnalysis(UInt_t duration, UInt_t nx){
   for(tower=0;tower<g_nTower; tower++){
     for (bilayer=0; bilayer<g_nTkrLayer; bilayer++) {
       for(xyview=0; xyview<g_nView; xyview++) {
-	vTkrHitMap[tower][bilayer][xyview]     = new float[g_nStripsPerLayer];
-	vTkrWHitMap[tower][bilayer][xyview]     = new float[g_nStripsPerLayer];
-	vTkrNoiseMul[tower][bilayer][xyview]   = new float[MUL_MAX];
-	vTkrNoiseTot0[tower][bilayer][xyview]  = new float[TOT_MAX];
-	vTkrNoiseTot1[tower][bilayer][xyview]  = new float[TOT_MAX];
-	for(ix=0; ix<g_nStripsPerLayer; ix++) 
-	  vTkrHitMap[tower][bilayer][xyview][ix] = 0.0;
-	for(ix=0; ix<g_nStripsPerLayer; ix++) 
-	  vTkrWHitMap[tower][bilayer][xyview][ix] = 0.0;
-	for(ix=0; ix<MUL_MAX; ix++)
-	  vTkrNoiseMul[tower][bilayer][xyview][ix]  = 0.0;
-	for(ix=0; ix<TOT_MAX; ix++){
-	  vTkrNoiseTot0[tower][bilayer][xyview][ix] = 0.0;
-	  vTkrNoiseTot1[tower][bilayer][xyview][ix] = 0.0;
-	}
+        vTkrHitMap[tower][bilayer][xyview]     = new float[g_nStripsPerLayer];
+        vTkrWHitMap[tower][bilayer][xyview]     = new float[g_nStripsPerLayer];
+        vTkrNoiseMul[tower][bilayer][xyview]   = new float[MUL_MAX];
+        vTkrNoiseTot0[tower][bilayer][xyview]  = new float[TOT_MAX];
+        vTkrNoiseTot1[tower][bilayer][xyview]  = new float[TOT_MAX];
+        for(ix=0; ix<g_nStripsPerLayer; ix++) 
+          vTkrHitMap[tower][bilayer][xyview][ix] = 0.0;
+        for(ix=0; ix<g_nStripsPerLayer; ix++) 
+          vTkrWHitMap[tower][bilayer][xyview][ix] = 0.0;
+        for(ix=0; ix<MUL_MAX; ix++)
+          vTkrNoiseMul[tower][bilayer][xyview][ix]  = 0.0;
+        for(ix=0; ix<TOT_MAX; ix++){
+          vTkrNoiseTot0[tower][bilayer][xyview][ix] = 0.0;
+          vTkrNoiseTot1[tower][bilayer][xyview][ix] = 0.0;
+        }
       }
     }
   }
@@ -137,9 +137,9 @@ TkrNoiseOcc::anaDigiEvt() {
   for(tower=0; tower<g_nTower; tower++) {
     for(bilayer=0; bilayer<g_nTkrLayer; bilayer++) {
       for(xyview=0; xyview<g_nView; xyview++) {
-	numHitLayer[tower][bilayer][xyview]=0;
-	tot0[tower][bilayer][xyview]=TOT_INI_VAL;
-	tot1[tower][bilayer][xyview]=TOT_INI_VAL;
+        numHitLayer[tower][bilayer][xyview]=0;
+        tot0[tower][bilayer][xyview]=TOT_INI_VAL;
+        tot1[tower][bilayer][xyview]=TOT_INI_VAL;
       }
     }
   }
@@ -157,19 +157,19 @@ TkrNoiseOcc::anaDigiEvt() {
     bool newrun = true;
     for(UInt_t ip=0; ip<vParamTimeDep.size(); ip++)
       if( runid == vParamTimeDep[ip].id() ){
-	newrun = false;
-	m_iP = ip;
-	std::cout << "Old run: " << runid << ", event id: " << ievent
-		  << ", start time: " << runInfo.startTime() << std::endl;
+        newrun = false;
+        m_iP = ip;
+        std::cout << "Old run: " << runid << ", event id: " << ievent
+                  << ", start time: " << runInfo.startTime() << std::endl;
       }
     // new run id
     if( newrun ){
       m_iP = vParamTimeDep.size();
       vParamTimeDep.push_back( paramTimeDep( runid, 
-					     runInfo.startTime(), 
-					     m_duration, m_nx ) );
+                                             runInfo.startTime(), 
+                                             m_duration, m_nx ) );
       std::cout << "New run: " << runid << ", event id: " << ievent
-		<< ", start time: " << runInfo.startTime() << std::endl;
+                << ", start time: " << runInfo.startTime() << std::endl;
     }
   }
 
@@ -214,89 +214,89 @@ TkrNoiseOcc::anaDigiEvt() {
       
       /// check TKR trigger
       if ( (m_trig_cut==1) && ( ((gemTkrVector>>tower)&0x1)==1 ) ) {
-	continue;
+        continue;
       }
 
       /*
       /// check track hits on the adjacent layers
       if (m_coincidence_cut>0) {
-	//if ( (numHitLayer[tower][bilayer][0]>0) && (numHitLayer[tower][bilayer][1]>0) ) {
-	//  continue;
-	//}
-	if (bilayer>0) {
-	  if ( (numHitLayer[tower][bilayer-1][0]>0) || (numHitLayer[tower][bilayer-1][1]>0) ) {
-	    continue;
-	  }
-	} 
-	if ( bilayer<(g_nTkrLayer-1) ){
-	  if ( (numHitLayer[tower][bilayer+1][0]>0) || (numHitLayer[tower][bilayer+1][1]>0) ) {
-	    continue;
-	  }
-	}
+        //if ( (numHitLayer[tower][bilayer][0]>0) && (numHitLayer[tower][bilayer][1]>0) ) {
+        //  continue;
+        //}
+        if (bilayer>0) {
+          if ( (numHitLayer[tower][bilayer-1][0]>0) || (numHitLayer[tower][bilayer-1][1]>0) ) {
+            continue;
+          }
+        } 
+        if ( bilayer<(g_nTkrLayer-1) ){
+          if ( (numHitLayer[tower][bilayer+1][0]>0) || (numHitLayer[tower][bilayer+1][1]>0) ) {
+            continue;
+          }
+        }
       }
       */
       
       for(xyview=0; xyview<g_nView; xyview++){ 
-		
-	/// check track hits on the adjacent layers
-	if (m_coincidence_cut>0) {
-	  if (numHitLayer[tower][bilayer][(xyview+1)%2]>0) {
-	    continue;
-	  }
-	  if (bilayer>0) {
-	    if ( (numHitLayer[tower][bilayer-1][0]>0) || (numHitLayer[tower][bilayer-1][1]>0) ) {
-	      continue;
-	    }
-	  } 
-	  if ( bilayer<(g_nTkrLayer-1) ){
-	    if ( (numHitLayer[tower][bilayer+1][0]>0) || (numHitLayer[tower][bilayer+1][1]>0) ) {
-	      continue;
-	    }
-	  }
-	} // coincidence_cut
-	
-	// Cut by Multiplicity
-	if( (numHitLayer[tower][bilayer][xyview]<m_multi_ld)
-	    || (numHitLayer[tower][bilayer][xyview]>m_multi_hd) ){
-	  continue;
-	  vParamTimeDep[m_iP].fill( tower, bilayer, xyview, m_evtTime, 1, 0 );
-	}
+                
+        /// check track hits on the adjacent layers
+        if (m_coincidence_cut>0) {
+          if (numHitLayer[tower][bilayer][(xyview+1)%2]>0) {
+            continue;
+          }
+          if (bilayer>0) {
+            if ( (numHitLayer[tower][bilayer-1][0]>0) || (numHitLayer[tower][bilayer-1][1]>0) ) {
+              continue;
+            }
+          } 
+          if ( bilayer<(g_nTkrLayer-1) ){
+            if ( (numHitLayer[tower][bilayer+1][0]>0) || (numHitLayer[tower][bilayer+1][1]>0) ) {
+              continue;
+            }
+          }
+        } // coincidence_cut
+        
+        // Cut by Multiplicity
+        if( (numHitLayer[tower][bilayer][xyview]<m_multi_ld)
+            || (numHitLayer[tower][bilayer][xyview]>m_multi_hd) ){
+          continue;
+          vParamTimeDep[m_iP].fill( tower, bilayer, xyview, m_evtTime, 1, 0 );
+        }
 
-	// Fill time dependent variables
-	vParamTimeDep[m_iP].fill( tower, bilayer, xyview, m_evtTime,
-				  1, numHitLayer[tower][bilayer][xyview] );
-	
-	// Fill Noise Multiplicity
-	vTkrNoiseMul[tower][bilayer][xyview][numHitLayer[tower][bilayer][xyview]] +=1.0;
-	// Fill HitMap
-	for(ihit=0; ihit<numHitLayer[tower][bilayer][xyview]; ihit++) {
-	  vTkrHitMap[tower][bilayer][xyview][buf_stripId[tower][bilayer][xyview][ihit]] +=1.0;
-	  vTkrWHitMap[tower][bilayer][xyview][buf_stripId[tower][bilayer][xyview][ihit]] +=1.0/numHitLayer[tower][bilayer][xyview];
-	}
-	//Fill Tot
-	val = tot0[tower][bilayer][xyview];
-	if( val>TOT_MAX-2 ) val = TOT_MAX-2;
-	if( val<0 ) val = TOT_MAX-1;
-	vTkrNoiseTot0[tower][bilayer][xyview][val] +=1.0;
-	
-	if ((err_cout==1)&&(val>=TOT_MAX-2)) {
-	  std::cout << " ievent = " << ievent;
-	  std::cout << " tower = " << tower;
-	  std::cout << " layer = " << bilayer*g_nView+xyview;
-	  std::cout << " tot0 = "  << tot0[tower][bilayer][xyview] << std::endl;
-	}	      
+        // Fill time dependent variables
+        vParamTimeDep[m_iP].fill( tower, bilayer, xyview, m_evtTime,
+                                  1, numHitLayer[tower][bilayer][xyview] );
+        
+        // Fill Noise Multiplicity
+        vTkrNoiseMul[tower][bilayer][xyview][numHitLayer[tower][bilayer][xyview]] +=1.0;
+        // Fill HitMap
+        for(ihit=0; ihit<numHitLayer[tower][bilayer][xyview]; ihit++) {
+          vTkrHitMap[tower][bilayer][xyview][buf_stripId[tower][bilayer][xyview][ihit]] +=1.0;
+          vTkrWHitMap[tower][bilayer][xyview][buf_stripId[tower][bilayer][xyview][ihit]] +=1.0/numHitLayer[tower][bilayer][xyview];
+        }
+        //Fill Tot
+        val = tot0[tower][bilayer][xyview];
+        if( val>TOT_MAX-2 ) val = TOT_MAX-2;
+        if( val<0 ) val = TOT_MAX-1;
+        vTkrNoiseTot0[tower][bilayer][xyview][val] +=1.0;
+        
+        if ((err_cout==1)&&(val>=TOT_MAX-2)) {
+          std::cout << " ievent = " << ievent;
+          std::cout << " tower = " << tower;
+          std::cout << " layer = " << bilayer*g_nView+xyview;
+          std::cout << " tot0 = "  << tot0[tower][bilayer][xyview] << std::endl;
+        }              
 
-	val = tot1[tower][bilayer][xyview];
-	if ( val<0 || 299<val ) val = 299;
-	vTkrNoiseTot1[tower][bilayer][xyview][val] +=1.0;
-	
-	if ((err_cout==1)&&(val==299)) {
-	  std::cout << " ievent = " << ievent;
-	  std::cout << " tower = " << tower;
-	  std::cout << " layer = " << bilayer*g_nView+xyview;
-	  std::cout << " tot1 = "  << tot1[tower][bilayer][xyview] << std::endl;
-	}	      
-	
+        val = tot1[tower][bilayer][xyview];
+        if ( val<0 || 299<val ) val = 299;
+        vTkrNoiseTot1[tower][bilayer][xyview][val] +=1.0;
+        
+        if ((err_cout==1)&&(val==299)) {
+          std::cout << " ievent = " << ievent;
+          std::cout << " tower = " << tower;
+          std::cout << " layer = " << bilayer*g_nView+xyview;
+          std::cout << " tot1 = "  << tot1[tower][bilayer][xyview] << std::endl;
+        }              
+        
       }
     }
   }
@@ -320,17 +320,17 @@ TkrNoiseOcc::clearAnalysis() {
   for(tower=0;tower<g_nTower; tower++){
     for (bilayer=0; bilayer<g_nTkrLayer; bilayer++) {
       for(xyview=0; xyview<g_nView; xyview++) {
-	delete[] vTkrHitMap[tower][bilayer][xyview];   
-	delete[] vTkrWHitMap[tower][bilayer][xyview];   
-	delete[] vTkrNoiseMul[tower][bilayer][xyview]; 
-	delete[] vTkrNoiseTot0[tower][bilayer][xyview];
-	delete[] vTkrNoiseTot1[tower][bilayer][xyview];
-	
-	vTkrHitMap[tower][bilayer][xyview]     = NULL;
-	vTkrWHitMap[tower][bilayer][xyview]     = NULL;
-	vTkrNoiseMul[tower][bilayer][xyview]   = NULL;
-	vTkrNoiseTot0[tower][bilayer][xyview]  = NULL;
-	vTkrNoiseTot1[tower][bilayer][xyview]  = NULL;
+        delete[] vTkrHitMap[tower][bilayer][xyview];   
+        delete[] vTkrWHitMap[tower][bilayer][xyview];   
+        delete[] vTkrNoiseMul[tower][bilayer][xyview]; 
+        delete[] vTkrNoiseTot0[tower][bilayer][xyview];
+        delete[] vTkrNoiseTot1[tower][bilayer][xyview];
+        
+        vTkrHitMap[tower][bilayer][xyview]     = NULL;
+        vTkrWHitMap[tower][bilayer][xyview]     = NULL;
+        vTkrNoiseMul[tower][bilayer][xyview]   = NULL;
+        vTkrNoiseTot0[tower][bilayer][xyview]  = NULL;
+        vTkrNoiseTot1[tower][bilayer][xyview]  = NULL;
       }
     }
   }
@@ -426,53 +426,53 @@ TkrNoiseOcc::writeAnaToHis(TDirectory* dirTkrNoise){
     for (bilayer=0; bilayer<g_nTkrLayer; bilayer++) {
       for(xyview=0; xyview<g_nView; xyview++) {
 
-	// convert layer/view to layer name
-	char lname[] = "X15";
-	if( xyview == 0 ) sprintf(lname,"X%d", bilayer);
-	else sprintf(lname,"Y%d", bilayer);
-	// convert layer/view to uni-plane
-	//int unp = getUnpFromBilayer( xyview, bilayer );
+        // convert layer/view to layer name
+        char lname[] = "X15";
+        if( xyview == 0 ) sprintf(lname,"X%d", bilayer);
+        else sprintf(lname,"Y%d", bilayer);
+        // convert layer/view to uni-plane
+        //int unp = getUnpFromBilayer( xyview, bilayer );
 
-	// Hitmap
-	dirHitmap->cd();
-	sprintf(hname, "hTkrHitMapT%d%s", tower, lname);
-	sprintf(htitle, "Tower%d-TKR Layer %s Hit Map", tower, lname);
-	hTkrHitMap = new TH1F(hname, htitle, g_nStripsPerLayer, 
-			      -0.5, g_nStripsPerLayer-0.5);
-	// WeightedHitmap
-	sprintf(hname, "hTkrWHitMapT%d%s", tower, lname);
-	sprintf(htitle, "Tower%d-TKR Layer %s Weighted Hit Map", tower, lname);
-	hTkrWHitMap = new TH1F(hname, htitle, g_nStripsPerLayer, -0.5, g_nStripsPerLayer-0.5);
-	for (ix=0; ix<g_nStripsPerLayer; ix++){
-	  hTkrHitMap->SetBinContent(ix+1, vTkrHitMap[tower][bilayer][xyview][ix]);
-	  hTkrWHitMap->SetBinContent(ix+1, vTkrWHitMap[tower][bilayer][xyview][ix]);
-	}
-	hTkrHitMap->Write("",TObject::kOverwrite);
-	hTkrWHitMap->Write("",TObject::kOverwrite);
+        // Hitmap
+        dirHitmap->cd();
+        sprintf(hname, "hTkrHitMapT%d%s", tower, lname);
+        sprintf(htitle, "Tower%d-TKR Layer %s Hit Map", tower, lname);
+        hTkrHitMap = new TH1F(hname, htitle, g_nStripsPerLayer, 
+                              -0.5, g_nStripsPerLayer-0.5);
+        // WeightedHitmap
+        sprintf(hname, "hTkrWHitMapT%d%s", tower, lname);
+        sprintf(htitle, "Tower%d-TKR Layer %s Weighted Hit Map", tower, lname);
+        hTkrWHitMap = new TH1F(hname, htitle, g_nStripsPerLayer, -0.5, g_nStripsPerLayer-0.5);
+        for (ix=0; ix<g_nStripsPerLayer; ix++){
+          hTkrHitMap->SetBinContent(ix+1, vTkrHitMap[tower][bilayer][xyview][ix]);
+          hTkrWHitMap->SetBinContent(ix+1, vTkrWHitMap[tower][bilayer][xyview][ix]);
+        }
+        hTkrHitMap->Write("",TObject::kOverwrite);
+        hTkrWHitMap->Write("",TObject::kOverwrite);
 
-	// Multiplicity
-	dirMulti->cd();
-	sprintf(hname, "hTkrNoiseMulT%d%s", tower, lname);
-	sprintf(htitle, "Tower%d-TKR Layer %s Noise Multiplicity", tower, lname);
-	hTkrNoiseMul = new TH1F(hname, htitle, MUL_MAX, -0.5, MUL_MAX-0.5);
-	for (ix=0; ix<MUL_MAX; ix++) 
-	  hTkrNoiseMul-> SetBinContent(ix+1, vTkrNoiseMul[tower][bilayer][xyview][ix]);
-	hTkrNoiseMul->Write("",TObject::kOverwrite);
+        // Multiplicity
+        dirMulti->cd();
+        sprintf(hname, "hTkrNoiseMulT%d%s", tower, lname);
+        sprintf(htitle, "Tower%d-TKR Layer %s Noise Multiplicity", tower, lname);
+        hTkrNoiseMul = new TH1F(hname, htitle, MUL_MAX, -0.5, MUL_MAX-0.5);
+        for (ix=0; ix<MUL_MAX; ix++) 
+          hTkrNoiseMul-> SetBinContent(ix+1, vTkrNoiseMul[tower][bilayer][xyview][ix]);
+        hTkrNoiseMul->Write("",TObject::kOverwrite);
 
-	// TOT
-	dirTOT->cd();
-	sprintf(hname, "hTkrNoiseTot0T%d%s", tower, lname);
-	sprintf(htitle, "Tower%d-TKR Layer %s ToT0", tower, lname);
-	hTkrNoiseTot0 = new TH1F(hname, htitle, TOT_MAX, -0.5, TOT_MAX-0.5);
-	sprintf(hname, "hTkrNoiseTot1T%d%s", tower, lname);
-	sprintf(htitle, "Tower%d-TKR Layer %s ToT1", tower, lname);
-	hTkrNoiseTot1 = new TH1F(hname, htitle, TOT_MAX, -0.5, TOT_MAX-0.5);
-	for (ix=0; ix<TOT_MAX; ix++){
-	  hTkrNoiseTot0->SetBinContent(ix+1, vTkrNoiseTot0[tower][bilayer][xyview][ix]); 
-	  hTkrNoiseTot1->SetBinContent(ix+1, vTkrNoiseTot1[tower][bilayer][xyview][ix]);
-	}
-	hTkrNoiseTot1->Write("",TObject::kOverwrite);
-	hTkrNoiseTot0->Write("",TObject::kOverwrite);
+        // TOT
+        dirTOT->cd();
+        sprintf(hname, "hTkrNoiseTot0T%d%s", tower, lname);
+        sprintf(htitle, "Tower%d-TKR Layer %s ToT0", tower, lname);
+        hTkrNoiseTot0 = new TH1F(hname, htitle, TOT_MAX, -0.5, TOT_MAX-0.5);
+        sprintf(hname, "hTkrNoiseTot1T%d%s", tower, lname);
+        sprintf(htitle, "Tower%d-TKR Layer %s ToT1", tower, lname);
+        hTkrNoiseTot1 = new TH1F(hname, htitle, TOT_MAX, -0.5, TOT_MAX-0.5);
+        for (ix=0; ix<TOT_MAX; ix++){
+          hTkrNoiseTot0->SetBinContent(ix+1, vTkrNoiseTot0[tower][bilayer][xyview][ix]); 
+          hTkrNoiseTot1->SetBinContent(ix+1, vTkrNoiseTot1[tower][bilayer][xyview][ix]);
+        }
+        hTkrNoiseTot1->Write("",TObject::kOverwrite);
+        hTkrNoiseTot0->Write("",TObject::kOverwrite);
 
       } //xyview
     } // bilayer
@@ -494,25 +494,25 @@ TkrNoiseOcc::writeAnaToHis(TDirectory* dirTkrNoise){
   /*
   dirTkrNoise->cd();
   TH2F *hMaxStripOcc = new TH2F("hMaxStripOcc", 
-				"Max Noise Occupancy averaged over layer", 
-				g_nTower, -0.5, g_nTower-0.5, 
-				ybin, -0.5, ymax);
+                                "Max Noise Occupancy averaged over layer", 
+                                g_nTower, -0.5, g_nTower-0.5, 
+                                ybin, -0.5, ymax);
   TH2F *hMaxLayerOcc = new TH2F("hMaxLayerOcc", 
-				"Max Layer Occupancy averaged over layer", 
-				g_nTower, -0.5, g_nTower-0.5, 
-				ybin, -0.5, ymax);
+                                "Max Layer Occupancy averaged over layer", 
+                                g_nTower, -0.5, g_nTower-0.5, 
+                                ybin, -0.5, ymax);
   */
   TH2F *hExposureMap = new TH2F("hExposureMap", "Exposure per layer",
-				g_nTower, -0.5, g_nTower-0.5, 
-				ybin, -0.5, ymax);
+                                g_nTower, -0.5, g_nTower-0.5, 
+                                ybin, -0.5, ymax);
   TH2F *hStripOccMap = new TH2F("hStripOccMap", 
-				"Average Noise Occupancy averaged over layer", 
-				g_nTower, -0.5, g_nTower-0.5, 
-				ybin, -0.5, ymax);
+                                "Average Noise Occupancy averaged over layer", 
+                                g_nTower, -0.5, g_nTower-0.5, 
+                                ybin, -0.5, ymax);
   TH2F *hLayerOccMap = new TH2F("hLayerOccMap", 
-				"Average Layer Occupancy averaged over layer", 
-				g_nTower, -0.5, g_nTower-0.5, 
-				ybin, -0.5, ymax);
+                                "Average Layer Occupancy averaged over layer", 
+                                g_nTower, -0.5, g_nTower-0.5, 
+                                ybin, -0.5, ymax);
   
   Double_t exposure[g_nTower][g_nTkrLayer*g_nView];
   float *vExposure, *vStripOcc, *vLayerOcc;
@@ -534,93 +534,93 @@ TkrNoiseOcc::writeAnaToHis(TDirectory* dirTkrNoise){
       dirTowerOcc->cd();
       sprintf(hname, "hTkrTowerOccTwr%d%s", tower, nid);
       sprintf(htitle, "Tower%d-TKR tower noise occupancy%s", 
-	      tower, runid);
+              tower, runid);
       hTkrTowerOcc = new TH1F(hname, htitle, m_nx, xmi, xma);
      
       //Sum of esposures of entire layers in Tower
       sprintf(hname, "hTkrTowerSumExpTwr%d%s", tower, nid);
       sprintf(htitle, "Tower%d-TKR exposure of entire layer in Tower%s", 
-	      tower, runid);
+              tower, runid);
       hTkrTowerSumExp  = new TH1F(hname, htitle, m_nx, xmi, xma );
       sprintf(dirname, "Tower%d", tower);
       dirTimeDep = dirTimeDepRt->mkdir(dirname);
       dirTimeDep->cd();
       
       for (bilayer=0; bilayer<g_nTkrLayer; bilayer++) {
-	for(xyview=0; xyview<g_nView; xyview++) {
-	  // convert layer/view to layer name
-	  char lname[] = "X15";
-	  if( xyview == 0 ) sprintf(lname,"X%d", bilayer);
-	  else sprintf(lname,"Y%d", bilayer);
-	  // convert layer/view to uni-plane
-	  int unp = getUnpFromBilayer( xyview, bilayer );
+        for(xyview=0; xyview<g_nView; xyview++) {
+          // convert layer/view to layer name
+          char lname[] = "X15";
+          if( xyview == 0 ) sprintf(lname,"X%d", bilayer);
+          else sprintf(lname,"Y%d", bilayer);
+          // convert layer/view to uni-plane
+          int unp = getUnpFromBilayer( xyview, bilayer );
 
-	  // Exposure
-	  sprintf(hname, "hTkrExposT%d%s%s",  tower, lname, nid);
-	  sprintf(htitle, " TKR  Tower%d Layer %s Exposure%s", 
-		  tower, lname, runid);
-	  hTkrExposure = new TH1F(hname, htitle, m_nx, xmi, xma);
-	  vExposure = vParamTimeDep[ip].getExposure( tower, bilayer, xyview );
+          // Exposure
+          sprintf(hname, "hTkrExposT%d%s%s",  tower, lname, nid);
+          sprintf(htitle, " TKR  Tower%d Layer %s Exposure%s", 
+                  tower, lname, runid);
+          hTkrExposure = new TH1F(hname, htitle, m_nx, xmi, xma);
+          vExposure = vParamTimeDep[ip].getExposure( tower, bilayer, xyview );
       
-	  // StripOcc
-	  sprintf(hname, "hTkrStripOccT%d%s%s", tower, lname, nid);
-	  sprintf(htitle, "Tower%d- Averaged Strip Occupancy per Layer %s%s", 
-		  tower, lname, runid);
-	  hTkrStripOcc  = new TH1F(hname, htitle, m_nx, xmi, xma);
-	  vStripOcc = vParamTimeDep[ip].getStripOcc( tower, bilayer, xyview );
-	  
-	  // LayerOcc
-	  sprintf(hname, "hTkrLayerOccT%d%s%s", tower, lname, nid);
-	  sprintf(htitle, "Tower%d- Layer-OR Occupancy per Layer %s%s", 
-		  tower, lname, runid);
-	  hTkrLayerOcc  = new TH1F(hname, htitle, m_nx, xmi, xma);
-	  vLayerOcc = vParamTimeDep[ip].getLayerOcc( tower, bilayer, xyview );
+          // StripOcc
+          sprintf(hname, "hTkrStripOccT%d%s%s", tower, lname, nid);
+          sprintf(htitle, "Tower%d- Averaged Strip Occupancy per Layer %s%s", 
+                  tower, lname, runid);
+          hTkrStripOcc  = new TH1F(hname, htitle, m_nx, xmi, xma);
+          vStripOcc = vParamTimeDep[ip].getStripOcc( tower, bilayer, xyview );
+          
+          // LayerOcc
+          sprintf(hname, "hTkrLayerOccT%d%s%s", tower, lname, nid);
+          sprintf(htitle, "Tower%d- Layer-OR Occupancy per Layer %s%s", 
+                  tower, lname, runid);
+          hTkrLayerOcc  = new TH1F(hname, htitle, m_nx, xmi, xma);
+          vLayerOcc = vParamTimeDep[ip].getLayerOcc( tower, bilayer, xyview );
 
-	  //
-	  //
-	  // fill and save histograms
-	  for (ix=0; ix<m_nx; ix++){
-	    hTkrExposure->SetBinContent(ix+1, vExposure[ix]);
-	    hTkrStripOcc->SetBinContent(ix+1, vStripOcc[ix]);
-	    hTkrLayerOcc->SetBinContent(ix+1, vLayerOcc[ix]);
-	  }	
-	  exposure[tower][unp] = hTkrExposure->Integral();
-	  hTkrExposure->Write("",TObject::kOverwrite);
-	  hTkrStripOcc->Write("",TObject::kOverwrite);
-	  hTkrLayerOcc->Write("",TObject::kOverwrite);
-	  
-	  // For tower average occupancy
-	  hTkrTowerOcc->Add(hTkrStripOcc);
-	  hTkrTowerSumExp->Add(hTkrExposure);
-	  	  
-	  // check maximum strip rate
-	  /*
-	  max_rate = hTkrStripOcc->GetMaximum();
-	  if (max_rate>m_crit_strip_rate) {
-	    std::cout << " Tower" << tower;
-	    std::cout << " Layer" << lname;
-	    std::cout << std::scientific << " Max Strip Occupancy=" << max_rate << std::endl;
-	  }
-	  // check maximum layer rate
-	  max_rate = hTkrLayerOcc->GetMaximum();
-	  if (max_rate>m_crit_layer_rate) {
-	    std::cout << " Tower" << tower;
-	    std::cout << " Layer" << lname;
-	    std::cout << std::scientific << " Max Layer ccupancy=" << max_rate << std::endl;
-	  }
-	  */
+          //
+          //
+          // fill and save histograms
+          for (ix=0; ix<m_nx; ix++){
+            hTkrExposure->SetBinContent(ix+1, vExposure[ix]);
+            hTkrStripOcc->SetBinContent(ix+1, vStripOcc[ix]);
+            hTkrLayerOcc->SetBinContent(ix+1, vLayerOcc[ix]);
+          }        
+          exposure[tower][unp] = hTkrExposure->Integral();
+          hTkrExposure->Write("",TObject::kOverwrite);
+          hTkrStripOcc->Write("",TObject::kOverwrite);
+          hTkrLayerOcc->Write("",TObject::kOverwrite);
+          
+          // For tower average occupancy
+          hTkrTowerOcc->Add(hTkrStripOcc);
+          hTkrTowerSumExp->Add(hTkrExposure);
+                    
+          // check maximum strip rate
+          /*
+          max_rate = hTkrStripOcc->GetMaximum();
+          if (max_rate>m_crit_strip_rate) {
+            std::cout << " Tower" << tower;
+            std::cout << " Layer" << lname;
+            std::cout << std::scientific << " Max Strip Occupancy=" << max_rate << std::endl;
+          }
+          // check maximum layer rate
+          max_rate = hTkrLayerOcc->GetMaximum();
+          if (max_rate>m_crit_layer_rate) {
+            std::cout << " Tower" << tower;
+            std::cout << " Layer" << lname;
+            std::cout << std::scientific << " Max Layer ccupancy=" << max_rate << std::endl;
+          }
+          */
 
-	  // fill summary maps
-	  /*
-	  max_rate = hTkrStripOcc->GetMaximum();
-	  hMaxStripOcc->Fill(tower, unp, max_rate);
-	  max_rate = hTkrLayerOcc->GetMaximum();
-	  hMaxLayerOcc->Fill(tower, unp, max_rate);
-	  */
-	  hExposureMap->Fill(tower, unp, hTkrExposure->GetSum() );
-	  hStripOccMap->Fill(tower, unp, hTkrStripOcc->GetSum() );
-	  hLayerOccMap->Fill(tower, unp, hTkrLayerOcc->GetSum() );
-	} //xyview
+          // fill summary maps
+          /*
+          max_rate = hTkrStripOcc->GetMaximum();
+          hMaxStripOcc->Fill(tower, unp, max_rate);
+          max_rate = hTkrLayerOcc->GetMaximum();
+          hMaxLayerOcc->Fill(tower, unp, max_rate);
+          */
+          hExposureMap->Fill(tower, unp, hTkrExposure->GetSum() );
+          hStripOccMap->Fill(tower, unp, hTkrStripOcc->GetSum() );
+          hLayerOccMap->Fill(tower, unp, hTkrLayerOcc->GetSum() );
+        } //xyview
       } // bilayer
 
       // Tower Average Occupancy scale
@@ -671,7 +671,7 @@ TkrNoiseOcc::writeAnaToHis(TDirectory* dirTkrNoise){
 
 
 paramTimeDep::paramTimeDep( UInt_t id, UInt_t startT, UInt_t duration, 
-			    UInt_t nx ){
+                            UInt_t nx ){
   m_startTime = startT;
   m_duration = duration;
   m_nx = nx;
@@ -683,21 +683,21 @@ paramTimeDep::paramTimeDep( UInt_t id, UInt_t startT, UInt_t duration,
       //m_Exposure[tower][bilayer] = new float[m_nx];
       //for( UInt_t ix=0; ix<m_nx; ix++) m_Exposure[tower][bilayer][ix]=0.0;
       for( UInt_t xyview=0; xyview<g_nView; xyview++) {
-	m_Exposure[tower][bilayer][xyview] = new float[m_nx];
-	m_StripOcc[tower][bilayer][xyview] = new float[m_nx];
-	m_LayerOcc[tower][bilayer][xyview] = new float[m_nx];
-	for( UInt_t ix=0; ix<m_nx; ix++){
-	  m_Exposure[tower][bilayer][xyview][ix] = 0.0;
-	  m_StripOcc[tower][bilayer][xyview][ix] = 0.0;
-	  m_LayerOcc[tower][bilayer][xyview][ix] = 0.0;
-	}
+        m_Exposure[tower][bilayer][xyview] = new float[m_nx];
+        m_StripOcc[tower][bilayer][xyview] = new float[m_nx];
+        m_LayerOcc[tower][bilayer][xyview] = new float[m_nx];
+        for( UInt_t ix=0; ix<m_nx; ix++){
+          m_Exposure[tower][bilayer][xyview][ix] = 0.0;
+          m_StripOcc[tower][bilayer][xyview][ix] = 0.0;
+          m_LayerOcc[tower][bilayer][xyview][ix] = 0.0;
+        }
       }
     }
   }
 }
 
 void paramTimeDep::fill( int tower, int bilayer, int view, Double_t timeStamp,
-			 float nExp, float nOcc ){
+                         float nExp, float nOcc ){
   
   if( nExp <= 0.0 ) return;
   Int_t ix = (int) (( timeStamp - m_startTime ) / m_binSize);
@@ -718,12 +718,12 @@ void paramTimeDep::clear(){
   for( UInt_t tower=0;tower<g_nTower; tower++){
     for ( UInt_t bilayer=0; bilayer<g_nTkrLayer; bilayer++) {
       for( UInt_t xyview=0; xyview<g_nView; xyview++) {
-	delete[] m_Exposure[tower][bilayer][xyview];
-	delete[] m_StripOcc[tower][bilayer][xyview]; 
-	delete[] m_LayerOcc[tower][bilayer][xyview]; 
-	m_Exposure[tower][bilayer][xyview]   = NULL;
-	m_StripOcc[tower][bilayer][xyview]   = NULL;
-	m_LayerOcc[tower][bilayer][xyview]   = NULL;
+        delete[] m_Exposure[tower][bilayer][xyview];
+        delete[] m_StripOcc[tower][bilayer][xyview]; 
+        delete[] m_LayerOcc[tower][bilayer][xyview]; 
+        m_Exposure[tower][bilayer][xyview]   = NULL;
+        m_StripOcc[tower][bilayer][xyview]   = NULL;
+        m_LayerOcc[tower][bilayer][xyview]   = NULL;
       }
     }
   }

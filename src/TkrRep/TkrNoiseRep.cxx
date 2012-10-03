@@ -30,10 +30,10 @@ TkrNoiseRep::findNoisyLayer(){
   for(tower=0; tower<16; tower++){
     for(bilayer=0; bilayer<18; bilayer++){
       for(view=0; view<2; view++){
-	m_failStripOcc[tower][bilayer][view]=0;
-	m_failLayerOcc[tower][bilayer][view]=0;
-	m_failAveLayerOcc[tower][bilayer][view]=0;
-	m_failMultiRatio[tower][bilayer][view]=0;
+        m_failStripOcc[tower][bilayer][view]=0;
+        m_failLayerOcc[tower][bilayer][view]=0;
+        m_failAveLayerOcc[tower][bilayer][view]=0;
+        m_failMultiRatio[tower][bilayer][view]=0;
       }
     }
   }
@@ -49,21 +49,21 @@ TkrNoiseRep::findNoisyLayer(){
   for(tower=0; tower<16; tower++){
     for(bilayer=0; bilayer<18; bilayer++){
       for(view=0; view<2; view++){
-	layer = bilayer*2+view;
-	
-	if ( m_critical_strip_occ < (hStrip->GetBinContent(tower+1, layer+1)) ) {
-	  m_failStripOcc[tower][bilayer][view]=1;
-	}
-	if ( m_critical_layer_occ < (hLayer->GetBinContent(tower+1, layer+1)) ) {
-	  m_failLayerOcc[tower][bilayer][view]=1;
-	}
-	if ( m_critical_layer_occ < (hAveLayer->GetBinContent(tower+1, layer+1)) ) {
-	  m_failAveLayerOcc[tower][bilayer][view]=1;
-	}
-	if ( m_critical_multi_ratio < (hMulti->GetBinContent(tower+1, layer+1)) ) {
-	  m_failMultiRatio[tower][bilayer][view]=1;
-	}
-	
+        layer = bilayer*2+view;
+        
+        if ( m_critical_strip_occ < (hStrip->GetBinContent(tower+1, layer+1)) ) {
+          m_failStripOcc[tower][bilayer][view]=1;
+        }
+        if ( m_critical_layer_occ < (hLayer->GetBinContent(tower+1, layer+1)) ) {
+          m_failLayerOcc[tower][bilayer][view]=1;
+        }
+        if ( m_critical_layer_occ < (hAveLayer->GetBinContent(tower+1, layer+1)) ) {
+          m_failAveLayerOcc[tower][bilayer][view]=1;
+        }
+        if ( m_critical_multi_ratio < (hMulti->GetBinContent(tower+1, layer+1)) ) {
+          m_failMultiRatio[tower][bilayer][view]=1;
+        }
+        
       }
     }
   }
@@ -109,16 +109,16 @@ TkrNoiseRep::writeSummaryXML(){
   for(tower=0; tower<16; tower++){
     for(bilayer=0; bilayer<18; bilayer++){
       for(view=0; view<2; view++){
-	layer = bilayer*2+view;
-	if (m_failStripOcc[tower][bilayer][view]==1) {
-	  fprintf(outfile, "<stripOcc tower=\"%d\" biLayer=\"%d\" view=\"%d\" occupancy=\"%.6e\"/>\n", tower, bilayer, view, hStrip->GetBinContent(tower+1, layer+1));
-	}
-	if (m_failLayerOcc[tower][bilayer][view]==1) {
-	  fprintf(outfile, "<layerOcc tower=\"%d\" biLayer=\"%d\" view=\"%d\" occupancy=\"%.6e\"/>\n", tower, bilayer, view, hLayer->GetBinContent(tower+1, layer+1));
-	}
-	if (m_failMultiRatio[tower][bilayer][view]==1) {
-	  fprintf(outfile, "<multiRatio tower=\"%d\" biLayer=\"%d\" view=\"%d\" multiRatio=\"%.6e\"/>\n", tower, bilayer, view, hMulti->GetBinContent(tower+1, layer+1));
-	}
+        layer = bilayer*2+view;
+        if (m_failStripOcc[tower][bilayer][view]==1) {
+          fprintf(outfile, "<stripOcc tower=\"%d\" biLayer=\"%d\" view=\"%d\" occupancy=\"%.6e\"/>\n", tower, bilayer, view, hStrip->GetBinContent(tower+1, layer+1));
+        }
+        if (m_failLayerOcc[tower][bilayer][view]==1) {
+          fprintf(outfile, "<layerOcc tower=\"%d\" biLayer=\"%d\" view=\"%d\" occupancy=\"%.6e\"/>\n", tower, bilayer, view, hLayer->GetBinContent(tower+1, layer+1));
+        }
+        if (m_failMultiRatio[tower][bilayer][view]==1) {
+          fprintf(outfile, "<multiRatio tower=\"%d\" biLayer=\"%d\" view=\"%d\" multiRatio=\"%.6e\"/>\n", tower, bilayer, view, hMulti->GetBinContent(tower+1, layer+1));
+        }
       }
     }
   }
@@ -184,8 +184,8 @@ TkrNoiseRep::makeAncRootFile(){
       sprintf(hname, "hTkrExposTwr%dLayer%d", tower, layer);
       TH1F *hexpos = (TH1F*) gROOT->FindObject(hname);      
       if(hexpos==NULL) {
-	sprintf(hname, "hTkrExposTwr%dbiLayer%d", tower, int(layer/2));
-	hexpos = (TH1F*) gROOT->FindObject(hname);      
+        sprintf(hname, "hTkrExposTwr%dbiLayer%d", tower, int(layer/2));
+        hexpos = (TH1F*) gROOT->FindObject(hname);      
       }
 
       // Hitmap
@@ -232,8 +232,8 @@ TkrNoiseRep::makeAncRootFile(){
 
       nx = hexpos->GetNbinsX();
       if (hexpos->GetBinContent(nx)<expos_limit){
-	hStripOcc->SetBinContent(nx, 0.0);
-	hLayerOcc->SetBinContent(nx, 0.0);
+        hStripOcc->SetBinContent(nx, 0.0);
+        hLayerOcc->SetBinContent(nx, 0.0);
       }
       /// hMaxStrip ///
       max_rate = hStripOcc->GetMaximum();
@@ -1183,9 +1183,9 @@ TkrNoiseRep::generateSummaryPage(){
   for(tower=0; tower<16; tower++) {
     for(bilayer=0; bilayer<18; bilayer++) {
       for(view=0; view<2; view++) {
-	if (m_failAveLayerOcc[tower][bilayer][view]==1) {
-	  fprintf(outfile, "Bay#%d-%c%d:", tower, xychar[view], bilayer); 
-	}
+        if (m_failAveLayerOcc[tower][bilayer][view]==1) {
+          fprintf(outfile, "Bay#%d-%c%d:", tower, xychar[view], bilayer); 
+        }
       }
     }
   }
@@ -1200,10 +1200,10 @@ TkrNoiseRep::generateSummaryPage(){
   for(tower=0; tower<16; tower++) {
     for(bilayer=0; bilayer<18; bilayer++) {
       for(view=0; view<2; view++) {
-	if (m_failStripOcc[tower][bilayer][view]==1) {
-	  sprintf(layerRep, "%s_LAT_Tower%d_%c%d_report.html", m_prefix, tower, xychar[view], bilayer);
-	  fprintf(outfile, "<a href=\"%s\">Bay#%d-%c%d</a>\n", layerRep, tower, xychar[view], bilayer);
-	}
+        if (m_failStripOcc[tower][bilayer][view]==1) {
+          sprintf(layerRep, "%s_LAT_Tower%d_%c%d_report.html", m_prefix, tower, xychar[view], bilayer);
+          fprintf(outfile, "<a href=\"%s\">Bay#%d-%c%d</a>\n", layerRep, tower, xychar[view], bilayer);
+        }
       }
     }
   }
@@ -1213,10 +1213,10 @@ TkrNoiseRep::generateSummaryPage(){
   for(tower=0; tower<16; tower++) {
     for(bilayer=0; bilayer<18; bilayer++) {
       for(view=0; view<2; view++) {
-	if (m_failLayerOcc[tower][bilayer][view]==1) {
-	  sprintf(layerRep, "%s_LAT_Tower%d_%c%d_report.html", m_prefix, tower, xychar[view], bilayer);
-	  fprintf(outfile, "<a href=\"%s\">Bay#%d-%c%d</a>\n", layerRep, tower, xychar[view], bilayer);
-	}
+        if (m_failLayerOcc[tower][bilayer][view]==1) {
+          sprintf(layerRep, "%s_LAT_Tower%d_%c%d_report.html", m_prefix, tower, xychar[view], bilayer);
+          fprintf(outfile, "<a href=\"%s\">Bay#%d-%c%d</a>\n", layerRep, tower, xychar[view], bilayer);
+        }
       }
     }
   }
@@ -1226,10 +1226,10 @@ TkrNoiseRep::generateSummaryPage(){
   for(tower=0; tower<16; tower++) {
     for(bilayer=0; bilayer<18; bilayer++) {
       for(view=0; view<2; view++) {
-	if (m_failMultiRatio[tower][bilayer][view]==1) {
-	  sprintf(layerRep, "%s_LAT_Tower%d_%c%d_report.html", m_prefix, tower, xychar[view], bilayer);
-	  fprintf(outfile, "<a href=\"%s\">Bay#%d-%c%d</a>\n", layerRep, tower, xychar[view], bilayer);
-	}
+        if (m_failMultiRatio[tower][bilayer][view]==1) {
+          sprintf(layerRep, "%s_LAT_Tower%d_%c%d_report.html", m_prefix, tower, xychar[view], bilayer);
+          fprintf(outfile, "<a href=\"%s\">Bay#%d-%c%d</a>\n", layerRep, tower, xychar[view], bilayer);
+        }
       }
     }
   }
@@ -1353,18 +1353,18 @@ TkrNoiseRep::generateNoisyLayerReport(){
   for(tower=0; tower<16; tower++) {
     for(bilayer=0; bilayer<18; bilayer++) {
       for(view=0; view<2; view++) {
-	if( (m_failStripOcc[tower][bilayer][view]==1) 
-	    || (m_failLayerOcc[tower][bilayer][view]==1) 
-	    || (m_failMultiRatio[tower][bilayer][view]==1) ){
+        if( (m_failStripOcc[tower][bilayer][view]==1) 
+            || (m_failLayerOcc[tower][bilayer][view]==1) 
+            || (m_failMultiRatio[tower][bilayer][view]==1) ){
 
-	  layer = bilayer*2+view;
-	  drawStripOccGr_perLayer(tower, layer);
-	  drawLayerOccGr_perLayer(tower, layer);
-	  drawStripHist(tower, layer);
-	  drawMultiHist(tower, layer);
-	  drawTotHist(tower, layer);
-	  generateLayerReport(tower, layer);
-	}
+          layer = bilayer*2+view;
+          drawStripOccGr_perLayer(tower, layer);
+          drawLayerOccGr_perLayer(tower, layer);
+          drawStripHist(tower, layer);
+          drawMultiHist(tower, layer);
+          drawTotHist(tower, layer);
+          generateLayerReport(tower, layer);
+        }
       }
     }
   }
