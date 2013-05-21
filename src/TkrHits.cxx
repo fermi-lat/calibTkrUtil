@@ -518,7 +518,7 @@ TkrHits::TkrHits( bool initHistsFlag ):
   tag.assign( tag, 0, i ) ;
   m_tag = tag;
 
-  std::string version = "$Revision: 1.21 $";
+  std::string version = "$Revision: 1.22 $";
   i = version.find( " " );
   version.assign( version, i+1, version.size() );
   i = version.find( " " );
@@ -1157,10 +1157,13 @@ bool TkrHits::MIPfilter()
   //
   // check ACD variables
   //
-  AcdRecon* acdRecon = m_reconEvent->getAcdRecon();
-  assert(acdRecon != 0);
-  m_acdTileCount = acdRecon->nAcdHit();
-  m_acdTotalEnergy = acdRecon->getEnergy();
+  AcdReconV2* acdRecon = m_reconEvent->getAcdReconV2();
+  assert(acdRecon!= 0);
+  AcdEventTopology& eventTopology = acdRecon->getEventTopology();
+  AcdEventTopology* pTopo = &eventTopology;
+  assert(pTopo!=0);
+  m_acdTileCount = eventTopology.getTileCount();
+  m_acdTotalEnergy = eventTopology.getTotalTileEnergy();
   m_hAcdTileCount->Fill( m_acdTileCount );
   m_hAcdTotalEnergy->Fill( m_acdTotalEnergy );
 
