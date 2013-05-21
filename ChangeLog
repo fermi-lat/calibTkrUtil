@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: lsrea  Tue May 21 10:36:11 PDT 2013
+calibTkrUtil/src
+
+Modified Files:
+	TkrHits.cxx 
+Log Message:
+Compiles now... don't know if it runs
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: GlastRelease-20-08-13, operation: add
 Package: calibTkrUtil
