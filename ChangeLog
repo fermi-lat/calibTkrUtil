@@ -1,5 +1,44 @@
 ------------------------------------------------------------
 TAG
+Tag name: GlastRelease-20-09-10, operation: add
+Package: calibTkrUtil
+User: heather  Wed May 14 08:39:35 2014
+Files:
+  calibTkrUtil/calibTkrUtilLib.py  1.3
+  calibTkrUtil/.cvsignore  1.2
+  calibTkrUtil/ChangeLog  1.461
+  calibTkrUtil/SConscript  1.26
+  calibTkrUtil/calibTkrUtil/GeoConstants.h  1.3
+  calibTkrUtil/calibTkrUtil/TkrNoiseOcc.h  1.10
+  calibTkrUtil/calibTkrUtil/TkrHits.h  1.12
+  calibTkrUtil/cmt/.cvsignore  1.1.1.1
+  calibTkrUtil/cmt/requirements  1.24
+  calibTkrUtil/doc/release.notes  1.21
+  calibTkrUtil/python/mergeTkrRootFiles.py  1.5
+  calibTkrUtil/python/tkrUtils.py  1.6
+  calibTkrUtil/python/limits.txt  1.1
+  calibTkrUtil/python/runSummary.py  1.1
+  calibTkrUtil/python/paramLimitsDefault.xml  1.2
+  calibTkrUtil/python/tkrMonitor.py  1.22
+  calibTkrUtil/src/tkrPyRoot.in  1.2
+  calibTkrUtil/src/tkrPyRoot.i  1.1
+  calibTkrUtil/src/TkrHits.cxx  1.23
+  calibTkrUtil/src/badStrips.dtd  1.1
+  calibTkrUtil/src/TkrNoiseOcc.cxx  1.17
+  calibTkrUtil/src/TkrRep/TkrNoiseRep.cxx  1.7
+  calibTkrUtil/src/TkrRep/genTkrNoiseRep.cxx  1.1
+  calibTkrUtil/src/TkrRep/TkrNoiseRep.h  1.5
+  calibTkrUtil/src/test/RootTestAnalyzer.h  1.3
+  calibTkrUtil/src/test/tkrRootAanalysis.cxx  1.3
+  calibTkrUtil/src/test/RootTestAnalyzer.cxx  1.14
+  calibTkrUtil/src/test/AnalyzerOption.dat  1.6
+  calibTkrUtil/src/tkrPyRoot/tkrPyRoot.h  1.2
+  calibTkrUtil/src/tkrPyRoot/tkrPyRoot.cxx  1.4
+  calibTkrUtil/src/tkrPyRoot/LinkDef.h  1.2
+
+    *
+------------------------------------------------------------
+TAG
 Tag name: GlastRelease-20-09-09, operation: add
 Package: calibTkrUtil
 User: heather  Wed Apr  9 10:47:22 2014
