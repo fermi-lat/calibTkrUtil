@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: monzani  Fri Jun 12 13:37:43 PDT 2015
+calibTkrUtil/src
+
+Modified Files:
+	TkrHits.cxx 
+Log Message:
+adding Hiro's mods
+    *
+------------------------------------------------------------
+User: monzani  Fri Jun 12 13:37:43 PDT 2015
 calibTkrUtil/python
 
 Modified Files:
