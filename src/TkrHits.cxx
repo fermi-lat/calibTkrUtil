@@ -511,14 +511,14 @@ TkrHits::TkrHits( bool initHistsFlag ):
 {
 
   // get version number from CVS string
-  std::string tag = "$Name:  $";
+  std::string tag = "$Name: calibTkrUtil-02-10-01 $";
   int i = tag.find( " " );
   tag.assign( tag, i+1, tag.size() );
   i = tag.find( " " );
   tag.assign( tag, 0, i ) ;
   m_tag = tag;
 
-  std::string version = "$Revision: 1.22 $";
+  std::string version = "$Revision: 1.23 $";
   i = version.find( " " );
   version.assign( version, i+1, version.size() );
   i = version.find( " " );
@@ -1091,21 +1091,57 @@ void TkrHits::saveOccHists(){
 }
 
 
+void TkrHits::printEvent( int iEvent )
+{
+  std::cout << "Event#: " << iEvent << std::endl;
+}
+
+
 void TkrHits::analyzeEvent()
 {
+#ifdef PRINT_DEBUG
+    std::cout << "start analyzeEvent" << std::endl;
+#endif
     if( ! m_towerInfoDefined ) setTowerInfo();
+#ifdef PRINT_DEBUG
+    std::cout << "setTowerInfo done " << std::endl;
+#endif
     if( ! MIPfilter() ) return;
+#ifdef PRINT_DEBUG
+    std::cout << "MIPfilter done " << std::endl;
+#endif
     //MIPfilter(); // result of MIP is used in passCut()
     monitorTKR();
+#ifdef PRINT_DEBUG
+    std::cout << "monitorTKR done " << std::endl;
+#endif
 
     if(! passCut()) return;
+#ifdef PRINT_DEBUG
+    std::cout << "passCut done " << std::endl;
+#endif
 
     getReconClusters();
+#ifdef PRINT_DEBUG
+    std::cout << "getReconCluster done " << std::endl;
+#endif
     getDigiClusters();
+#ifdef PRINT_DEBUG
+    std::cout << "getDigiCluster done " << std::endl;
+#endif
     selectGoodClusters();
+#ifdef PRINT_DEBUG
+    std::cout << "selectGoodCluster done " << std::endl;
+#endif
     
     fillOccupancy( 0 );
+#ifdef PRINT_DEBUG
+    std::cout << "fillOcc done " << std::endl;
+#endif
     fillTot();
+#ifdef PRINT_DEBUG
+    std::cout << "fillTot done " << std::endl;
+#endif
 
 }
 
@@ -1143,6 +1179,9 @@ bool TkrHits::MIPfilter()
   TObjArray* tracks = tkrRecon->getTrackCol();
   // select only 1-track event
   if( tracks->GetEntries() != 1 ) m_cut[1] = false;
+#ifdef PRINT_DEBUG
+  std::cout << "# of tracks: " << tracks->GetEntries() << std::endl;
+#endif
   TkrTrack* track = dynamic_cast<TkrTrack*>(tracks->At(0));
   if( track ) 
     if( track->getKalEnergy() < 700 ) m_cut[2] = false;
@@ -1174,15 +1213,26 @@ bool TkrHits::MIPfilter()
   assert(calRecon != 0);
   TObjArray* clusters = calRecon->getCalClusterCol();
   int numClusters = clusters->GetEntries();
-  if(numClusters) numClusters -= 2; // uber and uber2
+#ifdef PRINT_DEBUG
+  std::cout << "# of clusters: " << clusters->GetEntries() << std::endl;
+#endif
+  if(numClusters == 2 or numClusters == 3){
+    std::cout << "Invalid # of clusters: " << clusters->GetEntries() << std::endl;
+    numClusters = 0;
+  }
+  else if(numClusters > 3){
+    numClusters -= 2; // uber and uber2
+  }
   //Event::CalCluster* calCluster = pCals->front();
   m_calEnergyRaw = 0;
   int num = 0;
-  for( int cl=0; cl!=numClusters; cl++){
-    CalCluster* calCluster = dynamic_cast<CalCluster*>(clusters->At(cl));
-    if(calCluster) {
-      m_calEnergyRaw += calCluster->getMomParams().getEnergy();
-      num++;
+  if( numClusters > 0 ){
+    for( int cl=0; cl!=numClusters; cl++){
+      CalCluster* calCluster = dynamic_cast<CalCluster*>(clusters->At(cl));
+      if(calCluster) {
+	m_calEnergyRaw += calCluster->getMomParams().getEnergy();
+	num++;
+      }
     }
   }
   if( m_digiEvent->getGem().getCnoVector()==0 ){
@@ -1193,6 +1243,9 @@ bool TkrHits::MIPfilter()
   m_hCalEnergyRaw->Fill( m_calEnergyRaw );
   TObjArray* xtals = calRecon->getCalXtalRecCol();
   int numXtals = xtals->GetEntries();
+#ifdef PRINT_DEBUG
+  std::cout << "# of Xtals: " << xtals->GetEntries() << std::endl;
+#endif
   const int maxXtal = 7;
   UInt_t numXtal[maxXtal];
   for( int i=0; i<maxXtal; i++) numXtal[i] = 0;
@@ -1224,6 +1277,9 @@ bool TkrHits::MIPfilter()
   // find 6-in-a-row
   //
   const TObjArray* tkrDigiCol = m_digiEvent->getTkrDigiCol();
+#ifdef PRINT_DEBUG
+  std::cout << "# of tkrGigi: " << tkrDigiCol->GetEntries() << std::endl;
+#endif
   if (tkrDigiCol){
     bool sixInARow[g_nTower], triggered[g_nTower], badTower[g_nTower];
     int nHitTC[g_nTower][g_nTkrLayer],
@@ -2232,6 +2288,9 @@ bool TkrHits::passCut()
   
   // select only 1 or 2 track event
   if( numTracks > 2 ) return false;
+#ifdef DEBUG_PRINT
+  std::cout << "# of tracks: " << tracks->GetEntries() << std::endl;
+#endif
   
   // find a track with maximum number of hits.
   int maxHits = 0, nHits;
