@@ -261,7 +261,8 @@ class TkrHits {
   //  TkrHits( const std::string, const std::string );
   ~TkrHits(){};
   
-  void setOutputFile( TFile* outputFile ) {m_rootFile=outputFile;}  
+  void setOutputFile( TFile* outputFile ) {m_rootFile=outputFile;} 
+  void printEvent(int);
   void analyzeEvent();
   
   void fillTot();   
@@ -273,6 +274,7 @@ class TkrHits {
   {
     m_digiEvent=digiEvent;
     m_reconEvent=reconEvent;
+    std::cout << "setEvtPtrs" << std::endl;
   }
 
   void saveAllHist( bool saveTimeOcc=false, bool runFitTot=true );

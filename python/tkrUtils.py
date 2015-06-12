@@ -1,7 +1,7 @@
 import os, glob, xml.dom.minidom, math, time, datetime, sys, cStringIO
 from xml.dom import xmlbuilder
 
-import numarray, ROOT, pyfits
+import numpy, ROOT, pyfits
 
 try:
   ROOT.gSystem.Load("libcommonRootData.so")
@@ -14,8 +14,8 @@ except:
   sys.exit()
 
 # get tag and version numbers
-__tag__  = "$Name:  $"
-__version__  = "$Revision: 1.0 $"
+__tag__  = "$Name: calibTkrUtil-02-10-01 $"
+__version__  = "$Revision: 1.6 $"
 tagv = "%s:%s" % (__tag__.split()[1], __version__.split()[1])
 
 g_nTowers = 16
@@ -392,7 +392,7 @@ def readThrXml( xmlfile ):
       continue
     
     # initialize arrays for tot parameters
-    thr = numarray.zeros( (g_nUniPlanes,g_nStrips), numarray.Float32 )
+    thr = numpy.zeros( (g_nUniPlanes,g_nStrips), numpy.float32 )
     for plane in planes:
       tray = str( plane.getAttribute("tray") )
       which = str( plane.getAttribute("which") )
@@ -437,7 +437,7 @@ def getThrDac( run ):
 
 def readThrDacFromTnt( runid, rundir ):
   prefix = "/TkrThresholdCal_FeThr_Layer"
-  dacarray = numarray.zeros( (g_nUniPlanes,g_nFE), numarray.Float32 )
+  dacarray = numpy.zeros( (g_nUniPlanes,g_nFE), numpy.float32 )
   for unp in range(g_nUniPlanes):
     lname = g_layerNames[unp]
     fname = rundir + prefix  + lname + "_" + runid + ".tnt"
@@ -472,7 +472,7 @@ def readThrDacFromXml( xmlfile ):
       print "Invalid hardware: ", hwserial
       continue
     gtcclist = tem.getElementsByTagName("GTCC")
-    dacarray = numarray.zeros( (g_nUniPlanes,g_nFE), numarray.Float32 )
+    dacarray = numpy.zeros( (g_nUniPlanes,g_nFE), numpy.float32 )
 
     # loop GTCC
     for gtcc in gtcclist:
@@ -581,7 +581,7 @@ def readChargeScaleFromRoot( rname ):
     unilayer = ROOT.calibRootData.ChargeScaleUnilayer();
     unibranch.SetAddress(ROOT.AddressOf(unilayer));
     #print tower, (row, col), (twr.getRow(), twr.getCol()), twr.getSerial(), unibranch.GetEntries()
-    csarray = numarray.zeros( (g_nUniPlanes,g_nFE), numarray.Float32 )
+    csarray = numpy.zeros( (g_nUniPlanes,g_nFE), numpy.float32 )
     for inp in range( unibranch.GetEntries() ):
       unibranch.GetEvent(inp);
       tkrId =  unilayer.getId()
@@ -638,7 +638,7 @@ def readChargeScaleFromXml( xmlfile ):
       return [ ( hwserial, None ) ]
     
     # initialize arrays for tot parameters
-    csarray = numarray.zeros( (g_nUniPlanes,g_nFE), numarray.Float32 )
+    csarray = numpy.zeros( (g_nUniPlanes,g_nFE), numpy.float32 )
     for plane in planes:
       tray = str( plane.getAttribute("tray") )
       which = str( plane.getAttribute("which") )
@@ -684,7 +684,7 @@ def compareResults( rawValues, refValues, limits=None ):
   if num == 0:
     return (0.0, 0.0, -1.0, -1.0, -1.0, foutliers )
     
-  nums = numarray.sum( numarray.transpose( mask ) )
+  nums = numpy.sum( mask, axis=1 )
   masknums = (nums!=0)
   nums += (1-masknums)*1E-10
 
@@ -707,11 +707,11 @@ def compareResults( rawValues, refValues, limits=None ):
   else: rmsR = 0.0
 
   # calculate layer rms of ratios
-  meanL = numarray.sum( numarray.transpose( ratios ) ) / nums
-  rmssq = numarray.sum( numarray.transpose( sq ) )/nums - meanL*meanL
+  meanL = numpy.sum( ratios, axis=1 ) / nums
+  rmssq = numpy.sum( sq, axis=1 )/nums - meanL*meanL
   masknums *= (rmssq>0)
   rmssq += (1-masknums)*1E-10 # avoid sqrt of zero
-  rmsL = numarray.sqrt( rmssq )
+  rmsL = numpy.sqrt( rmssq )
   if masknums.sum() > 0:
     rmsLayerR = (rmsL*masknums).sum() / masknums.sum()
   else:
@@ -743,10 +743,10 @@ def readTotParamsFromRoot( fname ):
     hwserial = g_Serials[tower]
     if not pmap.has_key( hwserial ):
       # initialize arrays for tot parameters
-      p0array = numarray.zeros( (g_nUniPlanes,g_nStrips), numarray.Float32 )
-      p1array = numarray.zeros( (g_nUniPlanes,g_nStrips), numarray.Float32 )
-      p2array = numarray.zeros( (g_nUniPlanes,g_nStrips), numarray.Float32 )
-      chisqarray = numarray.zeros( (g_nUniPlanes,g_nStrips), numarray.Float32 )
+      p0array = numpy.zeros( (g_nUniPlanes,g_nStrips), numpy.float32 )
+      p1array = numpy.zeros( (g_nUniPlanes,g_nStrips), numpy.float32 )
+      p2array = numpy.zeros( (g_nUniPlanes,g_nStrips), numpy.float32 )
+      chisqarray = numpy.zeros( (g_nUniPlanes,g_nStrips), numpy.float32 )
       pmap[hwserial] = [p0array, p1array, p2array, chisqarray]
     row=tower/4
     col=tower%4
@@ -810,10 +810,10 @@ def readTotParamsFromFits( fname ):
     hwserial = g_Serials[tower]
     if not pmap.has_key( hwserial ):
       # initialize arrays for tot parameters
-      p0array = numarray.zeros( (g_nUniPlanes,g_nStrips), numarray.Float32 )
-      p1array = numarray.zeros( (g_nUniPlanes,g_nStrips), numarray.Float32 )
-      p2array = numarray.zeros( (g_nUniPlanes,g_nStrips), numarray.Float32 )
-      chisqarray = numarray.zeros( (g_nUniPlanes,g_nStrips), numarray.Float32 )
+      p0array = numpy.zeros( (g_nUniPlanes,g_nStrips), numpy.float32 )
+      p1array = numpy.zeros( (g_nUniPlanes,g_nStrips), numpy.float32 )
+      p2array = numpy.zeros( (g_nUniPlanes,g_nStrips), numpy.float32 )
+      chisqarray = numpy.zeros( (g_nUniPlanes,g_nStrips), numpy.float32 )
       pmap[hwserial] = [p0array, p1array, p2array, chisqarray]
     unp = g_TrayNames.index( tray+which )
     #print unp, ext.data
@@ -857,10 +857,10 @@ def readTotParamsFromXml( xmlfile ):
       return [ ( hwserial, None ) ]
     
     # initialize arrays for tot parameters
-    p0array = numarray.zeros( (g_nUniPlanes,g_nStrips), numarray.Float32 )
-    p1array = numarray.zeros( (g_nUniPlanes,g_nStrips), numarray.Float32 )
-    p2array = numarray.zeros( (g_nUniPlanes,g_nStrips), numarray.Float32 )
-    chisqarray = numarray.zeros( (g_nUniPlanes,g_nStrips), numarray.Float32 )
+    p0array = numpy.zeros( (g_nUniPlanes,g_nStrips), numpy.float32 )
+    p1array = numpy.zeros( (g_nUniPlanes,g_nStrips), numpy.float32 )
+    p2array = numpy.zeros( (g_nUniPlanes,g_nStrips), numpy.float32 )
+    chisqarray = numpy.zeros( (g_nUniPlanes,g_nStrips), numpy.float32 )
     for plane in planes:
       tray = str( plane.getAttribute("tray") )
       which = str( plane.getAttribute("which") )
@@ -881,10 +881,10 @@ def readTotParamsFromXml( xmlfile ):
 def readTotParamsFromTnt( runid, rundir ):
   prefix = "/TkrTotGainNt_Layer"
   # initialize arrays for tot parameters
-  p0array = numarray.zeros( (g_nUniPlanes,g_nStrips), numarray.Float32 )
-  p1array = numarray.zeros( (g_nUniPlanes,g_nStrips), numarray.Float32 )
-  p2array = numarray.zeros( (g_nUniPlanes,g_nStrips), numarray.Float32 )
-  chisqarray = numarray.zeros( (g_nUniPlanes,g_nStrips), numarray.Float32 )
+  p0array = numpy.zeros( (g_nUniPlanes,g_nStrips), numpy.float32 )
+  p1array = numpy.zeros( (g_nUniPlanes,g_nStrips), numpy.float32 )
+  p2array = numpy.zeros( (g_nUniPlanes,g_nStrips), numpy.float32 )
+  chisqarray = numpy.zeros( (g_nUniPlanes,g_nStrips), numpy.float32 )
 
   # loop through uniplanes
   for unp in range(g_nUniPlanes):
