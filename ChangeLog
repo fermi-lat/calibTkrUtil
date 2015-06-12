@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: monzani  Fri Jun 12 13:37:42 PDT 2015
+calibTkrUtil/calibTkrUtil
+
+Modified Files:
+	TkrHits.h 
+Log Message:
+adding Hiro's mods
+    *
+------------------------------------------------------------
 TAG
 Tag name: GlastRelease-20-10-02, operation: add
 Package: calibTkrUtil
